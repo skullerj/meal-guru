@@ -1,7 +1,6 @@
 import React from 'react';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import styled from 'styled-components';
-import Button from './components/Button.js';
-import Input from './components/Input.js';
 import Header from './components/Header.js';
 import H1 from './components/H1.js';
 import A from './components/A.js';
@@ -30,22 +29,36 @@ const HeaderLink = styled(A)`
 
 function App() {
   return (
-    <div className="App">
-      <GlobalStyles />
-      <Header>
-        <HeaderContent>
-          <H1>MEAL GURU</H1>
-          <Spacer />
-          <HeaderLink>Link One</HeaderLink>
-          <HeaderLink>Link Two</HeaderLink>
-        </HeaderContent>
-      </Header>
-      <header className="App-header">
-        <Button>Here comes the app</Button>
-        <br />
-        <Input value="This is the text"/>
-      </header>
-    </div>
+    <Router>
+      <>
+        <GlobalStyles />
+        <Header>
+          <HeaderContent>
+            <H1>MEAL GURU</H1>
+            <Spacer />
+            <Link to="/">
+              <HeaderLink>Home</HeaderLink>
+            </Link>
+            <Link to="/recepies">
+              <HeaderLink>Recepies</HeaderLink>
+            </Link>
+            <Link to="/planing">
+              <HeaderLink>Planinng</HeaderLink>
+            </Link>
+            <Link to="/cart">
+              <HeaderLink>Cart</HeaderLink>
+            </Link>
+          </HeaderContent>
+        </Header> 
+        <Switch>
+          <Route path="/" exact render={() => <H1>Welcome to the first view</H1>}/>
+          <Route path="/recepies" render={() => <H1>Recepies</H1>}/>
+          <Route path="/planing" render={() => <H1>Planing</H1>}/>
+          <Route path="/cart" render={() => <H1>Cart</H1>}/>
+          <Route render={() => <H1>You are lost my fellow padawan</H1>} />
+        </Switch>
+      </>
+    </Router>
   );
 }
 
