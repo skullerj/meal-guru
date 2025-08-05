@@ -1,10 +1,12 @@
-# Astro Starter Kit: Basics
+# Meal Guru
 
-```sh
-npm create astro@latest -- --template basics
-```
+**Code name**: meal-guru (commercial name TBD)
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Project Overview
+
+Meal Guru is designed to reduce the mental strain of meal planning and preparation. The app helps people efficiently plan and prepare meals for the week through batch cooking, saving time and money while eliminating the frustration of wandering around supermarkets trying to find ingredients for recipes.
+
+**Target User**: People who want to cook for multiple days at once (batch cooking) and streamline their grocery shopping and meal preparation process.
 
 ## 🚀 Project Structure
 
