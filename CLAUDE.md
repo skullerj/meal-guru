@@ -9,6 +9,7 @@ Meal Guru is an Astro-based web application designed to reduce the mental strain
 - **Framework**: Astro 5.12.8
 - **Language**: TypeScript
 - **Package Manager**: npm
+- **Linter/Formatter**: Biome
 
 ## Development Commands
 ```bash
@@ -23,6 +24,12 @@ npm run build
 
 # Preview production build
 npm run preview
+
+# Lint code
+npm run lint
+
+# Format code
+npm run format
 
 # Run Astro CLI commands
 npm run astro ...
@@ -49,4 +56,4 @@ npm run astro ...
 - Uses Astro framework with TypeScript
 - Current state: Basic project structure with minimal components
 - No testing framework currently configured
-- No linting or type checking commands specified yet
+- Uses Biome for linting and formatting
