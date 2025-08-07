@@ -9,6 +9,7 @@ Meal Guru is an Astro-based web application designed to reduce the mental strain
 - **Framework**: Astro 5.12.8
 - **Language**: TypeScript
 - **Package Manager**: npm
+- **Styling**: Tailwind CSS
 - **Linter/Formatter**: Biome
 
 ## Development Commands
@@ -45,15 +46,19 @@ npm run astro ...
 │   ├── components/
 │   ├── layouts/
 │   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
+│   ├── pages/
+│   │   └── index.astro
+│   └── styles/
+│       └── global.css
+├── astro.config.mjs
 ├── package.json
 └── tsconfig.json
 ```
 
 ## Notes for Claude
 - This is a meal planning and batch cooking application
-- Uses Astro framework with TypeScript
+- Uses Astro framework with TypeScript and Tailwind CSS
+- Tailwind CSS is configured via Vite plugin with global CSS import in Layout.astro
 - Current state: Basic project structure with minimal components
 - No testing framework currently configured
 - Uses Biome for linting and formatting
