@@ -11,6 +11,7 @@ Meal Guru is an Astro-based web application designed to reduce the mental strain
 - **Package Manager**: npm
 - **Styling**: Tailwind CSS
 - **Linter/Formatter**: Biome
+- **Git Hooks**: Lefthook
 
 ## Development Commands
 ```bash
@@ -57,6 +58,8 @@ npm run astro ...
 │   └── styles/
 │       └── global.css
 ├── astro.config.mjs
+├── biome.json
+├── lefthook.yml
 ├── package.json
 └── tsconfig.json
 ```
@@ -81,5 +84,9 @@ npm run astro ...
 - Current state: Functional barebones recipe website with shopping and cooking workflows
 - No testing framework currently configured
 - Uses Biome for linting and formatting
+- Lefthook configured for pre-commit hooks (runs `npx biome check` on staged files)
 - Recipe data stored in `/src/data/recipes.ts` with TypeScript interfaces
 - Interactive client-side functionality for ingredient tracking and step progression
+
+## Project Maintenance Reminders
+- Always keep CLAUDE.md up to date when adding new libraries
