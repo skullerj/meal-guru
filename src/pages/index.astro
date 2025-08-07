@@ -1,7 +1,21 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { recipes } from "../data/recipes";
 ---
 
 <Layout>
-    <h1 class="text-3xl font-bold underline">This will be your meal guru</h1>
+    <h1 class="text-3xl font-bold underline mb-8">Meal Guru</h1>
+    
+    <div class="space-y-6">
+        {recipes.map((recipe) => (
+            <div class="border border-gray-300 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold mb-2">{recipe.name}</h2>
+                <p class="text-gray-600 mb-4">{recipe.ingredients.length} ingredients • {recipe.instructions.length} steps</p>
+                <div class="space-x-4">
+                    <a href={`/recipe/${recipe.id}`} class="bg-blue-500 text-white px-4 py-2 rounded">Buy Ingredients</a>
+                    <a href={`/recipe/${recipe.id}/cook`} class="bg-green-500 text-white px-4 py-2 rounded">Cook Recipe</a>
+                </div>
+            </div>
+        ))}
+    </div>
 </Layout>

@@ -1,0 +1,121 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { recipes } from "../../../data/recipes";
+
+export async function getStaticPaths() {
+  return recipes.map((recipe) => ({
+    params: { id: recipe.id },
+    props: { recipe },
+  }));
+}
+
+const { recipe } = Astro.props;
+---
+
+<Layout>
+    <div class="mb-6">
+        <a href={`/recipe/${recipe.id}`} class="text-blue-500 hover:underline">← Back to shopping</a>
+    </div>
+    
+    <h1 class="text-2xl font-bold mb-6">Cooking: {recipe.name}</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2">
+            <h2 class="text-lg font-semibold mb-4">Instructions:</h2>
+            <div class="space-y-4">
+                {recipe.instructions.map((step, index) => (
+                    <div class="border border-gray-200 rounded-lg p-4 step-card" data-step={index}>
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                {index + 1}
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-gray-800">{step.text}</p>
+                                <button 
+                                    class="mt-2 text-sm text-gray-500 hover:text-blue-500 step-done-btn"
+                                    data-step={index}
+                                >
+                                    Mark as done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+        
+        <div class="lg:col-span-1">
+            <div class="sticky top-4">
+                <h2 class="text-lg font-semibold mb-4">Ingredients for Current Step:</h2>
+                <div id="step-ingredients" class="space-y-2 mb-6">
+                    <p class="text-gray-500">Click on a step to see its ingredients</p>
+                </div>
+                
+                <h3 class="text-md font-semibold mb-3">All Ingredients:</h3>
+                <div class="space-y-2 text-sm">
+                    {recipe.ingredients.map((ingredient) => (
+                        <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                            <span class="font-medium">{ingredient.name}</span>
+                            <span class="text-gray-600">{ingredient.amount} {ingredient.unit}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script define:vars={{ recipe }}>
+    document.addEventListener('DOMContentLoaded', function() {
+        const stepCards = document.querySelectorAll('.step-card');
+        const stepIngredientsDiv = document.getElementById('step-ingredients');
+        const stepDoneBtns = document.querySelectorAll('.step-done-btn');
+        
+        function showIngredientsForStep(stepIndex) {
+            const step = recipe.instructions[stepIndex];
+            const ingredients = step.ingredientIds.map(id => 
+                recipe.ingredients.find(ing => ing.id === id)
+            ).filter(Boolean);
+            
+            if (ingredients.length === 0) {
+                stepIngredientsDiv.innerHTML = '<p class="text-gray-500">No specific ingredients for this step</p>';
+            } else {
+                stepIngredientsDiv.innerHTML = ingredients.map(ingredient => 
+                    `<div class="p-2 bg-blue-50 border border-blue-200 rounded">
+                        <span class="font-medium">${ingredient.name}</span>
+                        <span class="text-gray-600 ml-2">${ingredient.amount} ${ingredient.unit}</span>
+                    </div>`
+                ).join('');
+            }
+        }
+        
+        stepCards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                stepCards.forEach(c => c.classList.remove('bg-blue-50', 'border-blue-300'));
+                card.classList.add('bg-blue-50', 'border-blue-300');
+                showIngredientsForStep(index);
+            });
+        });
+        
+        stepDoneBtns.forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const stepIndex = parseInt(btn.dataset.step);
+                const stepCard = document.querySelector(`[data-step="${stepIndex}"]`);
+                
+                if (stepCard.classList.contains('opacity-50')) {
+                    stepCard.classList.remove('opacity-50', 'line-through');
+                    btn.textContent = 'Mark as done';
+                } else {
+                    stepCard.classList.add('opacity-50');
+                    stepCard.querySelector('p').classList.add('line-through');
+                    btn.textContent = 'Undo';
+                }
+            });
+        });
+        
+        if (stepCards.length > 0) {
+            stepCards[0].click();
+        }
+    });
+</script>

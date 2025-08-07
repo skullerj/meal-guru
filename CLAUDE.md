@@ -44,10 +44,16 @@ npm run astro ...
 ├── src/
 │   ├── assets/
 │   ├── components/
+│   ├── data/
+│   │   └── recipes.ts
 │   ├── layouts/
 │   │   └── Layout.astro
 │   ├── pages/
-│   │   └── index.astro
+│   │   ├── index.astro
+│   │   └── recipe/
+│   │       ├── [id].astro
+│   │       └── [id]/
+│   │           └── cook.astro
 │   └── styles/
 │       └── global.css
 ├── astro.config.mjs
@@ -55,10 +61,25 @@ npm run astro ...
 └── tsconfig.json
 ```
 
+## Features Implemented
+- **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
+- **Homepage**: Lists all recipes with navigation to buy/cook pages
+- **Shopping List Page** (`/recipe/[id]`): Interactive ingredient checklist with shelf item identification
+- **Cooking Page** (`/recipe/[id]/cook`): Step-by-step instructions with ingredient sidebar
+- **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
+- **Interactive Features**: Checkbox state management, step completion tracking, ingredient linking
+
+## Data Structure
+- **Recipes**: 3 complete recipes (Spaghetti Carbonara, Chicken Stir Fry, Vegetable Soup)
+- **Ingredients**: Include ID, name, amount, unit, URL, and shelf status (common household items)
+- **Instructions**: Each step linked to specific ingredient IDs for contextual cooking guidance
+
 ## Notes for Claude
 - This is a meal planning and batch cooking application
 - Uses Astro framework with TypeScript and Tailwind CSS
 - Tailwind CSS is configured via Vite plugin with global CSS import in Layout.astro
-- Current state: Basic project structure with minimal components
+- Current state: Functional barebones recipe website with shopping and cooking workflows
 - No testing framework currently configured
 - Uses Biome for linting and formatting
+- Recipe data stored in `/src/data/recipes.ts` with TypeScript interfaces
+- Interactive client-side functionality for ingredient tracking and step progression
