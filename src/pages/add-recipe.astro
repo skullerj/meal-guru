@@ -1,0 +1,488 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Add Recipe | Meal Guru">
+    <main class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Add New Recipe</h1>
+
+        <div class="max-w-2xl mx-auto">
+            <!-- PDF Upload Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h2 class="text-xl font-semibold mb-4">Upload Recipe PDF</h2>
+                <div
+                    id="upload-area"
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+                >
+                    <input
+                        type="file"
+                        id="pdf-upload"
+                        accept=".pdf"
+                        class="hidden"
+                    />
+                    <div id="upload-content">
+                        <svg
+                            class="mx-auto h-12 w-12 text-gray-400"
+                            stroke="currentColor"
+                            fill="none"
+                            viewBox="0 0 48 48"
+                        >
+                            <path
+                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span
+                                class="font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
+                                >Click to upload</span
+                            > or drag and drop
+                        </p>
+                        <p class="text-xs text-gray-500">PDF files only</p>
+                    </div>
+                </div>
+                <button
+                    id="parse-btn"
+                    class="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled
+                >
+                    Parse Recipe
+                </button>
+            </div>
+
+            <!-- Recipe Form Section (initially hidden) -->
+            <div
+                id="recipe-form"
+                class="bg-white p-6 rounded-lg shadow-md hidden"
+            >
+                <h2 class="text-xl font-semibold mb-4">Recipe Details</h2>
+                <form id="recipe-details-form">
+                    <!-- Recipe Name -->
+                    <div class="mb-4">
+                        <label
+                            for="recipe-name"
+                            class="block text-sm font-medium text-gray-700 mb-2"
+                            >Recipe Name</label
+                        >
+                        <input
+                            type="text"
+                            id="recipe-name"
+                            name="recipe-name"
+                            class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        />
+                    </div>
+
+                    <!-- Parsed Text Display -->
+                    <div class="mb-6">
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-2"
+                            >Extracted Text</label
+                        >
+                        <textarea
+                            id="extracted-text"
+                            class="w-full h-32 p-2 border border-gray-300 rounded-md bg-gray-50"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Ingredients Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">
+                            Ingredients
+                        </h3>
+                        <div id="ingredients-list" class="space-y-4">
+                            <!-- Ingredients will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- Instructions Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">
+                            Instructions
+                        </h3>
+                        <div id="instructions-list" class="space-y-4">
+                            <!-- Instructions will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+                    >
+                        Generate Recipe JSON
+                    </button>
+                </form>
+            </div>
+
+            <!-- JSON Output Section (initially hidden) -->
+            <div
+                id="json-output"
+                class="bg-white p-6 rounded-lg shadow-md hidden"
+            >
+                <h2 class="text-xl font-semibold mb-4">Recipe JSON</h2>
+                <p class="text-sm text-gray-600 mb-4">
+                    Copy this JSON and add it to your recipes.ts file:
+                </p>
+                <div class="relative">
+                    <pre
+                        id="json-content"
+                        class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm border">
+                    </pre>
+                    <button
+                        id="copy-json"
+                        class="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 text-xs rounded hover:bg-blue-700"
+                    >
+                        Copy
+                    </button>
+                </div>
+                <button
+                    id="reset-form"
+                    class="mt-4 w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                >
+                    Add Another Recipe
+                </button>
+            </div>
+        </div>
+    </main>
+</Layout>
+
+<script>
+    import pdfParse from "pdf-parse-new";
+
+    let uploadedFile: File | null = null;
+    let parsedRecipe: any = null;
+
+    // PDF Upload functionality
+    const uploadArea = document.getElementById("upload-area");
+    const fileInput = document.getElementById("pdf-upload") as HTMLInputElement;
+    const parseBtn = document.getElementById("parse-btn") as HTMLButtonElement;
+    const uploadContent = document.getElementById("upload-content");
+
+    uploadArea?.addEventListener("click", () => {
+        fileInput.click();
+    });
+
+    uploadArea?.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("border-blue-500", "bg-blue-50");
+    });
+
+    uploadArea?.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("border-blue-500", "bg-blue-50");
+    });
+
+    uploadArea?.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("border-blue-500", "bg-blue-50");
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0 && files[0].type === "application/pdf") {
+            handleFileUpload(files[0]);
+        }
+    });
+
+    fileInput?.addEventListener("change", (e) => {
+        const target = e.target as HTMLInputElement;
+        const file = target.files?.[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    });
+
+    function handleFileUpload(file: File) {
+        uploadedFile = file;
+        if (uploadContent) {
+            uploadContent.innerHTML = `
+				<div class="flex items-center justify-center">
+					<svg class="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+					</svg>
+					<span class="text-sm text-gray-600">${file.name}</span>
+				</div>
+			`;
+        }
+        parseBtn.disabled = false;
+    }
+
+    // PDF Parsing functionality
+    parseBtn?.addEventListener("click", async () => {
+        if (!uploadedFile) return;
+
+        parseBtn.disabled = true;
+        parseBtn.textContent = "Parsing with AI...";
+
+        try {
+            // Extract text from PDF
+            const arrayBuffer = await uploadedFile.arrayBuffer();
+            const data = await pdfParse(arrayBuffer);
+            const text = data.text;
+
+            // Call the LLM API to parse the recipe
+            const response = await fetch("/api/parse-recipe", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to parse recipe");
+            }
+
+            parsedRecipe = result.recipe;
+
+            // Show the recipe form
+            document.getElementById("recipe-form")?.classList.remove("hidden");
+
+            // Populate the form
+            populateRecipeForm(parsedRecipe, text);
+        } catch (error) {
+            console.error("Error parsing PDF:", error);
+            alert(
+                `Error parsing PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+            );
+        }
+
+        parseBtn.disabled = false;
+        parseBtn.textContent = "Parse Recipe";
+    });
+
+    function generateId(name: string): string {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, "")
+            .replace(/\s+/g, "-")
+            .substring(0, 20);
+    }
+
+    function populateRecipeForm(recipe: any, extractedText: string) {
+        // Set recipe name
+        const nameInput = document.getElementById(
+            "recipe-name",
+        ) as HTMLInputElement;
+        nameInput.value = recipe.name;
+
+        // Set extracted text
+        const textArea = document.getElementById(
+            "extracted-text",
+        ) as HTMLTextAreaElement;
+        textArea.value = extractedText;
+
+        // Populate ingredients
+        const ingredientsList = document.getElementById("ingredients-list");
+        if (ingredientsList) {
+            ingredientsList.innerHTML = "";
+            recipe.ingredients.forEach((ingredient: any, index: number) => {
+                const ingredientDiv = document.createElement("div");
+                ingredientDiv.className =
+                    "border border-gray-200 p-4 rounded-md";
+                ingredientDiv.innerHTML = `
+					<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+							<input type="text" name="ingredient-name-${index}" value="${ingredient.name}" class="w-full p-2 border border-gray-300 rounded-md" required>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Recipe Amount</label>
+							<input type="number" step="0.1" name="ingredient-amount-${index}" value="${ingredient.amount}" class="w-full p-2 border border-gray-300 rounded-md" required>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+							<input type="text" name="ingredient-unit-${index}" value="${ingredient.unit}" class="w-full p-2 border border-gray-300 rounded-md" required>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">
+								<input type="checkbox" name="ingredient-shelf-${index}" ${ingredient.shelf ? "checked" : ""} class="mr-2">
+								Shelf item
+							</label>
+						</div>
+					</div>
+					<div class="mt-4">
+						<h4 class="text-sm font-medium text-gray-700 mb-2">Source Information (Required)</h4>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-gray-50 rounded-md">
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Store URL</label>
+								<input type="url" name="ingredient-source-url-${index}" value="${ingredient.source?.url || ""}" placeholder="https://store.com/product" class="w-full p-2 border border-gray-300 rounded-md" required>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Store Price (£)</label>
+								<input type="number" step="0.01" name="ingredient-source-price-${index}" value="${ingredient.source?.price || 0}" placeholder="0.00" class="w-full p-2 border border-gray-300 rounded-md" required>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Store Amount</label>
+								<input type="number" step="0.1" name="ingredient-source-amount-${index}" value="${ingredient.source?.amount || 0}" placeholder="Amount sold at store" class="w-full p-2 border border-gray-300 rounded-md" required>
+							</div>
+						</div>
+					</div>
+				`;
+                ingredientsList.appendChild(ingredientDiv);
+            });
+        }
+
+        // Populate instructions
+        const instructionsList = document.getElementById("instructions-list");
+        if (instructionsList) {
+            instructionsList.innerHTML = "";
+            recipe.instructions.forEach((instruction: any, index: number) => {
+                const instructionDiv = document.createElement("div");
+                instructionDiv.className =
+                    "border border-gray-200 p-4 rounded-md";
+                instructionDiv.innerHTML = `
+					<label class="block text-sm font-medium text-gray-700 mb-1">Step ${index + 1}</label>
+					<textarea name="instruction-${index}" class="w-full h-20 p-2 border border-gray-300 rounded-md" required>${instruction.text}</textarea>
+				`;
+                instructionsList.appendChild(instructionDiv);
+            });
+        }
+    }
+
+    // Form submission
+    const form = document.getElementById("recipe-details-form");
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Collect form data and generate JSON
+        const formData = new FormData(e.target as HTMLFormElement);
+        const recipeData = collectRecipeData(formData);
+
+        // Show JSON output
+        showRecipeJSON(recipeData);
+    });
+
+    function collectRecipeData(formData: FormData) {
+        const recipeName = formData.get("recipe-name") as string;
+        const recipeId = generateId(recipeName);
+
+        const ingredients: any[] = [];
+        const instructions: any[] = [];
+
+        // Collect ingredients
+        let ingredientIndex = 0;
+        while (formData.has(`ingredient-name-${ingredientIndex}`)) {
+            ingredients.push({
+                id: generateId(
+                    formData.get(
+                        `ingredient-name-${ingredientIndex}`,
+                    ) as string,
+                ),
+                name: formData.get(
+                    `ingredient-name-${ingredientIndex}`,
+                ) as string,
+                amount: parseFloat(
+                    formData.get(
+                        `ingredient-amount-${ingredientIndex}`,
+                    ) as string,
+                ),
+                unit: formData.get(
+                    `ingredient-unit-${ingredientIndex}`,
+                ) as string,
+                source: {
+                    url: formData.get(
+                        `ingredient-source-url-${ingredientIndex}`,
+                    ) as string,
+                    price: parseFloat(
+                        formData.get(
+                            `ingredient-source-price-${ingredientIndex}`,
+                        ) as string,
+                    ),
+                    amount: parseFloat(
+                        formData.get(
+                            `ingredient-source-amount-${ingredientIndex}`,
+                        ) as string,
+                    ),
+                },
+                shelf: formData.has(`ingredient-shelf-${ingredientIndex}`),
+            });
+            ingredientIndex++;
+        }
+
+        // Collect instructions
+        let instructionIndex = 0;
+        while (formData.has(`instruction-${instructionIndex}`)) {
+            instructions.push({
+                text: formData.get(`instruction-${instructionIndex}`) as string,
+                ingredientIds: [], // For now, this would need manual linking
+            });
+            instructionIndex++;
+        }
+
+        return {
+            id: recipeId,
+            name: recipeName,
+            ingredients,
+            instructions,
+        };
+    }
+
+    function showRecipeJSON(recipeData: any) {
+        // Hide the form and show JSON output
+        document.getElementById("recipe-form")?.classList.add("hidden");
+        document.getElementById("json-output")?.classList.remove("hidden");
+
+        // Format and display JSON
+        const jsonContent = document.getElementById("json-content");
+        if (jsonContent) {
+            jsonContent.textContent = JSON.stringify(recipeData, null, 2);
+        }
+    }
+
+    // Copy JSON functionality
+    document
+        .getElementById("copy-json")
+        ?.addEventListener("click", async () => {
+            const jsonContent =
+                document.getElementById("json-content")?.textContent;
+            if (jsonContent) {
+                try {
+                    await navigator.clipboard.writeText(jsonContent);
+                    const button = document.getElementById("copy-json");
+                    if (button) {
+                        const originalText = button.textContent;
+                        button.textContent = "Copied!";
+                        button.classList.add("bg-green-600");
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            button.classList.remove("bg-green-600");
+                        }, 2000);
+                    }
+                } catch (err) {
+                    console.error("Failed to copy JSON:", err);
+                    alert("Failed to copy to clipboard");
+                }
+            }
+        });
+
+    // Reset form functionality
+    document.getElementById("reset-form")?.addEventListener("click", () => {
+        // Reset everything
+        document.getElementById("json-output")?.classList.add("hidden");
+        document.getElementById("recipe-form")?.classList.add("hidden");
+
+        // Reset upload area
+        if (uploadContent) {
+            uploadContent.innerHTML = `
+				<svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+					<path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+				<p class="mt-2 text-sm text-gray-600">
+					<span class="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">Click to upload</span> or drag and drop
+				</p>
+				<p class="text-xs text-gray-500">PDF files only</p>
+			`;
+        }
+
+        parseBtn.disabled = true;
+        uploadedFile = null;
+        parsedRecipe = null;
+
+        // Reset form
+        const form = document.getElementById(
+            "recipe-details-form",
+        ) as HTMLFormElement;
+        form?.reset();
+    });
+</script>

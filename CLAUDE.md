@@ -12,6 +12,7 @@ Meal Guru is an Astro-based web application designed to reduce the mental strain
 - **Styling**: Tailwind CSS
 - **Linter/Formatter**: Biome
 - **Git Hooks**: Lefthook
+- **AI Integration**: Anthropic Claude API for recipe parsing
 
 ## Development Commands
 ```bash
@@ -37,6 +38,18 @@ npm run format
 npm run astro ...
 ```
 
+## Environment Configuration
+Create a `.env` file in the project root with:
+```bash
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+```
+
+To get an Anthropic API key:
+1. Sign up at https://console.anthropic.com/
+2. Navigate to API Keys
+3. Create a new API key
+4. Add it to your `.env` file
+
 ## Project Structure
 ```
 /
@@ -50,6 +63,9 @@ npm run astro ...
 │   ├── layouts/
 │   │   └── Layout.astro
 │   ├── pages/
+│   │   ├── api/
+│   │   │   └── parse-recipe.ts
+│   │   ├── add-recipe.astro
 │   │   ├── index.astro
 │   │   └── recipe/
 │   │       ├── [id].astro
@@ -57,6 +73,7 @@ npm run astro ...
 │   │           └── cook.astro
 │   └── styles/
 │       └── global.css
+├── .env (create this file)
 ├── astro.config.mjs
 ├── biome.json
 ├── lefthook.yml
@@ -69,6 +86,7 @@ npm run astro ...
 - **Homepage**: Lists all recipes with navigation to buy/cook pages
 - **Shopping List Page** (`/recipe/[id]`): Interactive ingredient checklist with shelf item identification
 - **Cooking Page** (`/recipe/[id]/cook`): Step-by-step instructions with ingredient sidebar
+- **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
 - **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
 - **Interactive Features**: Checkbox state management, step completion tracking, ingredient linking
 
@@ -90,3 +108,4 @@ npm run astro ...
 
 ## Project Maintenance Reminders
 - Always keep CLAUDE.md up to date when adding new libraries
+- The objective of this app is to minimize waste when the user makes their shopping online using Ocado. For that, we first need to parse recipes and allow the user to input the current source information (url,amount and price) so we can compute the excess and use it to group the recipe with other recipes that might use that excess.

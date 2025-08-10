@@ -1,13 +1,17 @@
 export interface Ingredient {
   id: string;
   name: string;
-  amount: number;
   unit: string;
-  url: string;
+  amount: number;
+  source: {
+    url: string;
+    price: number;
+    amount: number;
+  };
   shelf: boolean;
 }
 
-export interface InstructionStep {
+interface InstructionStep {
   text: string;
   ingredientIds: string[];
 }
@@ -21,114 +25,190 @@ export interface Recipe {
 
 export const recipes: Recipe[] = [
   {
-    id: "one-pot-pepper-pasta",
-    name: "One Pot Pepper Pasta",
+    id: "lentileggplant-stew",
+    name: "Lentil-Eggplant Stew",
     ingredients: [
       {
-        id: "rapseed-oil",
-        name: "Rapseed oil",
-        amount: 2,
-        unit: "tbsp",
-        url: "https://www.ocado.com/products/ktc-rapeseed-vegetable-oil/298819011",
+        id: "olive-oil",
+        name: "olive oil",
+        amount: 50,
+        unit: "ml",
+        source: {
+          url: "https://www.ocado.com/products/filippo-berio-extra-virgin-olive-oil/13887011",
+          price: 5,
+          amount: 500,
+        },
         shelf: true,
       },
       {
-        id: "onions",
-        name: "Onions",
-        amount: 2,
-        unit: "units",
-        url: "https://www.ocado.com/products/ocado-brown-onions/65448011",
-        shelf: false,
-      },
-      {
-        id: "peppers",
-        name: "Peppers",
-        amount: 2,
-        unit: "units",
-        url: "https://www.ocado.com/products/ocado-red-peppers/65259011",
-        shelf: false,
-      },
-      {
-        id: "garlic",
-        name: "Garlic Cloves",
+        id: "garlic-cloves",
+        name: "garlic cloves",
         amount: 3,
         unit: "cloves",
-        url: "https://www.ocado.com/products/ocado-garlic/54450011",
-        shelf: true,
+        source: {
+          url: "https://www.ocado.com/products/ocado-large-garlic/91370011",
+          price: 0.4,
+          amount: 6,
+        },
+        shelf: false,
+      },
+      {
+        id: "red-onion",
+        name: "red onion",
+        amount: 160,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/ocado-red-onions/65453011",
+          price: 0.95,
+          amount: 480,
+        },
+        shelf: false,
       },
       {
         id: "thyme",
-        name: "Thyme",
-        amount: 1,
-        unit: "tsp",
-        url: "https://www.ocado.com/products/ocado-dried-thyme/363264011",
+        name: "thyme",
+        amount: 9,
+        unit: "gr",
+        source: {
+          url: "https://www.ocado.com/products/cook-with-m-s-thyme/518923011",
+          price: 1.5,
+          amount: 17,
+        },
         shelf: true,
       },
       {
-        id: "paprika",
-        name: "Smoked Paprika",
+        id: "eggplants",
+        name: "eggplants",
         amount: 2,
-        unit: "tsp",
-        url: "https://www.ocado.com/products/cook-with-m-s-smoked-paprika/505528011",
-        shelf: true,
-      },
-      {
-        id: "chopped-tomatoes",
-        name: "Chopped Tomatoes",
-        amount: 1,
-        unit: "can",
-        url: "https://www.ocado.com/products/mutti-polpa-finely-chopped-italian-tomatoes-basil/616229011",
+        unit: "units",
+        source: {
+          url: "https://www.ocado.com/products/ocado-aubergine/474749011",
+          price: 0.95,
+          amount: 1,
+        },
         shelf: false,
       },
       {
-        id: "tomato-puree",
-        name: "Tomato Purée",
-        amount: 2,
-        unit: "tbsp",
-        url: "https://www.ocado.com/products/cirio-tomato-puree/80259011",
-        shelf: true,
+        id: "cherry-tomatoes",
+        name: "cherry tomatoes",
+        amount: 200,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/m-s-cherry-tomatoes/517743011",
+          price: 1.2,
+          amount: 350,
+        },
+        shelf: false,
       },
       {
-        id: "vegetable-stock",
-        name: "Vegetable Stock Cube",
-        amount: 2,
-        unit: "cubes",
-        url: "https://www.ocado.com/products/knorr-20-vegetable-stock-cubes/384239011",
-        shelf: true,
-      },
-      {
-        id: "penne",
-        name: "Penne Pasta",
+        id: "puy-lentils",
+        name: "puy lentils",
         amount: 180,
         unit: "g",
-        url: "https://www.ocado.com/products/ocado-penne-pasta/587564011",
+        source: {
+          url: "https://www.ocado.com/products/great-scot-green-lentils/516744011",
+          price: 1.75,
+          amount: 500,
+        },
+        shelf: true,
+      },
+      {
+        id: "vegetable-broth-cube",
+        name: "vegetable broth cube stocks",
+        amount: 1,
+        unit: "unit",
+        source: {
+          url: "https://www.ocado.com/products/oxo-12-vegetable-stock-cubes/19366011",
+          price: 2.4,
+          amount: 12,
+        },
+        shelf: true,
+      },
+      {
+        id: "dry-white-wine",
+        name: "dry white wine",
+        amount: 80,
+        unit: "ml",
+        source: {
+          url: "https://www.ocado.com/products/m-s-pinot-grigio-provincia-di-pavia/513458011",
+          price: 7.5,
+          amount: 750,
+        },
+        shelf: true,
+      },
+      {
+        id: "crme-frache",
+        name: "crème fraîche",
+        amount: 100,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/m-s-creme-fraiche/574047011",
+          price: 1.1,
+          amount: 300,
+        },
+        shelf: false,
+      },
+      {
+        id: "chilly-flakes",
+        name: "Chilly Flakes",
+        amount: 2,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/cook-with-m-s-chilli-flakes/518837011",
+          price: 1.5,
+          amount: 30,
+        },
+        shelf: true,
+      },
+      {
+        id: "oregano-leaves",
+        name: "oregano leaves",
+        amount: 2,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/cook-with-m-s-oregano/518834011",
+          price: 1.5,
+          amount: 12,
+        },
+        shelf: true,
+      },
+      {
+        id: "salt",
+        name: "salt",
+        amount: 18,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/saxa-fine-sea-salt/529703011",
+          price: 1.65,
+          amount: 350,
+        },
+        shelf: true,
+      },
+      {
+        id: "black-pepper",
+        name: "black pepper",
+        amount: 8,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/cook-with-m-s-black-peppercorns/518911011",
+          price: 3.2,
+          amount: 100,
+        },
         shelf: true,
       },
     ],
     instructions: [
       {
-        text: "Boil salted water in a large pot and cook spaghetti according to package instructions until al dente.",
-        ingredientIds: ["spaghetti", "salt"],
-      },
-      {
-        text: "While pasta cooks, cut pancetta into small cubes and fry in a large pan until crispy.",
-        ingredientIds: ["pancetta"],
-      },
-      {
-        text: "In a bowl, whisk together eggs and grated Parmesan cheese with black pepper.",
-        ingredientIds: ["eggs", "parmesan", "black-pepper"],
-      },
-      {
-        text: "Drain pasta, reserving 1 cup of pasta water. Add hot pasta to pancetta pan.",
-        ingredientIds: ["spaghetti"],
-      },
-      {
-        text: "Remove from heat and quickly mix in egg mixture, adding pasta water gradually until creamy.",
+        text: "In a large pan, heat 2 tbsp olive oil over medium temperature. Add garlic, onion, thyme and ½ tsp salt and sauté golden brown for 8 minutes, stirring regularly. Transfer to a bowl - without the oil - and set aside.",
         ingredientIds: [],
       },
       {
-        text: "Serve immediately with extra Parmesan and black pepper.",
-        ingredientIds: ["parmesan", "black-pepper"],
+        text: "Season eggplant and tomatoes in a bowl with ¼ tsp salt and plenty of pepper. Heat the remaining oil (1 tbsp) vigorously in the pan. Add eggplant and tomatoes, sauté over medium to high heat for 10 minutes, turning constantly, until the eggplant is golden brown and soft and the tomatoes are slightly darkened. Add garlic and onion back, add lentils, broth, wine and 450ml water, stir everything with ¾ tsp salt. Bring to a boil and simmer over medium heat for 40 minutes, until the lentils are cooked but still have some bite.",
+        ingredientIds: [],
+      },
+      {
+        text: "Serve the stew warm or chilled, with a dollop of crème fraîche and a few drops of olive oil, sprinkled with Isot Biber and oregano leaves.",
+        ingredientIds: [],
       },
     ],
   },
