@@ -1,33 +1,9 @@
 ---
+import MealPlanner from "../components/MealPlanner";
 import { recipes } from "../data/recipes";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-    <section class="container mx-auto p-6 bg-white shadow-md rounded-lg">
-        <h1 class="text-3xl font-bold underline mb-8">Meal Guru</h1>
-
-        <div class="space-y-6">
-            {
-                recipes.map((recipe) => (
-                    <div class="border border-gray-300 p-4 rounded-lg">
-                        <h2 class="text-xl font-semibold mb-2">
-                            {recipe.name}
-                        </h2>
-                        <p class="text-gray-600 mb-4">
-                            {recipe.ingredients.length} ingredients
-                        </p>
-                        <div class="space-x-4">
-                            <a
-                                href={`/recipe/${recipe.id}`}
-                                class="bg-blue-500 text-white px-4 py-2 rounded"
-                            >
-                                Buy Ingredients
-                            </a>
-                        </div>
-                    </div>
-                ))
-            }
-        </div>
-    </section>
+    <MealPlanner recipes={recipes} client:load />
 </Layout>
