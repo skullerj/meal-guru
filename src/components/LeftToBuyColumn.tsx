@@ -10,6 +10,15 @@ interface LeftToBuyColumnProps {
   targetAmount?: number;
 }
 
+function openSmallWindow(e: React.MouseEvent<HTMLAnchorElement>) {
+  window.open(
+    e.currentTarget.href,
+    "_blank",
+    "width=800,height=600,scrollbars=yes,resizable=yes",
+  );
+  return false;
+}
+
 export default function LeftToBuyColumn({
   remainingIngredients,
   totalPrice,
@@ -17,7 +26,7 @@ export default function LeftToBuyColumn({
 }: LeftToBuyColumnProps) {
   const remainingToTarget = calculateRemainingToTarget(
     totalPrice,
-    targetAmount
+    targetAmount,
   );
   const { shelfIngredients, nonShelfIngredients } =
     separateIngredientsByShelf(remainingIngredients);
@@ -55,7 +64,16 @@ export default function LeftToBuyColumn({
                       {ingredient.name}
                     </h4>
                     <p className="text-sm text-gray-600">
-                      {ingredient.amount} {ingredient.unit}
+                      <span>
+                        Buy&nbsp;
+                        {Math.ceil(
+                          ingredient.amount / ingredient.source.amount,
+                        )}
+                        &nbsp;
+                      </span>
+                      <span>
+                        ({ingredient.amount} {ingredient.unit} needed)
+                      </span>
                     </p>
                   </div>
                   <div className="text-right">
@@ -64,6 +82,7 @@ export default function LeftToBuyColumn({
                     </p>
                     <a
                       href={ingredient.source.url}
+                      onClick={openSmallWindow}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 text-sm underline mt-1 inline-block"

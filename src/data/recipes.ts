@@ -25,6 +25,154 @@ export interface Recipe {
 
 export const recipes: Recipe[] = [
   {
+    id: "fajita-chicken-rice-",
+    name: "Fajita Chicken Rice Bowl",
+    ingredients: [
+      {
+        id: "chicken",
+        name: "chicken",
+        amount: 640,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/m-s-oakham-gold-medium-whole-chicken/634262011",
+          price: 7.25,
+          amount: 1000,
+        },
+        shelf: false,
+      },
+      {
+        id: "peppers",
+        name: "peppers",
+        amount: 300,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/ocado-red-peppers/65259011",
+          price: 1.85,
+          amount: 450,
+        },
+        shelf: false,
+      },
+      {
+        id: "red-onion",
+        name: "red onions",
+        amount: 200,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/ocado-red-onions/65453011",
+          price: 0.95,
+          amount: 300,
+        },
+        shelf: false,
+      },
+      {
+        id: "corn",
+        name: "corn",
+        amount: 130,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/ocado-baby-corn/639250011",
+          price: 1.45,
+          amount: 130,
+        },
+        shelf: false,
+      },
+      {
+        id: "chipotle-chilli-past",
+        name: "chipotle chilli paste",
+        amount: 3,
+        unit: "tsp",
+        source: {
+          url: "https://www.ocado.com/products/santa-maria-chipotle-paste/421557011",
+          price: 0,
+          amount: 0,
+        },
+        shelf: true,
+      },
+      {
+        id: "lime",
+        name: "lime",
+        amount: 1,
+        unit: "unit",
+        source: {
+          url: "https://www.ocado.com/products/m-s-limes/528789011",
+          price: 1.6,
+          amount: 5,
+        },
+        shelf: false,
+      },
+      {
+        id: "vegetable-oil",
+        name: "vegetable oil",
+        amount: 15,
+        unit: "ml",
+        source: {
+          url: "https://www.ocado.com/products/ktc-rapeseed-vegetable-oil/298819011",
+          price: 0,
+          amount: 0,
+        },
+        shelf: true,
+      },
+      {
+        id: "black-beans",
+        name: "black beans",
+        amount: 235,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/ocado-black-beans-in-water/414453011",
+          price: 0.49,
+          amount: 235,
+        },
+        shelf: false,
+      },
+      {
+        id: "coriander",
+        name: "coriander",
+        amount: 15,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/ocado-coriander/82803011",
+          price: 0.52,
+          amount: 30,
+        },
+        shelf: false,
+      },
+      {
+        id: "brown-rice",
+        name: "brown rice",
+        amount: 200,
+        unit: "g",
+        source: {
+          url: "https://www.ocado.com/products/m-s-wholegrain-rice/518823011",
+          price: 1.65,
+          amount: 500,
+        },
+        shelf: true,
+      },
+      {
+        id: "salsa",
+        name: "salsa",
+        amount: 30,
+        unit: "ml",
+        source: {
+          url: "https://www.ocado.com/products/m-s-red-salsa/509916011",
+          price: 1.2,
+          amount: 120,
+        },
+        shelf: true,
+      },
+    ],
+    instructions: [
+      {
+        text: "Heat the oven to 220C/200C fan/gas 7 and line a large baking tray with baking parchment. Arrange the chicken, peppers, red onions and baby corn on the tray, and spoon over the chipotle paste. Season, then toss to combine. Put the lime halves on the tray, cut-side down, then drizzle the oil over the chicken and veg. Roast for 20 mins, or until everything is cooked through.",
+        ingredientIds: [],
+      },
+      {
+        text: "Meanwhile, warm the beans in a small pan over a low heat, and season. Mix the beans with half the coriander and the lime zest, then squeeze over the juice of the roasted lime. Slice the chicken thinly on the diagonal and divide between four bowls along with the veg and brown rice. Sprinkle over the remaining coriander and serve with the salsa.",
+        ingredientIds: [],
+      },
+    ],
+  },
+  {
     id: "lentileggplant-stew",
     name: "Lentil-Eggplant Stew",
     ingredients: [

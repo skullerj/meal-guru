@@ -19,11 +19,10 @@ function IngredientItem({
   onToggle,
 }: IngredientItemProps) {
   return (
-    // biome-ignore lint/a11y/useSemanticElements: Need full div area clickable for better UX
-    <div
-      role="button"
-      tabIndex={0}
-      className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+    <button
+      type="button"
+      tabIndex={-1}
+      className={`block w-full border rounded-lg p-3 cursor-pointer transition-colors ${
         isOwned
           ? "border-green-500 bg-green-50"
           : "border-gray-300 hover:border-gray-400"
@@ -65,7 +64,7 @@ function IngredientItem({
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -75,7 +74,7 @@ export default function ShoppingColumn({
   onIngredientToggle,
 }: ShoppingColumnProps) {
   const { shelfIngredients, nonShelfIngredients } = separateIngredientsByShelf(
-    aggregatedIngredients
+    aggregatedIngredients,
   );
 
   if (aggregatedIngredients.length === 0) {
