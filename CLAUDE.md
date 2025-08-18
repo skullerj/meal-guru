@@ -9,6 +9,7 @@ Meal Guru is an Astro-based web application designed to reduce the mental strain
 - **Framework**: Astro 5.12.8 with Netlify adapter for SSR
 - **Language**: TypeScript
 - **Frontend**: React for interactive components
+- **Database**: Supabase (PostgreSQL)
 - **Package Manager**: npm
 - **Styling**: Tailwind CSS
 - **Linter/Formatter**: Biome
@@ -43,6 +44,8 @@ npm run astro ...
 Create a `.env` file in the project root with:
 ```bash
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
 To get an Anthropic API key:
@@ -50,6 +53,11 @@ To get an Anthropic API key:
 2. Navigate to API Keys
 3. Create a new API key
 4. Add it to your `.env` file
+
+To get Supabase credentials:
+1. Sign up at https://supabase.com
+2. Create a new project
+3. Go to Settings > API to get your URL and anon key
 
 ## Project Structure
 ```
@@ -67,18 +75,19 @@ To get an Anthropic API key:
 │   │       ├── mealPlannerUtils.ts  # Price calculations & ingredient aggregation
 │   │       └── mealPlannerReducer.ts # State management with useReducer
 │   ├── data/
-│   │   └── recipes.ts
+│   │   └── recipes.ts               # TypeScript interfaces only
+│   ├── lib/
+│   │   ├── supabase.ts              # Supabase client configuration
+│   │   └── database.ts              # Database access functions
 │   ├── layouts/
 │   │   └── Layout.astro
 │   ├── pages/
 │   │   ├── api/
 │   │   │   └── parse-recipe.ts
 │   │   ├── add-recipe.astro
-│   │   ├── index.astro             # Now uses MealPlanner component
+│   │   ├── index.astro              # Uses MealPlanner with Supabase data
 │   │   └── recipe/
-│   │       ├── [id].astro
-│   │       └── [id]/
-│   │           └── cook.astro
+│   │       └── [id].astro           # Shopping list page
 │   └── styles/
 │       └── global.css
 ├── .env (create this file)
@@ -93,15 +102,16 @@ To get an Anthropic API key:
 - **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
 - **3-Column Meal Planning Interface** (`/`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
 - **Shopping List Page** (`/recipe/[id]`): Interactive ingredient checklist with shelf item identification
-- **Cooking Page** (`/recipe/[id]/cook`): Step-by-step instructions with ingredient sidebar
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
+- **Supabase Integration**: Centralized database with ingredient library and standardized units
 - **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
 
 ## Data Structure
-- **Recipes**: Complete recipes with ingredients and instructions
-- **Ingredients**: Include ID, name, amount, unit, source (URL, price, amount), and shelf status
+- **Recipes**: Complete recipes with ingredients and instructions stored in Supabase
+- **Ingredients**: Master ingredient library with standardized units ('g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit')
 - **Instructions**: Each step linked to specific ingredient IDs for contextual cooking guidance
+- **Database**: PostgreSQL via Supabase with proper relationships and RLS security
 
 ## Architecture & State Management
 
@@ -205,7 +215,7 @@ Separated pure business logic into utility functions:
 
 #### Data Flow
 ```
-recipes.ts → MealPlanner (useReducer) → Column Components → User Interactions → Dispatch Actions → State Updates → Re-render
+Supabase Database → getRecipes() → MealPlanner (useReducer) → Column Components → User Interactions → Dispatch Actions → State Updates → Re-render
 ```
 
 This architecture provides:
@@ -217,16 +227,18 @@ This architecture provides:
 ## Notes for Claude
 - This is a meal planning and batch cooking application
 - Uses Astro framework with React integration for interactive components
-- Astro configured with Netlify adapter for SSR support
+- **Database**: Supabase (PostgreSQL) with full schema for recipes, ingredients, and relationships
+- **Data Management**: Recipe data fetched from Supabase, TypeScript interfaces in `/src/data/recipes.ts`
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling
+- **Standardized Units**: Ingredient units restricted to: 'g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit'
 - Tailwind CSS is configured via Vite plugin with global CSS import in Layout.astro
-- Current state: Full-featured meal planning interface with 3-column layout
+- Current state: Full-featured meal planning interface with Supabase backend
 - No testing framework currently configured
 - Uses Biome for linting and formatting
 - Lefthook configured for pre-commit hooks (runs `npx biome check` on staged files)
-- Recipe data stored in `/src/data/recipes.ts` with TypeScript interfaces
 - Complex business logic separated into utility functions for reusability and testing
+- **Setup Required**: Run SQL scripts in `database-schema.sql` and `migrate-data.sql` in Supabase SQL Editor
 
 ## Project Maintenance Reminders
 - Always keep CLAUDE.md up to date when adding new libraries

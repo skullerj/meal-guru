@@ -1,7 +1,9 @@
 ---
 import MealPlanner from "../components/MealPlanner";
-import { recipes } from "../data/recipes";
 import Layout from "../layouts/Layout.astro";
+import { getRecipes } from "../lib/database";
+
+const recipes = await getRecipes();
 ---
 
 <Layout>

@@ -14,7 +14,7 @@ function openSmallWindow(e: React.MouseEvent<HTMLAnchorElement>) {
   window.open(
     e.currentTarget.href,
     "_blank",
-    "width=800,height=600,scrollbars=yes,resizable=yes",
+    "width=800,height=600,scrollbars=yes,resizable=yes"
   );
   return false;
 }
@@ -26,7 +26,7 @@ export default function LeftToBuyColumn({
 }: LeftToBuyColumnProps) {
   const remainingToTarget = calculateRemainingToTarget(
     totalPrice,
-    targetAmount,
+    targetAmount
   );
   const { shelfIngredients, nonShelfIngredients } =
     separateIngredientsByShelf(remainingIngredients);
@@ -67,7 +67,7 @@ export default function LeftToBuyColumn({
                       <span>
                         Buy&nbsp;
                         {Math.ceil(
-                          ingredient.amount / ingredient.source.amount,
+                          ingredient.amount / ingredient.source.amount
                         )}
                         &nbsp;
                       </span>

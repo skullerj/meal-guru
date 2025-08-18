@@ -1,8 +1,9 @@
 ---
-import { recipes } from "../../data/recipes";
 import Layout from "../../layouts/Layout.astro";
+import { getRecipes } from "../../lib/database";
 
 export async function getStaticPaths() {
+  const recipes = await getRecipes();
   return recipes.map((recipe) => ({
     params: { id: recipe.id },
     props: { recipe },

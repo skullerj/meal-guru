@@ -74,7 +74,7 @@ export default function ShoppingColumn({
   onIngredientToggle,
 }: ShoppingColumnProps) {
   const { shelfIngredients, nonShelfIngredients } = separateIngredientsByShelf(
-    aggregatedIngredients,
+    aggregatedIngredients
   );
 
   if (aggregatedIngredients.length === 0) {
