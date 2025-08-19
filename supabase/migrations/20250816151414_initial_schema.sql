@@ -9,7 +9,7 @@ CREATE TABLE ingredients (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   unit unit_type NOT NULL,
-  source JSONB, -- {url: string, price: number, amount: number}
+  source JSONB NOT NULL,
   shelf BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

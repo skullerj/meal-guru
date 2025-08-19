@@ -1,93 +1,38 @@
+import { z } from "zod";
 import type { Database } from "../types/database";
 import { supabase } from "./supabase";
 
+const sourceSchema = z.object({
+  url: z.string().url(),
+  price: z.number(),
+  amount: z.number(),
+});
+
+export type Source = z.infer<typeof sourceSchema>;
 // Extract types from generated Database type
-type DbIngredient = Database["public"]["Tables"]["ingredients"]["Row"];
-type DbRecipe = Database["public"]["Tables"]["recipes"]["Row"];
-type DbRecipeIngredient =
+export type RecipeIngredient =
   Database["public"]["Tables"]["recipe_ingredients"]["Row"];
-
-// App-level types for compatibility with existing components
-export interface Ingredient {
-  id: string;
-  name: string;
-  unit: DbIngredient["unit"];
-  amount: number;
-  source: {
-    url: string;
-    price: number;
-    amount: number;
-  };
-  shelf: boolean;
-}
-
-export interface Recipe {
-  id: string;
-  name: string;
+export type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"] &
+  Pick<RecipeIngredient, "amount"> & { source: Source };
+export type Recipe = Database["public"]["Tables"]["recipes"]["Row"] & {
   ingredients: Ingredient[];
-  instructions: Array<{
-    text: string;
-    ingredientIds: string[];
-  }>;
-}
-
-// Extended types for database queries
-interface DbRecipeIngredientWithIngredient extends DbRecipeIngredient {
-  ingredients: DbIngredient;
-}
-
-interface DbRecipeWithIngredients extends DbRecipe {
-  recipe_ingredients: DbRecipeIngredientWithIngredient[];
-}
-
-// Convert database ingredient to app ingredient format
-function dbIngredientToIngredient(
-  dbIngredient: DbIngredient,
-  amount: number
-): Ingredient {
-  const source = dbIngredient.source || { url: "", price: 0, amount: 0 };
-  return {
-    id: dbIngredient.id,
-    name: dbIngredient.name,
-    unit: dbIngredient.unit,
-    amount: amount,
-    source: {
-      url: source.url,
-      price: source.price,
-      amount: source.amount,
-    },
-    shelf: dbIngredient.shelf,
-  };
-}
-
-// Get all ingredients
-export async function getIngredients(): Promise<DbIngredient[]> {
-  const { data, error } = await supabase
-    .from("ingredients")
-    .select("*")
-    .order("name");
-
-  if (error) {
-    console.error("Error fetching ingredients:", error);
-    throw error;
-  }
-
-  return data || [];
-}
+};
 
 // Get all recipes with their ingredients and instructions
 export async function getRecipes(): Promise<Recipe[]> {
   // Get recipes with their ingredients
   const { data: recipeData, error: recipeError } = await supabase
     .from("recipes")
-    .select(`
+    .select(
+      `
       *,
       recipe_ingredients!inner (
         amount,
         order_index,
         ingredients (*)
       )
-    `)
+    `
+    )
     .order("name");
 
   if (recipeError) {
@@ -97,42 +42,23 @@ export async function getRecipes(): Promise<Recipe[]> {
 
   if (!recipeData) return [];
 
-  // Get instructions for all recipes
-  const recipeIds = recipeData.map((recipe) => recipe.id);
-  const { data: instructionsData, error: instructionsError } = await supabase
-    .from("recipe_instructions")
-    .select("*")
-    .in("recipe_id", recipeIds)
-    .order("recipe_id, step_number");
-
-  if (instructionsError) {
-    console.error("Error fetching instructions:", instructionsError);
-    throw instructionsError;
-  }
-
   // Convert to app format
-  const recipes: Recipe[] = (recipeData as DbRecipeWithIngredients[]).map(
-    (dbRecipe) => {
-      const ingredients = dbRecipe.recipe_ingredients
-        .sort((a, b) => a.order_index - b.order_index)
-        .map((ri) => dbIngredientToIngredient(ri.ingredients, ri.amount));
+  const recipes = recipeData.map((dbRecipe) => {
+    const ingredients = dbRecipe.recipe_ingredients
+      .sort((a, b) => a.order_index - b.order_index)
+      .map((ing) => ({
+        ...ing.ingredients,
+        amount: ing.amount,
+        source: sourceSchema.parse(ing.ingredients.source),
+      }));
 
-      const instructions = (instructionsData || [])
-        .filter((inst) => inst.recipe_id === dbRecipe.id)
-        .sort((a, b) => a.step_number - b.step_number)
-        .map((inst) => ({
-          text: inst.instruction_text,
-          ingredientIds: inst.ingredient_ids || [],
-        }));
-
-      return {
-        id: dbRecipe.id,
-        name: dbRecipe.name,
-        ingredients,
-        instructions,
-      };
-    }
-  );
+    return {
+      id: dbRecipe.id,
+      name: dbRecipe.name,
+      created_at: dbRecipe.created_at,
+      ingredients,
+    };
+  });
 
   return recipes;
 }
@@ -140,17 +66,17 @@ export async function getRecipes(): Promise<Recipe[]> {
 // Create a new ingredient
 export async function createIngredient(ingredientData: {
   name: string;
-  unit: DbIngredient["unit"];
+  unit: Ingredient["unit"];
   source?: { url: string; price: number; amount: number } | null;
   shelf?: boolean;
-}): Promise<DbIngredient> {
+}): Promise<Pick<Ingredient, "name" | "unit" | "source" | "shelf">> {
   const { data, error } = await supabase
     .from("ingredients")
     .insert([
       {
         name: ingredientData.name,
         unit: ingredientData.unit,
-        source: ingredientData.source || null,
+        source: sourceSchema.parse(ingredientData.source),
         shelf: ingredientData.shelf || false,
       },
     ])
@@ -162,7 +88,7 @@ export async function createIngredient(ingredientData: {
     throw error;
   }
 
-  return data;
+  return { ...data, source: sourceSchema.parse(data.source) };
 }
 
 // Create a new recipe with ingredients and instructions
@@ -178,7 +104,7 @@ export async function createRecipe(
     instruction_text: string;
     ingredient_ids?: string[];
   }>
-): Promise<DbRecipe> {
+): Promise<Pick<Recipe, "id" | "name" | "created_at">> {
   // Start a transaction
   const { data: recipeData, error: recipeError } = await supabase
     .from("recipes")

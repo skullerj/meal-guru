@@ -1,16 +1,6 @@
 import type { Ingredient, Recipe } from "../../data/recipes";
 
-export interface AggregatedIngredient {
-  id: string;
-  name: string;
-  unit: string;
-  amount: number;
-  source: {
-    url: string;
-    price: number;
-    amount: number;
-  };
-  shelf: boolean;
+export interface AggregatedIngredient extends Ingredient {
   totalCost: number;
 }
 
