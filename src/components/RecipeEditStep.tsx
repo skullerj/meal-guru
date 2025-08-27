@@ -1,15 +1,11 @@
 import type { Ingredient } from "../lib/database";
 import IngredientInput from "./IngredientInput";
-import type {
-  IngredientFormData,
-  InstructionFormData,
-} from "./utils/addRecipeReducer";
+import type { IngredientFormData } from "./utils/addRecipeReducer";
 
 interface RecipeEditStepProps {
   recipeName: string;
   extractedText: string;
   ingredients: IngredientFormData[];
-  instructions: InstructionFormData[];
   availableIngredients: Omit<Ingredient, "amount">[];
   onRecipeNameChange: (name: string) => void;
   onIngredientUpdate: (
@@ -18,12 +14,6 @@ interface RecipeEditStepProps {
   ) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (index: number) => void;
-  onInstructionUpdate: (
-    index: number,
-    instruction: Partial<InstructionFormData>
-  ) => void;
-  onAddInstruction: () => void;
-  onRemoveInstruction: (index: number) => void;
   onGenerateJson: () => void;
   onBackToUpload: () => void;
 }
@@ -32,15 +22,11 @@ export default function RecipeEditStep({
   recipeName,
   extractedText,
   ingredients,
-  instructions,
   availableIngredients,
   onRecipeNameChange,
   onIngredientUpdate,
   onAddIngredient,
   onRemoveIngredient,
-  onInstructionUpdate,
-  onAddInstruction,
-  onRemoveInstruction,
   onGenerateJson,
   onBackToUpload,
 }: RecipeEditStepProps) {
@@ -158,84 +144,10 @@ export default function RecipeEditStep({
           )}
         </div>
 
-        {/* Instructions Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Instructions</h3>
-            <button
-              type="button"
-              onClick={onAddInstruction}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-            >
-              Add Step
-            </button>
-          </div>
-
-          {instructions.length === 0 ? (
-            <div className="text-gray-500 text-center py-8">
-              <p>No instructions added yet.</p>
-              <button
-                type="button"
-                onClick={onAddInstruction}
-                className="mt-2 text-blue-600 hover:text-blue-800 underline"
-              >
-                Add your first instruction step
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {instructions.map((instruction, index) => (
-                <div
-                  key={instruction.id}
-                  className="border border-gray-200 p-4 rounded-md"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <label
-                      htmlFor={`instruction-${index}`}
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Step {index + 1}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => onRemoveInstruction(index)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <svg
-                        className="h-5 w-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        aria-label="Remove instruction"
-                        role="graphics-symbol"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <textarea
-                    id={`instruction-${index}`}
-                    value={instruction.text}
-                    onChange={(e) =>
-                      onInstructionUpdate(index, { text: e.target.value })
-                    }
-                    className="w-full h-20 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    required
-                    placeholder={`Enter instruction for step ${index + 1}...`}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Form Actions */}
         <div className="flex justify-between items-center pt-6">
           <div className="text-sm text-gray-500">
-            {ingredients.length} ingredients, {instructions.length} steps
+            {ingredients.length} ingredients
           </div>
           <div className="space-x-4">
             <button

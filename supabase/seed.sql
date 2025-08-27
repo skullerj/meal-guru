@@ -2,7 +2,7 @@
 -- Generated from src/data/recipes.ts legacy data
 
 -- Insert ingredients first (PostgreSQL will auto-generate UUIDs)
-INSERT INTO ingredients (name, unit, source, shelf) VALUES 
+INSERT INTO ingredients (name, unit, source, shelf) VALUES
 -- Fajita Chicken Rice Bowl ingredients
 ('chicken', 'g', '{"url": "https://www.ocado.com/products/m-s-oakham-gold-medium-whole-chicken/634262011", "price": 7.25, "amount": 1000}', false),
 ('peppers', 'g', '{"url": "https://www.ocado.com/products/ocado-red-peppers/65259011", "price": 1.85, "amount": 450}', false),
@@ -35,7 +35,7 @@ INSERT INTO ingredients (name, unit, source, shelf) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert recipes (PostgreSQL will auto-generate UUIDs)
-INSERT INTO recipes (name) VALUES 
+INSERT INTO recipes (name) VALUES
 ('Fajita Chicken Rice Bowl'),
 ('Lentil-Eggplant Stew')
 
@@ -43,101 +43,78 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Insert recipe ingredients using subqueries to reference by name
 -- Fajita Chicken Rice Bowl
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 640, 1 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'chicken';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 300, 2 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'peppers';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 200, 3 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'red onions';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 130, 4 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'corn';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 3, 5 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'chipotle chilli paste';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 1, 6 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'lime';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 15, 7 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'vegetable oil';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 235, 8 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'black beans';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 15, 9 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'coriander';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 200, 10 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'brown rice';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 30, 11 FROM recipes r, ingredients i WHERE r.name = 'Fajita Chicken Rice Bowl' AND i.name = 'salsa';
 
 -- Lentil-Eggplant Stew
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 50, 1 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'olive oil';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 3, 2 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'garlic cloves';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 160, 3 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'red onion';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 9, 4 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'thyme';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 2, 5 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'eggplants';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 200, 6 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'cherry tomatoes';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 180, 7 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'puy lentils';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 1, 8 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'vegetable broth cube stocks';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 80, 9 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'dry white wine';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 100, 10 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'crème fraîche';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 2, 11 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'chilly flakes';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 2, 12 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'oregano leaves';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 18, 13 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'salt';
 
-INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index) 
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, order_index)
 SELECT r.id, i.id, 8, 14 FROM recipes r, ingredients i WHERE r.name = 'Lentil-Eggplant Stew' AND i.name = 'black pepper';
-
--- Insert recipe instructions using subqueries to reference recipe by name
--- Fajita Chicken Rice Bowl instructions
-INSERT INTO recipe_instructions (recipe_id, step_number, instruction_text, ingredient_ids) 
-SELECT r.id, 1, 'Heat the oven to 220C/200C fan/gas 7 and line a large baking tray with baking parchment. Arrange the chicken, peppers, red onions and baby corn on the tray, and spoon over the chipotle paste. Season, then toss to combine. Put the lime halves on the tray, cut-side down, then drizzle the oil over the chicken and veg. Roast for 20 mins, or until everything is cooked through.', '{}' 
-FROM recipes r WHERE r.name = 'Fajita Chicken Rice Bowl';
-
-INSERT INTO recipe_instructions (recipe_id, step_number, instruction_text, ingredient_ids) 
-SELECT r.id, 2, 'Meanwhile, warm the beans in a small pan over a low heat, and season. Mix the beans with half the coriander and the lime zest, then squeeze over the juice of the roasted lime. Slice the chicken thinly on the diagonal and divide between four bowls along with the veg and brown rice. Sprinkle over the remaining coriander and serve with the salsa.', '{}' 
-FROM recipes r WHERE r.name = 'Fajita Chicken Rice Bowl';
-
--- Lentil-Eggplant Stew instructions  
-INSERT INTO recipe_instructions (recipe_id, step_number, instruction_text, ingredient_ids) 
-SELECT r.id, 1, 'In a large pan, heat 2 tbsp olive oil over medium temperature. Add garlic, onion, thyme and ½ tsp salt and sauté golden brown for 8 minutes, stirring regularly. Transfer to a bowl - without the oil - and set aside.', '{}' 
-FROM recipes r WHERE r.name = 'Lentil-Eggplant Stew';
-
-INSERT INTO recipe_instructions (recipe_id, step_number, instruction_text, ingredient_ids) 
-SELECT r.id, 2, 'Season eggplant and tomatoes in a bowl with ¼ tsp salt and plenty of pepper. Heat the remaining oil (1 tbsp) vigorously in the pan. Add eggplant and tomatoes, sauté over medium to high heat for 10 minutes, turning constantly, until the eggplant is golden brown and soft and the tomatoes are slightly darkened. Add garlic and onion back, add lentils, broth, wine and 450ml water, stir everything with ¾ tsp salt. Bring to a boil and simmer over medium heat for 40 minutes, until the lentils are cooked but still have some bite.', '{}' 
-FROM recipes r WHERE r.name = 'Lentil-Eggplant Stew';
-
-INSERT INTO recipe_instructions (recipe_id, step_number, instruction_text, ingredient_ids) 
-SELECT r.id, 3, 'Serve the stew warm or chilled, with a dollop of crème fraîche and a few drops of olive oil, sprinkled with Isot Biber and oregano leaves.', '{}' 
-FROM recipes r WHERE r.name = 'Lentil-Eggplant Stew';

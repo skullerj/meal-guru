@@ -4,10 +4,7 @@ import type { Ingredient } from "../lib/database";
 import CreateRecipeStep from "./CreateRecipeStep";
 import PdfUploadStep from "./PdfUploadStep";
 import RecipeEditStep from "./RecipeEditStep";
-import type {
-  IngredientFormData,
-  InstructionFormData,
-} from "./utils/addRecipeReducer";
+import type { IngredientFormData } from "./utils/addRecipeReducer";
 import { addRecipeReducer, createInitialState } from "./utils/addRecipeReducer";
 import {
   extractTextFromPdf,
@@ -91,31 +88,9 @@ export default function AddRecipeForm({
     dispatch({ type: "REMOVE_INGREDIENT", index });
   };
 
-  // Handle instruction updates
-  const handleInstructionUpdate = (
-    index: number,
-    instruction: Partial<InstructionFormData>
-  ) => {
-    dispatch({ type: "UPDATE_INSTRUCTION", index, instruction });
-  };
-
-  // Handle adding new instruction
-  const handleAddInstruction = () => {
-    dispatch({ type: "ADD_INSTRUCTION" });
-  };
-
-  // Handle removing instruction
-  const handleRemoveInstruction = (index: number) => {
-    dispatch({ type: "REMOVE_INSTRUCTION", index });
-  };
-
   // Handle form submission (generate JSON)
   const handleGenerateJson = () => {
-    const validation = validateRecipeForm(
-      state.recipeName,
-      state.ingredients,
-      state.instructions
-    );
+    const validation = validateRecipeForm(state.recipeName, state.ingredients);
 
     if (!validation.isValid) {
       dispatch({
@@ -136,11 +111,7 @@ export default function AddRecipeForm({
 
   // Generate JSON for output
   const getRecipeJson = () => {
-    return transformToRecipeJson(
-      state.recipeName,
-      state.ingredients,
-      state.instructions
-    );
+    return transformToRecipeJson(state.recipeName, state.ingredients);
   };
 
   return (
@@ -196,15 +167,11 @@ export default function AddRecipeForm({
           recipeName={state.recipeName}
           extractedText={state.extractedText}
           ingredients={state.ingredients}
-          instructions={state.instructions}
           availableIngredients={state.availableIngredients}
           onRecipeNameChange={handleRecipeNameChange}
           onIngredientUpdate={handleIngredientUpdate}
           onAddIngredient={handleAddIngredient}
           onRemoveIngredient={handleRemoveIngredient}
-          onInstructionUpdate={handleInstructionUpdate}
-          onAddInstruction={handleAddInstruction}
-          onRemoveInstruction={handleRemoveInstruction}
           onGenerateJson={handleGenerateJson}
           onBackToUpload={() => dispatch({ type: "SET_STEP", step: "upload" })}
         />

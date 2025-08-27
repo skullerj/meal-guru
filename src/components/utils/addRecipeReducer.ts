@@ -1,24 +1,8 @@
-import type { Ingredient } from "../../lib/database";
+import type { Ingredient, Recipe } from "../../lib/database";
 
-export interface IngredientFormData {
-  id: string;
-  name: string;
-  amount: number;
-  unit: string;
-  shelf: boolean;
-  source: {
-    url: string;
-    price: number;
-    amount: number;
-  };
+export interface IngredientFormData extends Ingredient {
   // For autocomplete - reference to existing ingredient if reused
   existingIngredientId?: string;
-}
-
-export interface InstructionFormData {
-  id: string;
-  text: string;
-  ingredientIds: string[];
 }
 
 export interface AddRecipeState {
@@ -28,7 +12,6 @@ export interface AddRecipeState {
   extractedText: string;
   recipeName: string;
   ingredients: IngredientFormData[];
-  instructions: InstructionFormData[];
 
   // Computed state - for autocomplete and validation
   availableIngredients: Omit<Ingredient, "amount">[];
@@ -47,17 +30,7 @@ export type AddRecipeAction =
   | { type: "SET_RECIPE_NAME"; name: string }
   | {
       type: "SET_PARSED_RECIPE";
-      recipe: {
-        name: string;
-        ingredients: {
-          name: string;
-          amount?: number;
-          unit?: string;
-          shelf?: boolean;
-          source?: { url: string; price: number; amount: number };
-        }[];
-        instructions: { text: string; ingredientIds?: string[] }[];
-      };
+      recipe: Omit<Recipe, "created_at">;
     }
   | {
       type: "UPDATE_INGREDIENT";
@@ -66,13 +39,6 @@ export type AddRecipeAction =
     }
   | { type: "ADD_INGREDIENT" }
   | { type: "REMOVE_INGREDIENT"; index: number }
-  | {
-      type: "UPDATE_INSTRUCTION";
-      index: number;
-      instruction: Partial<InstructionFormData>;
-    }
-  | { type: "ADD_INSTRUCTION" }
-  | { type: "REMOVE_INSTRUCTION"; index: number }
   | { type: "RESET_FORM" };
 
 export function createInitialState(
@@ -84,7 +50,6 @@ export function createInitialState(
     extractedText: "",
     recipeName: "",
     ingredients: [],
-    instructions: [],
     availableIngredients,
     isLoading: false,
     error: null,
@@ -147,6 +112,7 @@ export function addRecipeReducer(
       const ingredients: IngredientFormData[] = recipe.ingredients.map(
         (ing) => ({
           id: generateId(ing.name),
+          created_at: new Date().toISOString(),
           name: ing.name,
           amount: ing.amount || 0,
           unit: ing.unit || "unit",
@@ -159,19 +125,10 @@ export function addRecipeReducer(
         })
       );
 
-      const instructions: InstructionFormData[] = recipe.instructions.map(
-        (inst, index) => ({
-          id: `instruction-${index}`,
-          text: inst.text,
-          ingredientIds: inst.ingredientIds || [],
-        })
-      );
-
       return {
         ...state,
         recipeName: recipe.name,
         ingredients,
-        instructions,
         currentStep: "edit",
       };
     }
@@ -187,26 +144,6 @@ export function addRecipeReducer(
       };
     }
 
-    case "ADD_INGREDIENT":
-      return {
-        ...state,
-        ingredients: [
-          ...state.ingredients,
-          {
-            id: generateId("new-ingredient"),
-            name: "",
-            amount: 0,
-            unit: "unit",
-            shelf: false,
-            source: {
-              url: "",
-              price: 0,
-              amount: 0,
-            },
-          },
-        ],
-      };
-
     case "REMOVE_INGREDIENT": {
       const { index } = action;
       const newIngredients = state.ingredients.filter((_, i) => i !== index);
@@ -217,42 +154,8 @@ export function addRecipeReducer(
       };
     }
 
-    case "UPDATE_INSTRUCTION": {
-      const { index, instruction } = action;
-      const newInstructions = [...state.instructions];
-      newInstructions[index] = { ...newInstructions[index], ...instruction };
-
-      return {
-        ...state,
-        instructions: newInstructions,
-      };
-    }
-
-    case "ADD_INSTRUCTION":
-      return {
-        ...state,
-        instructions: [
-          ...state.instructions,
-          {
-            id: `instruction-${state.instructions.length}`,
-            text: "",
-            ingredientIds: [],
-          },
-        ],
-      };
-
-    case "REMOVE_INSTRUCTION": {
-      const { index } = action;
-      const newInstructions = state.instructions.filter((_, i) => i !== index);
-
-      return {
-        ...state,
-        instructions: newInstructions,
-      };
-    }
-
     case "RESET_FORM":
-      return createInitialState();
+      return createInitialState(state.availableIngredients);
 
     default:
       return state;

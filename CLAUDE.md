@@ -115,9 +115,8 @@ To get Supabase credentials:
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
 
 ## Data Structure
-- **Recipes**: Complete recipes with ingredients and instructions stored in Supabase
+- **Recipes**: Complete recipes with ingredients stored in Supabase
 - **Ingredients**: Master ingredient library with standardized units ('g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit')
-- **Instructions**: Each step linked to specific ingredient IDs for contextual cooking guidance
 - **Database**: PostgreSQL via Supabase with proper relationships and RLS security
 
 ## React Architecture Guidelines

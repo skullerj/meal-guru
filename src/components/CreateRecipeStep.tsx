@@ -1,9 +1,9 @@
 import { actions } from "astro:actions";
 import { useState } from "react";
-import type { RecipeJsonData } from "./utils/addRecipeUtils";
+import type { Recipe } from "../lib/database";
 
 interface CreateRecipeStepProps {
-  recipeJson: RecipeJsonData;
+  recipeJson: Omit<Recipe, "created_at">;
   onReset: () => void;
   onBackToEdit: () => void;
 }
@@ -26,19 +26,10 @@ export default function CreateRecipeStep({
     setError(null);
 
     try {
-      // Transform the recipe data to match the action schema
-      const transformedInstructions = recipeJson.instructions.map(
-        (instruction) => ({
-          text: instruction.text,
-          ingredientIds: instruction.ingredientIds,
-        })
-      );
-
       const { data, error: actionError } = await actions.saveRecipe({
         id: recipeJson.id,
         name: recipeJson.name,
         ingredients: recipeJson.ingredients,
-        instructions: transformedInstructions,
       });
 
       if (actionError) {
@@ -112,10 +103,6 @@ export default function CreateRecipeStep({
                 <p>
                   <strong>Ingredients:</strong> {recipeJson.ingredients.length}{" "}
                   items
-                </p>
-                <p>
-                  <strong>Instructions:</strong>{" "}
-                  {recipeJson.instructions.length} steps
                 </p>
                 <p>
                   <strong>Recipe ID:</strong> {createdRecipe.id}
@@ -229,12 +216,6 @@ export default function CreateRecipeStep({
               {recipeJson.ingredients.length} items
             </div>
           </div>
-          <div className="bg-purple-50 p-3 rounded">
-            <div className="font-medium text-purple-900">Instructions</div>
-            <div className="text-purple-700">
-              {recipeJson.instructions.length} steps
-            </div>
-          </div>
         </div>
 
         {/* Ingredient breakdown */}
@@ -258,29 +239,6 @@ export default function CreateRecipeStep({
             ))}
           </div>
         </div>
-
-        {/* Instructions preview */}
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">
-            Instructions:
-          </h4>
-          <ol className="text-sm text-gray-700 space-y-1">
-            {recipeJson.instructions.slice(0, 3).map((instruction, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: index will not change for instructions
-              <li key={index} className="flex">
-                <span className="font-medium text-gray-500 mr-2">
-                  {index + 1}.
-                </span>
-                <span className="truncate">{instruction.text}</span>
-              </li>
-            ))}
-            {recipeJson.instructions.length > 3 && (
-              <li className="text-gray-500 italic">
-                ... and {recipeJson.instructions.length - 3} more steps
-              </li>
-            )}
-          </ol>
-        </div>
       </div>
 
       {/* Create Recipe Button */}
@@ -291,7 +249,6 @@ export default function CreateRecipeStep({
           </h3>
           <p className="text-sm text-gray-600 mb-4">
             This will create the recipe in your database with all ingredients
-            and instructions.
           </p>
           <button
             type="button"

@@ -38,13 +38,8 @@ const saveRecipeSchema = z.object({
         price: z.number().min(0),
         amount: z.number().positive(),
       }),
+      created_at: z.string().default(new Date().toISOString()),
       isExisting: z.boolean().optional(),
-    })
-  ),
-  instructions: z.array(
-    z.object({
-      text: z.string().min(1),
-      ingredientIds: z.array(z.string()),
     })
   ),
 });
@@ -103,17 +98,10 @@ interface Ingredient {
   isExisting?: boolean;
 }
 
-interface InstructionStep {
-  instruction_text: string;
-  step_number: number;
-  ingredient_ids: string[];
-}
-
 interface Recipe {
   id: string;
   name: string;
   ingredients: Ingredient[];
-  instructions: InstructionStep[];
 }
 
 Instructions:
@@ -123,9 +111,8 @@ Instructions:
 4. **SOURCE FIELD**: Always set url to "", price to 0, amount to 0 (will be filled later)
 5. **SHELF ITEMS**: Set shelf: true for pantry/spice items (oils, spices, flour, etc.), false for fresh items
 6. **AMOUNTS**: Parse as numbers (convert "1/2" to 0.5, "1 1/2" to 1.5)
-7. **INSTRUCTIONS**: Use instruction_text, step_number (starting from 1), and ingredient_ids matching ingredient IDs
-8. **RECIPE ID**: Generate kebab-case ID for recipe
-9. **LANGUAGE**: Translate any recipe text to English if needed
+7. **RECIPE ID**: Generate kebab-case ID for recipe
+8. **LANGUAGE**: Translate any recipe text to English if needed
 ${existingIngredientsText}
 
 Text to parse:
@@ -147,8 +134,6 @@ Return ONLY the JSON object for the recipe, no other text or explanation.`;
         const responseText =
           message.content[0].type === "text" ? message.content[0].text : "";
 
-        console.log(responseText);
-
         let parsedRecipe: z.output<typeof saveRecipeSchema>;
         try {
           parsedRecipe = JSON.parse(responseText);
@@ -158,8 +143,6 @@ Return ONLY the JSON object for the recipe, no other text or explanation.`;
             message: "Failed to parse recipe from LLM response",
           });
         }
-
-        console.log(parsedRecipe);
 
         // Create a lookup map for existing ingredients by name (case-insensitive)
         const ingredientLookup = new Map(
@@ -182,6 +165,7 @@ Return ONLY the JSON object for the recipe, no other text or explanation.`;
                   unit: existingIngredient.unit,
                   shelf: existingIngredient.shelf,
                   id: existingIngredient.id,
+                  created_at: existingIngredient.created_at,
                 };
               }
 
@@ -207,7 +191,7 @@ Return ONLY the JSON object for the recipe, no other text or explanation.`;
 
   saveRecipe: defineAction({
     input: saveRecipeSchema,
-    handler: async ({ name, ingredients, instructions }) => {
+    handler: async ({ name, ingredients }) => {
       try {
         // First, create any new ingredients
         const processedIngredients = [];
@@ -227,17 +211,7 @@ Return ONLY the JSON object for the recipe, no other text or explanation.`;
             try {
               const newIngredient = await createIngredient({
                 name: ingredient.name,
-                unit: ingredient.unit as
-                  | "g"
-                  | "kg"
-                  | "ml"
-                  | "l"
-                  | "tsp"
-                  | "tbsp"
-                  | "cup"
-                  | "oz"
-                  | "lb"
-                  | "unit",
+                unit: ingredient.unit,
                 source: ingredient.source,
                 shelf: ingredient.shelf,
               });
@@ -260,21 +234,8 @@ Return ONLY the JSON object for the recipe, no other text or explanation.`;
           }
         }
 
-        // Process instructions
-        const processedInstructions = instructions.map(
-          (instruction, index) => ({
-            step_number: index + 1,
-            instruction_text: instruction.text,
-            ingredient_ids: instruction.ingredientIds,
-          })
-        );
-
         // Create the recipe
-        const newRecipe = await createRecipe(
-          { name },
-          processedIngredients,
-          processedInstructions
-        );
+        const newRecipe = await createRecipe({ name }, processedIngredients);
 
         return {
           success: true,

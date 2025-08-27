@@ -1,35 +1,14 @@
-import type {
-  IngredientFormData,
-  InstructionFormData,
-} from "./addRecipeReducer";
+import type { Ingredient, Recipe } from "../../lib/database";
+import type { Constants } from "../../types/database";
+import type { IngredientFormData } from "./addRecipeReducer";
 
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];
 }
 
-export interface RecipeJsonData {
-  id: string;
-  name: string;
-  ingredients: {
-    id: string;
-    name: string;
-    amount: number;
-    unit: string;
-    shelf: boolean;
-    source: {
-      url: string;
-      price: number;
-      amount: number;
-    };
-  }[];
-  instructions: {
-    text: string;
-    ingredientIds: string[];
-  }[];
-}
-
-// Standardized units allowed in the system
+export type AllowedUnit =
+  (typeof Constants)["public"]["Enums"]["unit_type"][number];
 export const ALLOWED_UNITS = [
   "g",
   "kg",
@@ -41,9 +20,7 @@ export const ALLOWED_UNITS = [
   "oz",
   "lb",
   "unit",
-] as const;
-
-export type AllowedUnit = (typeof ALLOWED_UNITS)[number];
+] as AllowedUnit[];
 
 // Generate consistent IDs
 export function generateId(name: string): string {
@@ -153,53 +130,10 @@ export function validateIngredients(
   };
 }
 
-// Validate instruction
-export function validateInstruction(
-  instruction: InstructionFormData
-): ValidationResult {
-  const errors: string[] = [];
-
-  if (!instruction.text.trim()) {
-    errors.push("Instruction text is required");
-  } else if (instruction.text.trim().length < 10) {
-    errors.push("Instruction must be at least 10 characters");
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
-}
-
-// Validate all instructions
-export function validateInstructions(
-  instructions: InstructionFormData[]
-): ValidationResult {
-  const errors: string[] = [];
-
-  if (instructions.length === 0) {
-    errors.push("At least one instruction is required");
-  }
-
-  // Validate each instruction
-  instructions.forEach((instruction, index) => {
-    const result = validateInstruction(instruction);
-    if (!result.isValid) {
-      errors.push(`Step ${index + 1}: ${result.errors.join(", ")}`);
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
-}
-
 // Validate entire recipe form
 export function validateRecipeForm(
   recipeName: string,
-  ingredients: IngredientFormData[],
-  instructions: InstructionFormData[]
+  ingredients: IngredientFormData[]
 ): ValidationResult {
   const errors: string[] = [];
 
@@ -213,11 +147,6 @@ export function validateRecipeForm(
     errors.push(...ingredientsValidation.errors);
   }
 
-  const instructionsValidation = validateInstructions(instructions);
-  if (!instructionsValidation.isValid) {
-    errors.push(...instructionsValidation.errors);
-  }
-
   return {
     isValid: errors.length === 0,
     errors,
@@ -227,16 +156,17 @@ export function validateRecipeForm(
 // Transform form data to recipe JSON
 export function transformToRecipeJson(
   recipeName: string,
-  ingredients: IngredientFormData[],
-  instructions: InstructionFormData[]
-): RecipeJsonData {
+  ingredients: IngredientFormData[]
+): Recipe {
   const recipeId = generateId(recipeName);
 
   return {
     id: recipeId,
     name: recipeName.trim(),
+    created_at: new Date().toISOString(),
     ingredients: ingredients.map((ingredient) => ({
       id: ingredient.existingIngredientId || generateId(ingredient.name),
+      created_at: new Date().toISOString(),
       name: ingredient.name.trim(),
       amount: ingredient.amount,
       unit: ingredient.unit,
@@ -247,19 +177,15 @@ export function transformToRecipeJson(
         amount: ingredient.source.amount,
       },
     })),
-    instructions: instructions.map((instruction) => ({
-      text: instruction.text.trim(),
-      ingredientIds: instruction.ingredientIds,
-    })),
   };
 }
 
 // Filter ingredients for autocomplete
 export function filterIngredientsForAutocomplete(
-  availableIngredients: Array<{ id: string; name: string; unit: string }>,
+  availableIngredients: Array<Omit<Ingredient, "amount">>,
   query: string,
   limit: number = 5
-): Array<{ id: string; name: string; unit: string }> {
+): Array<Omit<Ingredient, "amount">> {
   if (!query.trim()) return [];
 
   const lowercaseQuery = query.toLowerCase().trim();

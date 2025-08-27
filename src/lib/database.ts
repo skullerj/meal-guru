@@ -12,13 +12,16 @@ export type Source = z.infer<typeof sourceSchema>;
 // Extract types from generated Database type
 export type RecipeIngredient =
   Database["public"]["Tables"]["recipe_ingredients"]["Row"];
-export type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"] &
+export type Ingredient = Omit<
+  Database["public"]["Tables"]["ingredients"]["Row"],
+  "source"
+> &
   Pick<RecipeIngredient, "amount"> & { source: Source };
 export type Recipe = Database["public"]["Tables"]["recipes"]["Row"] & {
   ingredients: Ingredient[];
 };
 
-// Get all recipes with their ingredients and instructions
+// Get all recipes with their ingredients
 export async function getRecipes(): Promise<Recipe[]> {
   // Get recipes with their ingredients
   const { data: recipeData, error: recipeError } = await supabase
@@ -69,7 +72,7 @@ export async function createIngredient(ingredientData: {
   unit: Ingredient["unit"];
   source?: { url: string; price: number; amount: number } | null;
   shelf?: boolean;
-}): Promise<Pick<Ingredient, "name" | "unit" | "source" | "shelf">> {
+}): Promise<Pick<Ingredient, "id" | "name" | "unit" | "source" | "shelf">> {
   // Check if ingredient with this name already exists
   const existingIngredients = await searchIngredients(ingredientData.name);
   const exactMatch = existingIngredients.find(
@@ -102,18 +105,13 @@ export async function createIngredient(ingredientData: {
   return { ...data, source: sourceSchema.parse(data.source) };
 }
 
-// Create a new recipe with ingredients and instructions
+// Create a new recipe with ingredients
 export async function createRecipe(
   recipe: { name: string },
   ingredients: Array<{
     ingredient_id: string;
     amount: number;
     order_index: number;
-  }>,
-  instructions: Array<{
-    step_number: number;
-    instruction_text: string;
-    ingredient_ids?: string[];
   }>
 ): Promise<Pick<Recipe, "id" | "name" | "created_at">> {
   // Start a transaction
@@ -141,21 +139,6 @@ export async function createRecipe(
   if (ingredientsError) {
     console.error("Error creating recipe ingredients:", ingredientsError);
     throw ingredientsError;
-  }
-
-  // Insert recipe instructions
-  const recipeInstructions = instructions.map((inst) => ({
-    recipe_id: recipeData.id,
-    ...inst,
-  }));
-
-  const { error: instructionsError } = await supabase
-    .from("recipe_instructions")
-    .insert(recipeInstructions);
-
-  if (instructionsError) {
-    console.error("Error creating recipe instructions:", instructionsError);
-    throw instructionsError;
   }
 
   return recipeData;

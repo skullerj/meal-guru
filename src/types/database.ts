@@ -80,38 +80,6 @@ export type Database = {
           },
         ];
       };
-      recipe_instructions: {
-        Row: {
-          id: string;
-          ingredient_ids: string[] | null;
-          instruction_text: string;
-          recipe_id: string;
-          step_number: number;
-        };
-        Insert: {
-          id?: string;
-          ingredient_ids?: string[] | null;
-          instruction_text: string;
-          recipe_id: string;
-          step_number: number;
-        };
-        Update: {
-          id?: string;
-          ingredient_ids?: string[] | null;
-          instruction_text?: string;
-          recipe_id?: string;
-          step_number?: number;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "recipe_instructions_recipe_id_fkey";
-            columns: ["recipe_id"];
-            isOneToOne: false;
-            referencedRelation: "recipes";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       recipes: {
         Row: {
           created_at: string;

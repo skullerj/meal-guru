@@ -91,7 +91,7 @@ export default function IngredientInput({
   };
 
   const handleUnitChange = (unit: string) => {
-    onUpdate(index, { unit });
+    onUpdate(index, { unit: unit as Ingredient["unit"] });
   };
 
   const handleShelfChange = (shelf: boolean) => {
