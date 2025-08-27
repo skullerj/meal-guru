@@ -124,6 +124,7 @@ export default function LeftToBuyColumn({
                     </p>
                     <a
                       href={ingredient.source.url}
+                      onClick={openSmallWindow}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 text-sm underline mt-1 inline-block"

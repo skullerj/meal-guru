@@ -71,9 +71,16 @@ To get Supabase credentials:
 │   │   ├── RecipeColumn.tsx         # Recipe selection column
 │   │   ├── ShoppingColumn.tsx       # Aggregated ingredients column
 │   │   ├── LeftToBuyColumn.tsx      # Items to buy column
+│   │   ├── AddRecipeForm.tsx        # Main React component for recipe creation
+│   │   ├── PdfUploadStep.tsx        # Pure component for PDF upload
+│   │   ├── RecipeEditStep.tsx       # Pure component for recipe editing
+│   │   ├── IngredientInput.tsx      # Pure component with autocomplete
+│   │   ├── JsonOutputStep.tsx       # Pure component for JSON output
 │   │   └── utils/
 │   │       ├── mealPlannerUtils.ts  # Price calculations & ingredient aggregation
-│   │       └── mealPlannerReducer.ts # State management with useReducer
+│   │       ├── mealPlannerReducer.ts # State management with useReducer
+│   │       ├── addRecipeUtils.ts    # Recipe form business logic
+│   │       └── addRecipeReducer.ts  # Add recipe state management
 │   ├── data/
 │   │   └── recipes.ts               # TypeScript interfaces only
 │   ├── lib/
@@ -113,98 +120,160 @@ To get Supabase credentials:
 - **Instructions**: Each step linked to specific ingredient IDs for contextual cooking guidance
 - **Database**: PostgreSQL via Supabase with proper relationships and RLS security
 
-## Architecture & State Management
+## React Architecture Guidelines
 
-### Component Architecture
-The 3-column meal planning interface follows a clean component architecture with clear separation of concerns:
+### Component Architecture Patterns
+All React components in this project follow clean architecture with clear separation of concerns:
 
-#### Component Responsibility Allocation
-```typescript
-MealPlanner.tsx                    // State management coordinator
-├── RecipeColumn.tsx               // Pure component: recipe selection UI
-├── ShoppingColumn.tsx             // Pure component: ingredient aggregation UI  
-└── LeftToBuyColumn.tsx           // Pure component: purchase list UI
-```
-
-**Design Principles:**
-- **Separation of Concerns**: Column components are pure and only handle UI rendering
-- **Callback Props Pattern**: Components receive `onRecipeToggle`, `onIngredientToggle` callbacks
-- **State Management Isolation**: Only `MealPlanner` knows about the reducer/dispatch logic
-- **Component Reusability**: Column components can work with any state management approach
+#### Design Principles
+- **Separation of Concerns**: Child components are pure and only handle UI rendering
+- **Callback Props Pattern**: Components receive callback functions for user interactions
+- **State Management Isolation**: Only parent components manage reducer/dispatch logic
+- **Component Reusability**: Child components work with any state management approach
 
 #### Component Interface Design
 ```typescript
 // Clean prop interfaces - no direct state management dependency
-interface RecipeColumnProps {
-  recipes: Recipe[];
-  selectedRecipeIds: string[];
-  onRecipeToggle: (recipeId: string) => void;  // Callback-based interaction
+interface ChildComponentProps {
+  data: DataType[];
+  selections: string[];
+  onItemToggle: (id: string) => void;  // Callback-based interaction
+  onAction?: (payload: ActionPayload) => void;  // Optional callbacks
 }
+```
 
-interface ShoppingColumnProps {
-  aggregatedIngredients: AggregatedIngredient[];
-  ownedIngredientIds: string[];
-  onIngredientToggle: (ingredientId: string) => void;  // Callback-based interaction
-}
+#### Component Responsibility Allocation
+```typescript
+ParentComponent.tsx                // State management coordinator (useReducer)
+├── ChildComponent.tsx            // Pure component: UI rendering only
+├── AnotherChild.tsx              // Pure component: specific feature UI
+└── ActionComponent.tsx           // Pure component: user interactions
 ```
 
 ### State Management Strategy
 
-#### useReducer Pattern
-Chose `useReducer` over `useState` for complex state management needs:
+#### When to Use useReducer
+Use `useReducer` over `useState` for:
+- **Multi-step forms** with complex validation and interdependent fields
+- **Complex state logic** with interdependent data transformations
+- **Action-based workflows** where state changes need clear tracking
+- **Computed/derived state** that needs consistent recalculation
 
 **Benefits:**
 - **Predictable State Updates**: Pure reducer functions ensure predictable state changes
-- **Complex State Logic**: Handles interdependent state (recipes → ingredients → prices)
+- **Complex State Logic**: Handles interdependent state and computed values
 - **Action-Based Updates**: Clear, debuggable state transitions
 - **Performance**: Immutable updates prevent unnecessary re-renders
 - **Testability**: Reducer functions are pure and easily testable
 
-#### State Structure
+#### State Structure Pattern
 ```typescript
-interface MealPlannerState {
-  selectedRecipeIds: string[];           // User's recipe selections
-  ownedIngredientIds: string[];          // Ingredients user already owns
-  aggregatedIngredients: AggregatedIngredient[];  // Computed: combined ingredients
-  remainingToBuy: AggregatedIngredient[];         // Computed: filtered for purchase
-  totalPrice: number;                             // Computed: total cost
+interface ComponentState {
+  // Core state - user inputs/selections
+  primarySelections: string[];
+  userInputs: UserInputType[];
+
+  // Computed state - derived from core state
+  processedData: ProcessedType[];
+  calculatedValues: CalculatedType[];
+
+  // UI state - current step, loading, etc.
+  currentStep: string;
+  isLoading: boolean;
 }
 ```
 
-#### Action Design
+#### Action Design Pattern
 ```typescript
-type MealPlannerAction =
-  | { type: 'TOGGLE_RECIPE'; recipeId: string }
-  | { type: 'TOGGLE_OWNED_INGREDIENT'; ingredientId: string }
-  | { type: 'RESET_SELECTIONS' };
+type ComponentAction =
+  | { type: 'UPDATE_SELECTION'; id: string; value: any }
+  | { type: 'PROCESS_DATA'; payload: ProcessPayload }
+  | { type: 'RESET_FORM' }
+  | { type: 'SET_STEP'; step: string };
 ```
 
 #### State Recalculation Strategy
-The reducer uses a centralized `recalculateState` function that:
-1. Aggregates ingredients from selected recipes
-2. Filters out owned ingredients  
-3. Calculates total prices
-4. Returns computed state slice
+Use a centralized recalculation function in the reducer:
+1. Extract core state from action
+2. Process/transform data using utility functions
+3. Calculate derived state
+4. Return new state with both core and computed values
 
 This ensures all derived state stays consistent and calculations are performed in one place.
 
 ### Business Logic Layer
 
-#### Utility Functions (`mealPlannerUtils.ts`)
-Separated pure business logic into utility functions:
+#### Utility Functions Pattern
+Always separate pure business logic into utility functions:
 
-- **`aggregateIngredients()`**: Combines ingredients from multiple recipes
-  - Non-shelf items: Quantities are summed (e.g., 200g + 150g onions = 350g)
-  - Shelf items: No quantity aggregation (spices, oils don't combine)
-- **`calculateIngredientCost()`**: Proportional cost calculation based on needed vs. source amounts
-- **`calculateTotalPrice()`**: Sums up costs for remaining ingredients
-- **`separateIngredientsByShelf()`**: Categorizes ingredients for different UI sections
+**Example utility functions:**
+- **Data transformation functions**: Convert between formats, aggregate data
+- **Calculation functions**: Compute derived values, prices, totals
+- **Validation functions**: Form validation, data integrity checks
+- **Filter/search functions**: Data filtering, searching, sorting logic
 
-#### Key Business Rules
-1. **Ingredient Aggregation**: Only non-shelf ingredients combine quantities
-2. **Cost Calculation**: Proportional to needed amount vs. source package size
-3. **Price Target**: £40 minimum order with remaining amount calculation
-4. **Shelf Logic**: Pantry items (oils, spices) vs. fresh ingredients handling
+#### Utility Function Structure
+```typescript
+// componentUtils.ts
+export function transformData(input: InputType[]): OutputType[] {
+  // Pure function - no side effects
+  return input.map(/* transformation logic */);
+}
+
+export function calculateValues(data: DataType[]): CalculatedType {
+  // Business logic for calculations
+  return /* calculation result */;
+}
+
+export function validateInput(input: InputType): ValidationResult {
+  // Validation logic
+  return { isValid: boolean, errors: string[] };
+}
+```
+
+#### Business Rules Documentation
+Document key business rules that drive utility functions:
+1. **Data Processing Rules**: How data should be transformed/combined
+2. **Calculation Rules**: Formulas and business logic for computed values
+3. **Validation Rules**: What constitutes valid input/state
+4. **UI Logic Rules**: When to show/hide elements, enable/disable actions
+
+### React Component Creation Checklist
+
+When creating new React components, follow this checklist:
+
+#### 1. Determine State Management Approach
+- **Simple state**: Use `useState` for independent state values
+- **Complex state**: Use `useReducer` for multi-step forms, interdependent data, computed values
+- **No state**: Pure components that only render props
+
+#### 2. Design Component Interface
+- **Define clear prop interfaces** with TypeScript
+- **Use callback props** for user interactions (`onAction`, `onToggle`, etc.)
+- **Avoid passing dispatch/setState** directly to child components
+- **Keep components reusable** - no hard-coded business logic
+
+#### 3. Separate Concerns
+- **Astro pages**: Fetch data and pass to parent components
+- **Parent components**: Handle state management and receive fetched data from the astro page rendering them
+- **Child components**: Pure UI rendering and user interactions
+- **Utility files**: Business logic, calculations, transformations
+
+#### 4. Follow File Structure
+```
+components/
+├── ParentComponent.tsx        # State management
+├── ChildComponent.tsx         # Pure UI component
+├── AnotherChild.tsx          # Pure UI component
+└── utils/
+    ├── parentComponentUtils.ts    # Business logic
+    └── parentComponentReducer.ts  # State management (if using useReducer)
+```
+
+#### 5. Testing Considerations
+- **Pure functions**: Easy to test utility functions
+- **Component props**: Test component behavior with different prop combinations
+- **State transitions**: Test reducer actions and state changes
 
 ### Integration Approach
 
