@@ -1,6 +1,6 @@
-import type { Ingredient, Recipe } from "../../../lib/database";
+import type { Ingredient } from "../../../lib/database";
 import type { Constants } from "../../../types/database";
-import type { IngredientFormData } from "./addRecipeReducer";
+import type { EditableIngredient } from "./addRecipeReducer";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -23,13 +23,6 @@ export const ALLOWED_UNITS = [
 ] as AllowedUnit[];
 
 // Generate consistent IDs
-export function generateId(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, "-")
-    .substring(0, 20);
-}
 
 // Validate recipe name
 export function validateRecipeName(name: string): ValidationResult {
@@ -51,15 +44,17 @@ export function validateRecipeName(name: string): ValidationResult {
 
 // Validate individual ingredient
 export function validateIngredient(
-  ingredient: IngredientFormData
+  recipeIngredient: EditableIngredient
 ): ValidationResult {
   const errors: string[] = [];
+
+  const { ingredient, amount } = recipeIngredient;
 
   if (!ingredient.name.trim()) {
     errors.push("Ingredient name is required");
   }
 
-  if (!ingredient.amount || ingredient.amount <= 0) {
+  if (!amount || amount <= 0) {
     errors.push("Amount must be greater than 0");
   }
 
@@ -71,7 +66,7 @@ export function validateIngredient(
   }
 
   // Source validation - required for new ingredients
-  if (!ingredient.existingIngredientId) {
+  if (!ingredient?.id) {
     if (!ingredient.source.url) {
       errors.push("Store URL is required");
     } else {
@@ -99,7 +94,7 @@ export function validateIngredient(
 
 // Validate all ingredients
 export function validateIngredients(
-  ingredients: IngredientFormData[]
+  ingredients: EditableIngredient[]
 ): ValidationResult {
   const errors: string[] = [];
 
@@ -108,7 +103,9 @@ export function validateIngredients(
   }
 
   // Check for duplicate ingredient names
-  const names = ingredients.map((ing) => ing.name.toLowerCase().trim());
+  const names = ingredients.map((ing) =>
+    ing.ingredient.name.toLowerCase().trim()
+  );
   const duplicates = names.filter(
     (name, index) => names.indexOf(name) !== index
   );
@@ -133,7 +130,7 @@ export function validateIngredients(
 // Validate entire recipe form
 export function validateRecipeForm(
   recipeName: string,
-  ingredients: IngredientFormData[]
+  ingredients: EditableIngredient[]
 ): ValidationResult {
   const errors: string[] = [];
 
@@ -150,33 +147,6 @@ export function validateRecipeForm(
   return {
     isValid: errors.length === 0,
     errors,
-  };
-}
-
-// Transform form data to recipe JSON
-export function transformToRecipeJson(
-  recipeName: string,
-  ingredients: IngredientFormData[]
-): Recipe {
-  const recipeId = generateId(recipeName);
-
-  return {
-    id: recipeId,
-    name: recipeName.trim(),
-    created_at: new Date().toISOString(),
-    ingredients: ingredients.map((ingredient) => ({
-      id: ingredient.existingIngredientId || generateId(ingredient.name),
-      created_at: new Date().toISOString(),
-      name: ingredient.name.trim(),
-      amount: ingredient.amount,
-      unit: ingredient.unit,
-      shelf: ingredient.shelf,
-      source: {
-        url: ingredient.source.url,
-        price: ingredient.source.price,
-        amount: ingredient.source.amount,
-      },
-    })),
   };
 }
 

@@ -1,16 +1,16 @@
 import type { Ingredient } from "../../lib/database";
 import IngredientInput from "./IngredientInput";
-import type { IngredientFormData } from "./utils/addRecipeReducer";
+import type { EditableIngredient } from "./utils/addRecipeReducer";
 
 interface RecipeEditStepProps {
   recipeName: string;
   extractedText: string;
-  ingredients: IngredientFormData[];
+  ingredients: EditableIngredient[];
   availableIngredients: Omit<Ingredient, "amount">[];
   onRecipeNameChange: (name: string) => void;
   onIngredientUpdate: (
     index: number,
-    ingredient: Partial<IngredientFormData>
+    ingredient: Partial<EditableIngredient>
   ) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (index: number) => void;
@@ -130,10 +130,10 @@ export default function RecipeEditStep({
             </div>
           ) : (
             <div className="space-y-4">
-              {ingredients.map((ingredient, index) => (
+              {ingredients.map((recipeIngredient, index) => (
                 <IngredientInput
-                  key={ingredient.id}
-                  ingredient={ingredient}
+                  key={recipeIngredient.ingredient?.id || `new-${index}`}
+                  ingredient={recipeIngredient}
                   index={index}
                   availableIngredients={availableIngredients}
                   onUpdate={onIngredientUpdate}

@@ -1,9 +1,11 @@
-import type { Ingredient, Recipe } from "../../../lib/database";
+import type { Ingredient, RecipeIngredient } from "../../../lib/database";
 
-export interface IngredientFormData extends Ingredient {
-  // For autocomplete - reference to existing ingredient if reused
-  existingIngredientId?: string;
-}
+export type EditableIngredient = Omit<
+  RecipeIngredient,
+  "order_index" | "id" | "ingredient"
+> & {
+  ingredient: Omit<Ingredient, "created_at" | "id"> & { id?: string | null };
+};
 
 export interface AddRecipeState {
   // Core state - user inputs
@@ -11,7 +13,7 @@ export interface AddRecipeState {
   uploadedFile: File | null;
   extractedText: string;
   recipeName: string;
-  ingredients: IngredientFormData[];
+  ingredients: EditableIngredient[];
 
   // Computed state - for autocomplete and validation
   availableIngredients: Omit<Ingredient, "amount">[];
@@ -30,12 +32,15 @@ export type AddRecipeAction =
   | { type: "SET_RECIPE_NAME"; name: string }
   | {
       type: "SET_PARSED_RECIPE";
-      recipe: Omit<Recipe, "created_at">;
+      recipe: {
+        ingredients: EditableIngredient[];
+        name: string;
+      };
     }
   | {
       type: "UPDATE_INGREDIENT";
       index: number;
-      ingredient: Partial<IngredientFormData>;
+      ingredient: Partial<EditableIngredient>;
     }
   | { type: "ADD_INGREDIENT" }
   | { type: "REMOVE_INGREDIENT"; index: number }
@@ -54,14 +59,6 @@ export function createInitialState(
     isLoading: false,
     error: null,
   };
-}
-
-function generateId(name: string): string {
-  return `${name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, "-")
-    .substring(0, 20)}-${Date.now()}`;
 }
 
 export function addRecipeReducer(
@@ -109,26 +106,10 @@ export function addRecipeReducer(
     case "SET_PARSED_RECIPE": {
       const { recipe } = action;
 
-      const ingredients: IngredientFormData[] = recipe.ingredients.map(
-        (ing) => ({
-          id: generateId(ing.name),
-          created_at: new Date().toISOString(),
-          name: ing.name,
-          amount: ing.amount || 0,
-          unit: ing.unit || "unit",
-          shelf: ing.shelf || false,
-          source: {
-            url: ing.source?.url || "",
-            price: ing.source?.price || 0,
-            amount: ing.source?.amount || 0,
-          },
-        })
-      );
-
       return {
         ...state,
         recipeName: recipe.name,
-        ingredients,
+        ingredients: recipe.ingredients,
         currentStep: "edit",
       };
     }

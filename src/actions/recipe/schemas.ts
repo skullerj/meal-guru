@@ -19,18 +19,16 @@ export const saveRecipeSchema = z.object({
   name: z.string().min(3, "Recipe name must be at least 3 characters"),
   ingredients: z.array(
     z.object({
-      id: z.string(),
-      name: z.string(),
       amount: z.number().positive(),
-      unit: unitSchema,
-      shelf: z.boolean(),
-      source: z.object({
-        url: z.string(),
-        price: z.number().min(0),
-        amount: z.number().positive(),
+      ingredient: z.object({
+        id: z.string().nullish(),
+        unit: unitSchema,
+        name: z.string(),
+        shelf: z.boolean(),
+        source: sourceSchema
+          .nullish()
+          .transform((val) => val || { url: "", price: 0, amount: 0 }),
       }),
-      created_at: z.string().default(new Date().toISOString()),
-      isExisting: z.boolean().optional(),
     })
   ),
 });

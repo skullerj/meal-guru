@@ -39,15 +39,16 @@ export function aggregateIngredients(
   const ingredientMap = new Map<string, AggregatedIngredient>();
 
   for (const recipe of recipes) {
-    for (const ingredient of recipe.ingredients) {
+    for (const recipeIngredient of recipe.ingredients) {
+      const { ingredient, amount } = recipeIngredient;
       const existing = ingredientMap.get(ingredient.id);
 
       if (existing) {
         // If ingredient already exists and is not a shelf item, combine amounts
         if (!ingredient.shelf) {
-          existing.amount += ingredient.amount;
+          existing.amount += amount;
           existing.totalCost = calculateIngredientCost({
-            ...ingredient,
+            ...recipeIngredient,
             amount: existing.amount,
           });
         }
@@ -55,8 +56,8 @@ export function aggregateIngredients(
       } else {
         // First time seeing this ingredient
         const aggregated: AggregatedIngredient = {
-          ...ingredient,
-          totalCost: calculateIngredientCost(ingredient),
+          ...recipeIngredient,
+          totalCost: calculateIngredientCost(recipeIngredient),
         };
         ingredientMap.set(ingredient.id, aggregated);
       }
@@ -108,7 +109,7 @@ export function separateIngredientsByShelf(
   ingredients: AggregatedIngredient[]
 ) {
   return {
-    shelfIngredients: ingredients.filter((ing) => ing.shelf),
-    nonShelfIngredients: ingredients.filter((ing) => !ing.shelf),
+    shelfIngredients: ingredients.filter((ing) => ing.ingredient.shelf),
+    nonShelfIngredients: ingredients.filter((ing) => !ing.ingredient.shelf),
   };
 }

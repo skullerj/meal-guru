@@ -4,18 +4,14 @@ import type { Ingredient } from "../../lib/database";
 import CreateRecipeStep from "./CreateRecipeStep";
 import PdfUploadStep from "./PdfUploadStep";
 import RecipeEditStep from "./RecipeEditStep";
-import type { IngredientFormData } from "./utils/addRecipeReducer";
+import type { EditableIngredient } from "./utils/addRecipeReducer";
 import { addRecipeReducer, createInitialState } from "./utils/addRecipeReducer";
-import {
-  extractTextFromPdf,
-  transformToRecipeJson,
-  validateRecipeForm,
-} from "./utils/addRecipeUtils";
+import { extractTextFromPdf, validateRecipeForm } from "./utils/addRecipeUtils";
 
 export default function AddRecipeForm({
   ingredients: availableIngredients,
 }: {
-  ingredients: Omit<Ingredient, "amount">[];
+  ingredients: Ingredient[];
 }) {
   const [state, dispatch] = useReducer(
     addRecipeReducer,
@@ -73,7 +69,7 @@ export default function AddRecipeForm({
   // Handle ingredient updates
   const handleIngredientUpdate = (
     index: number,
-    ingredient: Partial<IngredientFormData>
+    ingredient: Partial<EditableIngredient>
   ) => {
     dispatch({ type: "UPDATE_INGREDIENT", index, ingredient });
   };
@@ -107,11 +103,6 @@ export default function AddRecipeForm({
   // Handle form reset
   const handleResetForm = () => {
     dispatch({ type: "RESET_FORM" });
-  };
-
-  // Generate JSON for output
-  const getRecipeJson = () => {
-    return transformToRecipeJson(state.recipeName, state.ingredients);
   };
 
   return (
@@ -179,7 +170,8 @@ export default function AddRecipeForm({
 
       {state.currentStep === "output" && (
         <CreateRecipeStep
-          recipeJson={getRecipeJson()}
+          name={state.recipeName}
+          ingredients={state.ingredients}
           onReset={handleResetForm}
           onBackToEdit={() => dispatch({ type: "SET_STEP", step: "edit" })}
         />

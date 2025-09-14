@@ -10,28 +10,26 @@ export default defineAction({
       const processedIngredients = [];
 
       for (let i = 0; i < ingredients.length; i++) {
-        const ingredient = ingredients[i];
+        const recipeIngredient = ingredients[i];
 
-        if (ingredient.isExisting) {
+        const { ingredient, amount } = recipeIngredient;
+
+        if (ingredient?.id) {
           // Use existing ingredient ID
           processedIngredients.push({
             ingredient_id: ingredient.id,
-            amount: ingredient.amount,
+            amount: amount,
             order_index: i,
           });
         } else {
           // Create new ingredient
+
           try {
-            const newIngredient = await createIngredient({
-              name: ingredient.name,
-              unit: ingredient.unit,
-              source: ingredient.source,
-              shelf: ingredient.shelf,
-            });
+            const newIngredient = await createIngredient(ingredient);
 
             processedIngredients.push({
-              ingredient_id: newIngredient.id || ingredient.id,
-              amount: ingredient.amount,
+              ingredient_id: newIngredient.id,
+              amount: amount,
               order_index: i,
             });
           } catch (error) {

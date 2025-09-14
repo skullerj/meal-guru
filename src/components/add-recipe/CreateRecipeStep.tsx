@@ -1,15 +1,25 @@
 import { actions } from "astro:actions";
 import { useState } from "react";
-import type { Recipe } from "../../lib/database";
+import type { EditableIngredient } from "./utils/addRecipeReducer";
 
 interface CreateRecipeStepProps {
-  recipeJson: Omit<Recipe, "created_at">;
+  name: string;
+  ingredients: EditableIngredient[];
   onReset: () => void;
   onBackToEdit: () => void;
 }
 
+export function generateId(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, "-")
+    .substring(0, 20);
+}
+
 export default function CreateRecipeStep({
-  recipeJson,
+  name,
+  ingredients,
   onReset,
   onBackToEdit,
 }: CreateRecipeStepProps) {
@@ -27,9 +37,9 @@ export default function CreateRecipeStep({
 
     try {
       const { data, error: actionError } = await actions.saveRecipe({
-        id: recipeJson.id,
-        name: recipeJson.name,
-        ingredients: recipeJson.ingredients,
+        id: generateId(name),
+        name,
+        ingredients,
       });
 
       if (actionError) {
@@ -101,8 +111,7 @@ export default function CreateRecipeStep({
                   <strong>Name:</strong> {createdRecipe.name}
                 </p>
                 <p>
-                  <strong>Ingredients:</strong> {recipeJson.ingredients.length}{" "}
-                  items
+                  <strong>Ingredients:</strong> {ingredients.length} items
                 </p>
                 <p>
                   <strong>Recipe ID:</strong> {createdRecipe.id}
@@ -208,13 +217,11 @@ export default function CreateRecipeStep({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="bg-blue-50 p-3 rounded">
             <div className="font-medium text-blue-900">Recipe Name</div>
-            <div className="text-blue-700">{recipeJson.name}</div>
+            <div className="text-blue-700">{name}</div>
           </div>
           <div className="bg-green-50 p-3 rounded">
             <div className="font-medium text-green-900">Ingredients</div>
-            <div className="text-green-700">
-              {recipeJson.ingredients.length} items
-            </div>
+            <div className="text-green-700">{ingredients.length} items</div>
           </div>
         </div>
 
@@ -224,17 +231,16 @@ export default function CreateRecipeStep({
             Ingredients:
           </h4>
           <div className="flex flex-wrap gap-2">
-            {recipeJson.ingredients.map((ingredient) => (
+            {ingredients.map(({ ingredient, amount }) => (
               <span
                 key={ingredient.id}
                 className={`px-2 py-1 text-xs rounded-full ${
-                  ingredient.id.includes("existing") ||
-                  ingredient.id.length > 20
+                  ingredient.id
                     ? "bg-green-100 text-green-800" // Reused ingredients
                     : "bg-blue-100 text-blue-800" // New ingredients
                 }`}
               >
-                {ingredient.name} ({ingredient.amount} {ingredient.unit})
+                {ingredient.name} ({amount} {ingredient.unit})
               </span>
             ))}
           </div>

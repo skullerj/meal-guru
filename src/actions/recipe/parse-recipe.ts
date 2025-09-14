@@ -2,38 +2,39 @@ import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import Anthropic from "@anthropic-ai/sdk";
 import { getAllIngredients } from "../../lib/database";
-import type { saveRecipeSchema } from "./schemas";
+import { saveRecipeSchema } from "./schemas";
 
 const getPrompt = (
   existingIngredients: string,
   text: string
 ) => `Extract recipe information from the following text and format it as JSON according to this TypeScript interface:
 
-interface Ingredient {
-  id: string;
-  name: string;
+interface RecipeIngredient {
   amount: number;
-  unit: "g" | "kg" | "ml" | "l" | "tsp" | "tbsp" | "cup" | "oz" | "lb" | "unit";
-  source: {
-    url: string;
-    price: number;
-    amount: number;
-  };
-  shelf: boolean;
-  isExisting?: boolean;
+  ingredient: {
+    id: string;
+    name: string;
+    unit: "g" | "kg" | "ml" | "l" | "tsp" | "tbsp" | "cup" | "oz" | "lb" | "unit";
+    source: {
+      url: string;
+      price: number;
+      amount: number;
+    } | null;
+    shelf: boolean;
+  }
 }
 
 interface Recipe {
   id: string;
   name: string;
-  ingredients: Ingredient[];
+  ingredients: RecipeIngredient[];
 }
 
 Instructions:
-1. **INGREDIENT MATCHING**: First check if ingredients match existing ones in the database (see list below). If found, use the EXACT name, id, unit, and shelf value from the database. Set isExisting: true for these.
-2. **NEW INGREDIENTS**: For ingredients not in database, generate kebab-case IDs (e.g., "soy-sauce", "chicken-breast") and set isExisting: false or omit.
+1. **RECIPE INGREDIENT MATCHING**: First check if the ingredients match existing ones in the database (see list below). If found add a RecipeIngredient and set its "ingredient" field to the found one, othwerwise try to fill the ingredient as best as you can.
+2. **NEW INGREDIENTS**: For ingredients not in database, add an entry into Recipe's ingredient with the matching fields, and fill the ingredient info as best as you can.
 3. **UNITS**: Only use these valid units: "g", "kg", "ml", "l", "tsp", "tbsp", "cup", "oz", "lb", "unit"
-4. **SOURCE FIELD**: Always set url to "", price to 0, amount to 0 (will be filled later)
+4. **SOURCE FIELD**: Set source field to null if the ingredient was not found
 5. **SHELF ITEMS**: Set shelf: true for pantry/spice items (oils, spices, flour, etc.), false for fresh items
 6. **AMOUNTS**: Parse as numbers (convert "1/2" to 0.5, "1 1/2" to 1.5)
 7. **RECIPE ID**: Generate kebab-case ID for recipe
@@ -53,14 +54,7 @@ export default defineAction({
   input: parseRecipeSchema,
   handler: async ({ text }) => {
     try {
-      // Fetch existing ingredients from database
-      let existingIngredients: Awaited<ReturnType<typeof getAllIngredients>> =
-        [];
-      try {
-        existingIngredients = await getAllIngredients();
-      } catch (dbError) {
-        console.warn("Failed to fetch existing ingredients:", dbError);
-      }
+      const existingIngredients = await getAllIngredients();
 
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
       if (!apiKey) {
@@ -102,43 +96,29 @@ export default defineAction({
 
       let parsedRecipe: z.output<typeof saveRecipeSchema>;
       try {
-        parsedRecipe = JSON.parse(responseText);
+        parsedRecipe = saveRecipeSchema.parse(JSON.parse(responseText));
       } catch (_parseError) {
         throw new ActionError({
           code: "BAD_REQUEST",
           message: "Failed to parse recipe from LLM response",
         });
       }
-
-      // Create a lookup map for existing ingredients by name (case-insensitive)
       const ingredientLookup = new Map(
-        existingIngredients.map((ing) => [ing.name.toLowerCase(), ing])
+        existingIngredients.map((ing) => [ing.id, ing])
       );
 
-      // Post-process ingredients to enrich with database source information
-      if (parsedRecipe.ingredients) {
-        parsedRecipe.ingredients = parsedRecipe.ingredients.map(
-          (ingredient) => {
-            const existingIngredient = ingredientLookup.get(
-              ingredient.name.toLowerCase()
-            );
-
-            if (existingIngredient && ingredient.isExisting) {
-              return {
-                ...ingredient,
-                source: existingIngredient.source,
-                name: existingIngredient.name,
-                unit: existingIngredient.unit,
-                shelf: existingIngredient.shelf,
-                id: existingIngredient.id,
-                created_at: existingIngredient.created_at,
-              };
-            }
-
-            return ingredient;
-          }
-        );
-      }
+      parsedRecipe.ingredients = parsedRecipe.ingredients.map((ing) => {
+        const existing = ing.ingredient?.id
+          ? ingredientLookup.get(ing.ingredient?.id)
+          : null;
+        if (existing) {
+          return {
+            ...ing,
+            ingredient: existing,
+          };
+        }
+        return ing;
+      });
 
       return parsedRecipe;
     } catch (error) {

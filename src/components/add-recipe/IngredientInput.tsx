@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import type { Ingredient } from "../../lib/database";
-import type { IngredientFormData } from "./utils/addRecipeReducer";
+import type { EditableIngredient } from "./utils/addRecipeReducer";
 import {
   ALLOWED_UNITS,
   filterIngredientsForAutocomplete,
 } from "./utils/addRecipeUtils";
 
 interface IngredientInputProps {
-  ingredient: IngredientFormData;
+  ingredient: EditableIngredient;
   index: number;
   availableIngredients: Omit<Ingredient, "amount">[];
-  onUpdate: (index: number, ingredient: Partial<IngredientFormData>) => void;
+  onUpdate: (index: number, ingredient: Partial<EditableIngredient>) => void;
   onRemove: (index: number) => void;
 }
 
 export default function IngredientInput({
-  ingredient,
+  ingredient: recipeIngredient,
   index,
   availableIngredients,
   onUpdate,
@@ -27,6 +27,7 @@ export default function IngredientInput({
   );
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const { ingredient } = recipeIngredient;
 
   // Update suggestions based on name input
   useEffect(() => {
@@ -37,14 +38,12 @@ export default function IngredientInput({
         5
       );
       setSuggestions(filtered);
-      setShowSuggestions(
-        filtered.length > 0 && !ingredient.existingIngredientId
-      );
+      setShowSuggestions(filtered.length > 0 && !ingredient.id);
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
     }
-  }, [ingredient.name, availableIngredients, ingredient.existingIngredientId]);
+  }, [ingredient?.name, availableIngredients, ingredient.id]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -67,21 +66,15 @@ export default function IngredientInput({
 
   const handleNameChange = (name: string) => {
     onUpdate(index, {
-      name,
-      existingIngredientId: undefined, // Clear existing ingredient reference
+      ingredient: { ...recipeIngredient.ingredient, id: "", name },
     });
   };
 
   const handleSuggestionSelect = (
     selectedIngredient: Omit<Ingredient, "amount">
   ) => {
-    // Pre-fill with existing ingredient data
     onUpdate(index, {
-      name: selectedIngredient.name,
-      unit: selectedIngredient.unit,
-      shelf: selectedIngredient.shelf,
-      source: selectedIngredient.source,
-      existingIngredientId: selectedIngredient.id,
+      ingredient: selectedIngredient,
     });
     setShowSuggestions(false);
   };
@@ -91,23 +84,31 @@ export default function IngredientInput({
   };
 
   const handleUnitChange = (unit: string) => {
-    onUpdate(index, { unit: unit as Ingredient["unit"] });
-  };
-
-  const handleShelfChange = (shelf: boolean) => {
-    onUpdate(index, { shelf });
-  };
-
-  const handleSourceChange = (sourceField: string, value: string | number) => {
     onUpdate(index, {
-      source: {
-        ...ingredient.source,
-        [sourceField]: value,
+      ingredient: {
+        ...recipeIngredient.ingredient,
+        unit: unit as Ingredient["unit"],
       },
     });
   };
 
-  const isUsingExistingIngredient = Boolean(ingredient.existingIngredientId);
+  const handleShelfChange = (shelf: boolean) => {
+    onUpdate(index, { ingredient: { ...recipeIngredient.ingredient, shelf } });
+  };
+
+  const handleSourceChange = (sourceField: string, value: string | number) => {
+    onUpdate(index, {
+      ingredient: {
+        ...recipeIngredient.ingredient,
+        source: {
+          ...recipeIngredient.ingredient.source,
+          [sourceField]: value,
+        },
+      },
+    });
+  };
+
+  const isUsingExistingIngredient = Boolean(recipeIngredient.ingredient.id);
 
   return (
     <div className="border border-gray-200 p-4 rounded-md">
@@ -197,7 +198,7 @@ export default function IngredientInput({
             id={`ingredient-amount-${index}`}
             type="number"
             step="0.1"
-            value={ingredient.amount || ""}
+            value={recipeIngredient.amount || ""}
             onChange={(e) =>
               handleAmountChange(parseFloat(e.target.value) || 0)
             }
@@ -220,7 +221,6 @@ export default function IngredientInput({
             onChange={(e) => handleUnitChange(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             required
-            disabled={isUsingExistingIngredient}
           >
             {ALLOWED_UNITS.map((unit) => (
               <option key={unit} value={unit}>
@@ -238,115 +238,76 @@ export default function IngredientInput({
               checked={ingredient.shelf}
               onChange={(e) => handleShelfChange(e.target.checked)}
               className="mr-2"
-              disabled={isUsingExistingIngredient}
             />
             Shelf item
           </label>
         </div>
       </div>
 
-      {/* Source Information - only show for new ingredients */}
-      {!isUsingExistingIngredient && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">
-            Source Information (Required for new ingredients)
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-gray-50 rounded-md">
-            <div>
-              <label
-                htmlFor={`ingredient-url-${index}`}
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Store URL
-              </label>
-              <input
-                id={`ingredient-url-${index}`}
-                type="url"
-                value={ingredient.source.url}
-                onChange={(e) => handleSourceChange("url", e.target.value)}
-                placeholder="https://store.com/product"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor={`ingredient-price-${index}`}
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Store Price (£)
-              </label>
-              <input
-                id={`ingredient-price-${index}`}
-                type="number"
-                step="0.01"
-                value={ingredient.source.price || ""}
-                onChange={(e) =>
-                  handleSourceChange("price", parseFloat(e.target.value) || 0)
-                }
-                placeholder="0.00"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor={`ingredient-store-amount-${index}`}
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Store Amount
-              </label>
-              <input
-                id={`ingredient-store-amount-${index}`}
-                type="number"
-                step="0.1"
-                value={ingredient.source.amount || ""}
-                onChange={(e) =>
-                  handleSourceChange("amount", parseFloat(e.target.value) || 0)
-                }
-                placeholder="Amount sold at store"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
+      <div className="mt-4">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">
+          Source Information (Required for new ingredients)
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-gray-50 rounded-md">
+          <div>
+            <label
+              htmlFor={`ingredient-url-${index}`}
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Store URL
+            </label>
+            <input
+              id={`ingredient-url-${index}`}
+              type="url"
+              value={ingredient.source.url}
+              onChange={(e) => handleSourceChange("url", e.target.value)}
+              placeholder="https://store.com/product"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor={`ingredient-price-${index}`}
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Store Price (£)
+            </label>
+            <input
+              id={`ingredient-price-${index}`}
+              type="number"
+              step="0.01"
+              value={ingredient.source.price || ""}
+              onChange={(e) =>
+                handleSourceChange("price", parseFloat(e.target.value) || 0)
+              }
+              placeholder="0.00"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor={`ingredient-store-amount-${index}`}
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Store Amount
+            </label>
+            <input
+              id={`ingredient-store-amount-${index}`}
+              type="number"
+              step="0.1"
+              value={ingredient.source.amount || ""}
+              onChange={(e) =>
+                handleSourceChange("amount", parseFloat(e.target.value) || 0)
+              }
+              placeholder="Amount sold at store"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
           </div>
         </div>
-      )}
-
-      {/* Show existing ingredient source info as read-only */}
-      {isUsingExistingIngredient && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">
-            Source Information (From existing ingredient)
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-blue-50 rounded-md">
-            <div>
-              <p className="block text-sm font-medium text-gray-700 mb-1">
-                Store URL
-              </p>
-              <p className="text-sm text-gray-600 break-all">
-                {ingredient.source.url}
-              </p>
-            </div>
-            <div>
-              <p className="block text-sm font-medium text-gray-700 mb-1">
-                Store Price (£)
-              </p>
-              <p className="text-sm text-gray-600">
-                £{ingredient.source.price.toFixed(2)}
-              </p>
-            </div>
-            <div>
-              <p className="block text-sm font-medium text-gray-700 mb-1">
-                Store Amount
-              </p>
-              <p className="text-sm text-gray-600">
-                {ingredient.source.amount}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
