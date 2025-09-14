@@ -1,0 +1,27 @@
+---
+import EditRecipeForm from "../../../components/edit-recipe/EditRecipeForm";
+import Layout from "../../../layouts/Layout.astro";
+import { getRecipeById } from "../../../lib/database";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return new Response(null, {
+    status: 404,
+    statusText: "Recipe not found",
+  });
+}
+
+const recipe = await getRecipeById(id);
+
+if (!recipe) {
+  return new Response(null, {
+    status: 404,
+    statusText: "Recipe not found",
+  });
+}
+---
+
+<Layout title={`Edit ${recipe.name} | Meal Guru`}>
+    <EditRecipeForm recipe={recipe} client:load />
+</Layout>

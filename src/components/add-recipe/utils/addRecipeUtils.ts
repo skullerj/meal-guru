@@ -1,5 +1,5 @@
-import type { Ingredient, Recipe } from "../../lib/database";
-import type { Constants } from "../../types/database";
+import type { Ingredient, Recipe } from "../../../lib/database";
+import type { Constants } from "../../../types/database";
 import type { IngredientFormData } from "./addRecipeReducer";
 
 export interface ValidationResult {

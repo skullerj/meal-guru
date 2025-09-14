@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Ingredient } from "../lib/database";
+import type { Ingredient } from "../../lib/database";
 import type { IngredientFormData } from "./utils/addRecipeReducer";
 import {
   ALLOWED_UNITS,

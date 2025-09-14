@@ -1,6 +1,6 @@
 import { actions } from "astro:actions";
 import { useReducer } from "react";
-import type { Ingredient } from "../lib/database";
+import type { Ingredient } from "../../lib/database";
 import CreateRecipeStep from "./CreateRecipeStep";
 import PdfUploadStep from "./PdfUploadStep";
 import RecipeEditStep from "./RecipeEditStep";

@@ -1,4 +1,4 @@
-import type { Ingredient, Recipe } from "../../lib/database";
+import type { Ingredient, Recipe } from "../../../lib/database";
 
 export interface IngredientFormData extends Ingredient {
   // For autocomplete - reference to existing ingredient if reused

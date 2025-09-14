@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import type { Recipe } from "../data/recipes";
+import type { Recipe } from "../../data/recipes";
 import LeftToBuyColumn from "./LeftToBuyColumn";
 import RecipeColumn from "./RecipeColumn";
 import ShoppingColumn from "./ShoppingColumn";

@@ -1,17 +1,19 @@
-import type { Ingredient, Recipe } from "../../data/recipes";
+import type { Recipe } from "../../../data/recipes";
+import type { RecipeIngredient } from "../../../lib/database";
 
-export interface AggregatedIngredient extends Ingredient {
+export interface AggregatedIngredient extends RecipeIngredient {
   totalCost: number;
 }
 
 /**
  * Calculate the cost of an ingredient based on amount needed vs source amount
  */
-export function calculateIngredientCost(ingredient: Ingredient): number {
-  const { amount: needed, source, shelf } = ingredient;
-  const { amount: sourceAmount, price: sourcePrice } = source;
+export function calculateIngredientCost(ingredient: RecipeIngredient): number {
+  const { amount: needed } = ingredient;
+  const { amount: sourceAmount, price: sourcePrice } =
+    ingredient.ingredient.source;
 
-  if (shelf) {
+  if (ingredient.ingredient.shelf) {
     return sourcePrice;
   }
   // Calculate cost per unit

@@ -1,4 +1,4 @@
-import type { Recipe } from "../../data/recipes";
+import type { Recipe } from "../../../data/recipes";
 import {
   type AggregatedIngredient,
   aggregateIngredients,

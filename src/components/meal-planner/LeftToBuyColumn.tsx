@@ -46,6 +46,24 @@ export default function LeftToBuyColumn({
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Left to Buy</h2>
 
+      {/* Price summary */}
+      <div className="border-t border-gray-200 pt-4 space-y-2">
+        <div className="flex justify-between text-lg font-semibold">
+          <span>Total:</span>
+          <span className="text-green-600">£{totalPrice.toFixed(2)}</span>
+        </div>
+
+        {remainingToTarget > 0 ? (
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Remaining to £{targetAmount}:</span>
+            <span>£{remainingToTarget.toFixed(2)}</span>
+          </div>
+        ) : (
+          <div className="text-sm text-green-600 text-center">
+            ✅ Target of £{targetAmount} reached!
+          </div>
+        )}
+      </div>
       {/* Fresh ingredients */}
       {nonShelfIngredients.length > 0 && (
         <div className="mb-6">
@@ -53,7 +71,7 @@ export default function LeftToBuyColumn({
             Fresh Ingredients
           </h3>
           <div className="space-y-2">
-            {nonShelfIngredients.map((ingredient) => (
+            {nonShelfIngredients.map(({ ingredient, totalCost, amount }) => (
               <div
                 key={ingredient.id}
                 className="border border-gray-200 rounded-lg p-3"
@@ -66,19 +84,17 @@ export default function LeftToBuyColumn({
                     <p className="text-sm text-gray-600">
                       <span>
                         Buy&nbsp;
-                        {Math.ceil(
-                          ingredient.amount / ingredient.source.amount
-                        )}
+                        {Math.ceil(amount / ingredient.source.amount)}
                         &nbsp;
                       </span>
                       <span>
-                        ({ingredient.amount} {ingredient.unit} needed)
+                        ({amount} {ingredient.unit} needed)
                       </span>
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-gray-700">
-                      £{ingredient.totalCost.toFixed(2)}
+                      £{totalCost.toFixed(2)}
                     </p>
                     <a
                       href={ingredient.source.url}
@@ -104,7 +120,7 @@ export default function LeftToBuyColumn({
             Pantry Items
           </h3>
           <div className="space-y-2">
-            {shelfIngredients.map((ingredient) => (
+            {shelfIngredients.map(({ totalCost, ingredient, amount }) => (
               <div
                 key={ingredient.id}
                 className="border border-gray-200 rounded-lg p-3"
@@ -115,12 +131,12 @@ export default function LeftToBuyColumn({
                       {ingredient.name}
                     </h4>
                     <p className="text-sm text-gray-600">
-                      {ingredient.amount} {ingredient.unit}
+                      {amount} {ingredient.unit}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-gray-700">
-                      £{ingredient.totalCost.toFixed(2)}
+                      £{totalCost.toFixed(2)}
                     </p>
                     <a
                       href={ingredient.source.url}
@@ -138,25 +154,6 @@ export default function LeftToBuyColumn({
           </div>
         </div>
       )}
-
-      {/* Price summary */}
-      <div className="border-t border-gray-200 pt-4 space-y-2">
-        <div className="flex justify-between text-lg font-semibold">
-          <span>Total:</span>
-          <span className="text-green-600">£{totalPrice.toFixed(2)}</span>
-        </div>
-
-        {remainingToTarget > 0 ? (
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Remaining to £{targetAmount}:</span>
-            <span>£{remainingToTarget.toFixed(2)}</span>
-          </div>
-        ) : (
-          <div className="text-sm text-green-600 text-center">
-            ✅ Target of £{targetAmount} reached!
-          </div>
-        )}
-      </div>
     </div>
   );
 }

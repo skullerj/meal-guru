@@ -1,41 +1,84 @@
 import { z } from "zod";
-import type { Database } from "../types/database";
+import type { Database, Tables } from "../types/database";
 import { supabase } from "./supabase";
 
-const sourceSchema = z.object({
+export const sourceSchema = z.object({
   url: z.string().url(),
   price: z.number(),
   amount: z.number(),
 });
 
 export type Source = z.infer<typeof sourceSchema>;
-// Extract types from generated Database type
-export type RecipeIngredient =
+
+// Database table types
+export type DBRecipeIngredient =
   Database["public"]["Tables"]["recipe_ingredients"]["Row"];
-export type Ingredient = Omit<
-  Database["public"]["Tables"]["ingredients"]["Row"],
-  "source"
-> &
-  Pick<RecipeIngredient, "amount"> & { source: Source };
-export type Recipe = Database["public"]["Tables"]["recipes"]["Row"] & {
-  ingredients: Ingredient[];
+export type DBIngredient = Database["public"]["Tables"]["ingredients"]["Row"];
+
+// Application types for ingredients
+export type Ingredient = Omit<DBIngredient, "source"> & { source: Source };
+
+// Recipe ingredient with nested ingredient data (for edit recipe functionality)
+export type RecipeIngredient = {
+  id: string; // recipe_ingredients.id
+  amount: number; // recipe_ingredients.amount
+  order_index: number; // recipe_ingredients.order_index
+  ingredient: Ingredient; // Full ingredient data
 };
+
+// Legacy flattened ingredient type (for backward compatibility)
+export type FlatIngredient = Ingredient & Pick<DBRecipeIngredient, "amount">;
+
+export type Recipe = Database["public"]["Tables"]["recipes"]["Row"] & {
+  ingredients: RecipeIngredient[];
+};
+
+const recipeSelect = `
+*,
+recipe_ingredients!inner (
+  id,
+  amount,
+  order_index,
+  ingredients (*)
+)
+`;
+
+function parseDBRecipe(
+  dbRecipe: Tables<"recipes"> & {
+    recipe_ingredients: (Omit<
+      Tables<"recipe_ingredients">,
+      "recipe_id" | "ingredient_id"
+    > & {
+      ingredients: Tables<"ingredients">;
+    })[];
+  }
+): Recipe {
+  const ingredients: RecipeIngredient[] = dbRecipe.recipe_ingredients
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((recipeIng) => ({
+      id: recipeIng.id,
+      amount: recipeIng.amount,
+      order_index: recipeIng.order_index,
+      ingredient: {
+        ...recipeIng.ingredients,
+        source: sourceSchema.parse(recipeIng.ingredients.source),
+      },
+    }));
+
+  return {
+    id: dbRecipe.id,
+    name: dbRecipe.name,
+    created_at: dbRecipe.created_at,
+    ingredients,
+  };
+}
 
 // Get all recipes with their ingredients
 export async function getRecipes(): Promise<Recipe[]> {
   // Get recipes with their ingredients
   const { data: recipeData, error: recipeError } = await supabase
     .from("recipes")
-    .select(
-      `
-      *,
-      recipe_ingredients!inner (
-        amount,
-        order_index,
-        ingredients (*)
-      )
-    `
-    )
+    .select(recipeSelect)
     .order("name");
 
   if (recipeError) {
@@ -46,22 +89,7 @@ export async function getRecipes(): Promise<Recipe[]> {
   if (!recipeData) return [];
 
   // Convert to app format
-  const recipes = recipeData.map((dbRecipe) => {
-    const ingredients = dbRecipe.recipe_ingredients
-      .sort((a, b) => a.order_index - b.order_index)
-      .map((ing) => ({
-        ...ing.ingredients,
-        amount: ing.amount,
-        source: sourceSchema.parse(ing.ingredients.source),
-      }));
-
-    return {
-      id: dbRecipe.id,
-      name: dbRecipe.name,
-      created_at: dbRecipe.created_at,
-      ingredients,
-    };
-  });
+  const recipes = recipeData.map(parseDBRecipe);
 
   return recipes;
 }
@@ -146,8 +174,12 @@ export async function createRecipe(
 
 // Get a single recipe by ID
 export async function getRecipeById(id: string): Promise<Recipe | null> {
-  const recipes = await getRecipes();
-  return recipes.find((recipe) => recipe.id === id) || null;
+  const { data } = await supabase
+    .from("recipes")
+    .select(recipeSelect)
+    .eq("id", id);
+  if (!data?.[0]) return null;
+  return parseDBRecipe(data[0]);
 }
 
 // Get all ingredients for autocomplete and ingredient reuse

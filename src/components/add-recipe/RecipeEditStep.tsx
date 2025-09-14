@@ -1,4 +1,4 @@
-import type { Ingredient } from "../lib/database";
+import type { Ingredient } from "../../lib/database";
 import IngredientInput from "./IngredientInput";
 import type { IngredientFormData } from "./utils/addRecipeReducer";
 

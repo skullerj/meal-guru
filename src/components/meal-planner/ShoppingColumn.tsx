@@ -44,16 +44,16 @@ function IngredientItem({
         />
         <div className="flex-1">
           <div className="flex justify-between items-start">
-            <div>
+            <div className="text-start">
               <h4
                 className={`font-medium ${isOwned ? "text-green-900" : "text-gray-900"}`}
               >
-                {ingredient.name}
+                {ingredient.ingredient.name}
               </h4>
               <p
                 className={`text-sm ${isOwned ? "text-green-700" : "text-gray-600"}`}
               >
-                {ingredient.amount} {ingredient.unit}
+                {ingredient.amount} {ingredient.ingredient.unit}
               </p>
             </div>
             <p

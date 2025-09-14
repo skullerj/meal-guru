@@ -1,6 +1,6 @@
 import { actions } from "astro:actions";
 import { useState } from "react";
-import type { Recipe } from "../lib/database";
+import type { Recipe } from "../../lib/database";
 
 interface CreateRecipeStepProps {
   recipeJson: Omit<Recipe, "created_at">;

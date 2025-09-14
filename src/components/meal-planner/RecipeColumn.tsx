@@ -1,4 +1,4 @@
-import type { Recipe } from "../data/recipes";
+import type { Recipe } from "../../data/recipes";
 import { calculateRecipePrice } from "./utils/mealPlannerUtils";
 
 interface RecipeColumnProps {
@@ -47,13 +47,41 @@ export default function RecipeColumn({
                   className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{recipe.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {recipe.ingredients.length} ingredients
-                  </p>
-                  <p className="text-lg font-medium text-green-600 mt-2">
-                    £{recipePrice.toFixed(2)}
-                  </p>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {recipe.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {recipe.ingredients.length} ingredients
+                      </p>
+                      <p className="text-lg font-medium text-green-600 mt-2">
+                        £{recipePrice.toFixed(2)}
+                      </p>
+                    </div>
+                    <a
+                      href={`/recipe/${recipe.id}/edit`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Edit recipe"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-label="Edit recipe"
+                        role="graphics-symbol"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
