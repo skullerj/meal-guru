@@ -54,10 +54,11 @@ export default function IngredientListColumn({
         ) : (
           <div className="space-y-2">
             {sortedIngredients.map((ingredient) => (
-              <button
+              // biome-ignore lint/a11y/useSemanticElements: Need to place a div as the container for full area clickable
+              <div
                 key={ingredient.id}
-                type="button"
-                disabled={ingredient.isDeleted}
+                role="button"
+                tabIndex={0}
                 className={`w-full p-3 rounded-lg border transition-all text-left ${
                   ingredient.isDeleted
                     ? "bg-red-50 border-red-200 opacity-60 cursor-not-allowed"
@@ -72,6 +73,12 @@ export default function IngredientListColumn({
                 onClick={() =>
                   !ingredient.isDeleted && onIngredientSelect(ingredient.id)
                 }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onIngredientSelect(ingredient.id);
+                  }
+                }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
@@ -173,7 +180,7 @@ export default function IngredientListColumn({
                     )}
                   </div>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}
