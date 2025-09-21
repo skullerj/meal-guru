@@ -1,7 +1,7 @@
 ---
 import EditRecipeForm from "../../../components/edit-recipe/EditRecipeForm";
 import Layout from "../../../layouts/Layout.astro";
-import { getRecipeById } from "../../../lib/database";
+import { getAllIngredients, getRecipeById } from "../../../lib/database";
 
 const { id } = Astro.params;
 
@@ -13,6 +13,7 @@ if (!id) {
 }
 
 const recipe = await getRecipeById(id);
+const availableIngredients = await getAllIngredients();
 
 if (!recipe) {
   return new Response(null, {
@@ -23,5 +24,5 @@ if (!recipe) {
 ---
 
 <Layout title={`Edit ${recipe.name} | Meal Guru`}>
-    <EditRecipeForm recipe={recipe} client:load />
+    <EditRecipeForm recipe={recipe} availableIngredients={availableIngredients} client:load />
 </Layout>

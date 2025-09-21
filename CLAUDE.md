@@ -312,3 +312,4 @@ This architecture provides:
 - Always keep CLAUDE.md up to date when adding new libraries
 - The objective of this app is to minimize waste when the user makes their shopping online using Ocado. For that, we first need to parse recipes and allow the user to input the current source information (url,amount and price) so we can compute the excess and use it to group the recipe with other recipes that might use that excess.
 - Commits need to start with the following prefixes: fix, feat, chore depending on the category of the work. example: feat: add new button to reset selection
+- For type checking use npx astro check

@@ -3,6 +3,7 @@ import type { Recipe, RecipeIngredient } from "../../../lib/database";
 export interface EditableRecipeIngredient extends RecipeIngredient {
   isModified: boolean;
   isDeleted: boolean;
+  isNew?: boolean;
   originalAmount?: number;
   originalIngredient?: RecipeIngredient["ingredient"];
 }
@@ -43,9 +44,10 @@ export function hasUnsavedChanges(
     return true;
   }
 
-  // Check if any ingredient is modified or deleted
+  // Check if any ingredient is modified, deleted, or new
   return currentIngredients.some(
-    (ingredient) => ingredient.isModified || ingredient.isDeleted
+    (ingredient) =>
+      ingredient.isModified || ingredient.isDeleted || ingredient.isNew
   );
 }
 
@@ -137,6 +139,40 @@ export function getActiveIngredients(
   ingredients: EditableRecipeIngredient[]
 ): EditableRecipeIngredient[] {
   return ingredients.filter((ingredient) => !ingredient.isDeleted);
+}
+
+// Get new ingredients that need to be created
+export function getNewIngredients(
+  ingredients: EditableRecipeIngredient[]
+): EditableRecipeIngredient[] {
+  return ingredients.filter(
+    (ingredient) => ingredient.isNew && !ingredient.isDeleted
+  );
+}
+
+// Create a new empty ingredient for adding
+export function createNewIngredient(): EditableRecipeIngredient {
+  const tempId = `new_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  return {
+    id: tempId,
+    amount: 1,
+    order_index: 0,
+    ingredient: {
+      id: "",
+      name: "",
+      unit: "unit",
+      shelf: false,
+      source: {
+        url: "",
+        price: 0,
+        amount: 0,
+      },
+      created_at: new Date().toISOString(),
+    },
+    isModified: false,
+    isDeleted: false,
+    isNew: true,
+  };
 }
 
 // Check if ingredient has valid changes

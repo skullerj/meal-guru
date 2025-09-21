@@ -1,11 +1,17 @@
 import { ActionError, defineAction } from "astro:actions";
-import { getRecipeById } from "../../lib/database";
+import { createIngredient, getRecipeById } from "../../lib/database";
 import { supabase } from "../../lib/supabase";
 import { editRecipeSchema } from "./schemas";
 
 export default defineAction({
   input: editRecipeSchema,
-  handler: async ({ id, name, ingredientsToUpdate, ingredientsToDelete }) => {
+  handler: async ({
+    id,
+    name,
+    ingredientsToUpdate,
+    ingredientsToDelete,
+    ingredientsToAdd,
+  }) => {
     try {
       if (name) {
         await supabase.from("recipes").update({ name }).eq("id", id);
@@ -36,6 +42,39 @@ export default defineAction({
           .from("recipe_ingredients")
           .delete()
           .in("id", ingredientsToDelete);
+      }
+
+      // Add new ingredients if provided
+      if (ingredientsToAdd?.length) {
+        // Get current recipe to determine next order_index
+        const currentRecipe = await getRecipeById(id);
+        if (!currentRecipe) {
+          throw new Error("Recipe not found");
+        }
+
+        let nextOrderIndex =
+          Math.max(
+            ...currentRecipe.ingredients.map((ing) => ing.order_index),
+            -1
+          ) + 1;
+
+        for (const newIngredient of ingredientsToAdd) {
+          // Create or reuse the ingredient
+          const ingredient = await createIngredient({
+            name: newIngredient.ingredient.name,
+            unit: newIngredient.ingredient.unit,
+            shelf: newIngredient.ingredient.shelf,
+            source: newIngredient.ingredient.source,
+          });
+
+          // Add the recipe_ingredient relationship
+          await supabase.from("recipe_ingredients").insert({
+            recipe_id: id,
+            ingredient_id: ingredient.id,
+            amount: newIngredient.amount,
+            order_index: nextOrderIndex++,
+          });
+        }
       }
 
       return getRecipeById(id);

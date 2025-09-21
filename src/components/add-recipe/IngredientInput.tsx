@@ -1,10 +1,7 @@
-import { useEffect, useRef, useState } from "react";
 import type { Ingredient } from "../../lib/database";
+import SearchIngredientInput from "../shared/SearchIngredientInput";
 import type { EditableIngredient } from "./utils/addRecipeReducer";
-import {
-  ALLOWED_UNITS,
-  filterIngredientsForAutocomplete,
-} from "./utils/addRecipeUtils";
+import { ALLOWED_UNITS } from "./utils/addRecipeUtils";
 
 interface IngredientInputProps {
   ingredient: EditableIngredient;
@@ -21,48 +18,7 @@ export default function IngredientInput({
   onUpdate,
   onRemove,
 }: IngredientInputProps) {
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<Omit<Ingredient, "amount">[]>(
-    []
-  );
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
   const { ingredient } = recipeIngredient;
-
-  // Update suggestions based on name input
-  useEffect(() => {
-    if (ingredient.name && ingredient.name.length > 1) {
-      const filtered = filterIngredientsForAutocomplete(
-        availableIngredients,
-        ingredient.name,
-        5
-      );
-      setSuggestions(filtered);
-      setShowSuggestions(filtered.length > 0 && !ingredient.id);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-  }, [ingredient?.name, availableIngredients, ingredient.id]);
-
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const handleNameChange = (name: string) => {
     onUpdate(index, {
@@ -70,13 +26,12 @@ export default function IngredientInput({
     });
   };
 
-  const handleSuggestionSelect = (
+  const handleIngredientSelect = (
     selectedIngredient: Omit<Ingredient, "amount">
   ) => {
     onUpdate(index, {
       ingredient: selectedIngredient,
     });
-    setShowSuggestions(false);
   };
 
   const handleAmountChange = (amount: number) => {
@@ -144,47 +99,18 @@ export default function IngredientInput({
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Name field with autocomplete */}
-        <div className="relative">
-          <label
-            htmlFor={`ingredient-name-${index}`}
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Name
-          </label>
-          <input
-            id={`ingredient-name-${index}`}
-            ref={inputRef}
-            type="text"
-            value={ingredient.name}
-            onChange={(e) => handleNameChange(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            required
-            placeholder="Start typing ingredient name..."
-          />
-
-          {/* Autocomplete suggestions */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div
-              ref={suggestionsRef}
-              className="absolute z-10 mt-1 w-full bg-white shadow-lg border border-gray-300 rounded-md max-h-60 overflow-auto"
-            >
-              {suggestions.map((suggestion) => (
-                <button
-                  key={suggestion.id}
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 border-b border-gray-100 last:border-b-0"
-                  onClick={() => handleSuggestionSelect(suggestion)}
-                >
-                  <div className="font-medium">{suggestion.name}</div>
-                  <div className="text-sm text-gray-500">
-                    Unit: {suggestion.unit} | Shelf:{" "}
-                    {suggestion.shelf ? "Yes" : "No"}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <SearchIngredientInput
+          value={ingredient.name}
+          availableIngredients={availableIngredients}
+          selectedIngredient={
+            ingredient.id ? (ingredient as Omit<Ingredient, "amount">) : null
+          }
+          onIngredientChange={handleNameChange}
+          onIngredientSelect={handleIngredientSelect}
+          id={`ingredient-name-${index}`}
+          label="Name"
+          required={true}
+        />
 
         {/* Recipe Amount */}
         <div>

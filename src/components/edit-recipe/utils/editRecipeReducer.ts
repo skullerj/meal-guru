@@ -2,6 +2,7 @@ import type { Recipe } from "../../../lib/database";
 import {
   checkAndMarkIngredientModified,
   createEditableIngredients,
+  createNewIngredient,
   type EditableRecipeIngredient,
   hasUnsavedChanges,
   revertIngredient,
@@ -35,6 +36,8 @@ export type EditRecipeAction =
   | { type: "DELETE_INGREDIENT"; ingredientId: string }
   | { type: "RESTORE_INGREDIENT"; ingredientId: string }
   | { type: "RESET_INGREDIENT"; ingredientId: string }
+  | { type: "ADD_INGREDIENT" }
+  | { type: "ADD_COMPLETE_INGREDIENT"; ingredient: EditableRecipeIngredient }
   | { type: "RESET_ALL_CHANGES" }
   | { type: "SET_LOADING"; isLoading: boolean }
   | { type: "SET_ERROR"; error: string | null };
@@ -178,6 +181,45 @@ export function editRecipeReducer(
       const newState = {
         ...state,
         ingredients: updatedIngredients,
+      };
+
+      // Update unsaved changes flag
+      newState.hasUnsavedChanges = hasUnsavedChanges(
+        state.originalRecipe,
+        state.recipeName,
+        updatedIngredients
+      );
+
+      return newState;
+    }
+
+    case "ADD_INGREDIENT": {
+      const newIngredient = createNewIngredient();
+      const updatedIngredients = [...state.ingredients, newIngredient];
+
+      const newState = {
+        ...state,
+        ingredients: updatedIngredients,
+        selectedIngredientId: newIngredient.id,
+      };
+
+      // Update unsaved changes flag
+      newState.hasUnsavedChanges = hasUnsavedChanges(
+        state.originalRecipe,
+        state.recipeName,
+        updatedIngredients
+      );
+
+      return newState;
+    }
+
+    case "ADD_COMPLETE_INGREDIENT": {
+      const updatedIngredients = [...state.ingredients, action.ingredient];
+
+      const newState = {
+        ...state,
+        ingredients: updatedIngredients,
+        selectedIngredientId: action.ingredient.id,
       };
 
       // Update unsaved changes flag

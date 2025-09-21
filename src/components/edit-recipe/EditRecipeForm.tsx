@@ -1,6 +1,7 @@
 import { actions } from "astro:actions";
 import { useReducer, useState } from "react";
-import type { Recipe } from "../../lib/database";
+import type { Ingredient, Recipe } from "../../lib/database";
+import AddIngredientForm from "./AddIngredientForm";
 import EditRecipeHeader from "./EditRecipeHeader";
 import IngredientEditForm from "./IngredientEditForm";
 import IngredientListColumn from "./IngredientListColumn";
@@ -13,20 +14,25 @@ import {
   getActiveIngredients,
   getDeletedIngredients,
   getModifiedIngredients,
+  getNewIngredients,
   validateRecipeForm,
 } from "./utils/editRecipeUtils";
 
 interface EditRecipeFormProps {
   recipe: Recipe;
+  availableIngredients: Ingredient[];
 }
 
-export default function EditRecipeForm({ recipe }: EditRecipeFormProps) {
+export default function EditRecipeForm({
+  recipe,
+  availableIngredients,
+}: EditRecipeFormProps) {
   const [state, dispatch] = useReducer(
     editRecipeReducer,
     createInitialState(recipe)
   );
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-
+  const [showAddIngredientForm, setShowAddIngredientForm] = useState(false);
   // Handler functions
   const handleRecipeNameChange = (name: string) => {
     dispatch({ type: "SET_RECIPE_NAME", name });
@@ -58,6 +64,20 @@ export default function EditRecipeForm({ recipe }: EditRecipeFormProps) {
   const handleResetAll = () => {
     dispatch({ type: "RESET_ALL_CHANGES" });
     setValidationErrors([]);
+  };
+
+  const handleShowAddIngredientForm = () => {
+    setShowAddIngredientForm(true);
+  };
+
+  const handleAddIngredientSubmit = (ingredient: EditableRecipeIngredient) => {
+    // Add the complete ingredient directly to the state
+    dispatch({ type: "ADD_COMPLETE_INGREDIENT", ingredient });
+    setShowAddIngredientForm(false);
+  };
+
+  const handleAddIngredientCancel = () => {
+    setShowAddIngredientForm(false);
   };
 
   const handleSave = async () => {
@@ -95,6 +115,20 @@ export default function EditRecipeForm({ recipe }: EditRecipeFormProps) {
         );
       }
 
+      // Add new ingredients
+      const newIngredients = getNewIngredients(state.ingredients);
+      if (newIngredients.length > 0) {
+        actionInput.ingredientsToAdd = newIngredients.map((ingredient) => ({
+          amount: ingredient.amount,
+          ingredient: {
+            name: ingredient.ingredient.name,
+            unit: ingredient.ingredient.unit,
+            shelf: ingredient.ingredient.shelf,
+            source: ingredient.ingredient.source,
+          },
+        }));
+      }
+
       // Call the edit recipe action
       const { error } = await actions.editRecipe(actionInput);
 
@@ -103,7 +137,7 @@ export default function EditRecipeForm({ recipe }: EditRecipeFormProps) {
       }
 
       // Success - redirect to the recipe page
-      window.location.href = `/recipe/${recipe.id}`;
+      window.location.href = `/`;
     } catch (error) {
       console.error("Error saving recipe:", error);
       dispatch({
@@ -127,7 +161,6 @@ export default function EditRecipeForm({ recipe }: EditRecipeFormProps) {
         recipeName={state.recipeName}
         hasUnsavedChanges={state.hasUnsavedChanges}
         isLoading={state.isLoading}
-        recipeId={recipe.id}
         onRecipeNameChange={handleRecipeNameChange}
         onSave={handleSave}
         onReset={handleResetAll}
@@ -179,6 +212,7 @@ export default function EditRecipeForm({ recipe }: EditRecipeFormProps) {
             onIngredientSelect={handleIngredientSelect}
             onIngredientDelete={handleIngredientDelete}
             onIngredientRestore={handleIngredientRestore}
+            onAddIngredient={handleShowAddIngredientForm}
           />
 
           {/* Right Column - Ingredient Edit Form */}
@@ -189,6 +223,15 @@ export default function EditRecipeForm({ recipe }: EditRecipeFormProps) {
           />
         </div>
       </div>
+
+      {/* Add Ingredient Modal */}
+      {showAddIngredientForm && (
+        <AddIngredientForm
+          availableIngredients={availableIngredients}
+          onAdd={handleAddIngredientSubmit}
+          onCancel={handleAddIngredientCancel}
+        />
+      )}
     </div>
   );
 }

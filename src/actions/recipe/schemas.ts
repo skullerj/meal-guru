@@ -55,4 +55,17 @@ export const editRecipeSchema = z.object({
     )
     .optional(),
   ingredientsToDelete: z.array(z.string()).optional(),
+  ingredientsToAdd: z
+    .array(
+      z.object({
+        amount: z.number().positive(),
+        ingredient: z.object({
+          name: z.string().min(1, "Ingredient name is required"),
+          unit: unitSchema,
+          shelf: z.boolean(),
+          source: sourceSchema,
+        }),
+      })
+    )
+    .optional(),
 });

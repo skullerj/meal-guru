@@ -6,6 +6,7 @@ interface IngredientListColumnProps {
   onIngredientSelect: (ingredientId: string) => void;
   onIngredientDelete: (ingredientId: string) => void;
   onIngredientRestore: (ingredientId: string) => void;
+  onAddIngredient: () => void;
 }
 
 export default function IngredientListColumn({
@@ -14,6 +15,7 @@ export default function IngredientListColumn({
   onIngredientSelect,
   onIngredientDelete,
   onIngredientRestore,
+  onAddIngredient,
 }: IngredientListColumnProps) {
   // Show all ingredients including deleted ones (with different styling)
   const sortedIngredients = [...ingredients].sort((a, b) => {
@@ -59,11 +61,13 @@ export default function IngredientListColumn({
                 className={`w-full p-3 rounded-lg border transition-all text-left ${
                   ingredient.isDeleted
                     ? "bg-red-50 border-red-200 opacity-60 cursor-not-allowed"
-                    : ingredient.isModified
-                      ? "bg-amber-50 border-amber-200 hover:bg-amber-100"
-                      : selectedIngredientId === ingredient.id
-                        ? "bg-blue-50 border-blue-300 ring-2 ring-blue-500 ring-opacity-50"
-                        : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                    : ingredient.isNew
+                      ? "bg-green-50 border-green-200 hover:bg-green-100"
+                      : ingredient.isModified
+                        ? "bg-amber-50 border-amber-200 hover:bg-amber-100"
+                        : selectedIngredientId === ingredient.id
+                          ? "bg-blue-50 border-blue-300 ring-2 ring-blue-500 ring-opacity-50"
+                          : "bg-gray-50 border-gray-200 hover:bg-gray-100"
                 }`}
                 onClick={() =>
                   !ingredient.isDeleted && onIngredientSelect(ingredient.id)
@@ -84,11 +88,18 @@ export default function IngredientListColumn({
 
                       {/* Status indicators */}
                       <div className="flex space-x-1">
-                        {ingredient.isModified && !ingredient.isDeleted && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                            Modified
+                        {ingredient.isNew && !ingredient.isDeleted && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            New
                           </span>
                         )}
+                        {ingredient.isModified &&
+                          !ingredient.isDeleted &&
+                          !ingredient.isNew && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                              Modified
+                            </span>
+                          )}
                         {ingredient.isDeleted && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                             Deleted
@@ -167,30 +178,58 @@ export default function IngredientListColumn({
           </div>
         )}
 
-        {/* Selection instruction */}
-        {!selectedIngredientId &&
-          sortedIngredients.some((ing) => !ing.isDeleted) && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
-                <svg
-                  className="inline w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-label="Info icon"
-                  role="graphics-symbol"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Click on an ingredient to edit its details
-              </p>
+        {/* Add ingredient button */}
+        <div className="mt-4 space-y-3">
+          <button
+            type="button"
+            onClick={onAddIngredient}
+            className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-label="Add ingredient"
+                role="graphics-symbol"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              <span className="text-sm font-medium">Add Ingredient</span>
             </div>
-          )}
+          </button>
+
+          {/* Selection instruction */}
+          {!selectedIngredientId &&
+            sortedIngredients.some((ing) => !ing.isDeleted) && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  <svg
+                    className="inline w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-label="Info icon"
+                    role="graphics-symbol"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Click on an ingredient to edit its details
+                </p>
+              </div>
+            )}
+        </div>
       </div>
     </div>
   );

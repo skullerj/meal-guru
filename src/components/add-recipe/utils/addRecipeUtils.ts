@@ -1,4 +1,3 @@
-import type { Ingredient } from "../../../lib/database";
 import type { Constants } from "../../../types/database";
 import type { EditableIngredient } from "./addRecipeReducer";
 
@@ -148,23 +147,6 @@ export function validateRecipeForm(
     isValid: errors.length === 0,
     errors,
   };
-}
-
-// Filter ingredients for autocomplete
-export function filterIngredientsForAutocomplete(
-  availableIngredients: Array<Omit<Ingredient, "amount">>,
-  query: string,
-  limit: number = 5
-): Array<Omit<Ingredient, "amount">> {
-  if (!query.trim()) return [];
-
-  const lowercaseQuery = query.toLowerCase().trim();
-
-  return availableIngredients
-    .filter((ingredient) =>
-      ingredient.name.toLowerCase().includes(lowercaseQuery)
-    )
-    .slice(0, limit);
 }
 
 // Extract text from PDF (client-side utility)
