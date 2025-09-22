@@ -1,5 +1,5 @@
 import type { Ingredient } from "../../lib/database";
-import Icon from "../shared/Icon";
+import IconButton from "../shared/IconButton";
 import SearchIngredientInput from "../shared/SearchIngredientInput";
 import type { EditableIngredient } from "./utils/addRecipeReducer";
 import { ALLOWED_UNITS } from "./utils/addRecipeUtils";
@@ -77,13 +77,13 @@ export default function IngredientInput({
             </span>
           )}
         </h4>
-        <button
-          type="button"
+        <IconButton
+          icon="close"
+          variant="danger"
+          size="sm"
           onClick={() => onRemove(index)}
-          className="text-red-600 hover:text-red-800"
-        >
-          <Icon name="close" size="sm" aria-label="Remove ingredient" />
-        </button>
+          aria-label="Remove ingredient"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

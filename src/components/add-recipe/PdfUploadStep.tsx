@@ -1,4 +1,5 @@
 import { type DragEvent, useRef } from "react";
+import Button from "../shared/Button";
 import Icon from "../shared/Icon";
 
 interface PdfUploadStepProps {
@@ -98,26 +99,14 @@ export default function PdfUploadStep({
         )}
       </button>
 
-      <button
-        type="button"
+      <Button
         onClick={onParsePdf}
-        disabled={!uploadedFile || isLoading}
-        className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        disabled={!uploadedFile}
+        loading={isLoading}
+        className="mt-4 w-full"
       >
-        {isLoading ? (
-          <div className="flex items-center justify-center">
-            <Icon
-              name="loading"
-              size="sm"
-              className="animate-spin -ml-1 mr-3 text-white"
-              aria-label="Loading"
-            />
-            Parsing with AI...
-          </div>
-        ) : (
-          "Parse Recipe"
-        )}
-      </button>
+        {isLoading ? "Parsing with AI..." : "Parse Recipe"}
+      </Button>
     </div>
   );
 }

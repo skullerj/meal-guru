@@ -1,5 +1,5 @@
 import type { Ingredient } from "../../lib/database";
-import Icon from "../shared/Icon";
+import Button from "../shared/Button";
 import IngredientInput from "./IngredientInput";
 import type { EditableIngredient } from "./utils/addRecipeReducer";
 
@@ -40,19 +40,14 @@ export default function RecipeEditStep({
     <div className="space-y-6">
       {/* Navigation */}
       <div className="flex justify-between items-center">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           onClick={onBackToUpload}
-          className="flex items-center text-gray-600 hover:text-gray-800"
+          leftIcon="arrow-left"
+          size="sm"
         >
-          <Icon
-            name="arrow-left"
-            size="sm"
-            className="mr-2"
-            aria-label="Back arrow"
-          />
           Back to Upload
-        </button>
+        </Button>
         <h2 className="text-xl font-semibold">Recipe Details</h2>
         <div></div>
       </div>
@@ -102,25 +97,28 @@ export default function RecipeEditStep({
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900">Ingredients</h3>
-            <button
-              type="button"
+            <Button
+              variant="success"
               onClick={onAddIngredient}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+              leftIcon="add"
+              size="sm"
             >
               Add Ingredient
-            </button>
+            </Button>
           </div>
 
           {ingredients.length === 0 ? (
             <div className="text-gray-500 text-center py-8">
               <p>No ingredients added yet.</p>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={onAddIngredient}
-                className="mt-2 text-blue-600 hover:text-blue-800 underline"
+                leftIcon="add"
+                size="sm"
+                className="mt-2"
               >
                 Add your first ingredient
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -144,19 +142,10 @@ export default function RecipeEditStep({
             {ingredients.length} ingredients
           </div>
           <div className="space-x-4">
-            <button
-              type="button"
-              onClick={onBackToUpload}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-            >
+            <Button variant="secondary" onClick={onBackToUpload}>
               Back
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Generate Recipe JSON
-            </button>
+            </Button>
+            <Button type="submit">Generate Recipe JSON</Button>
           </div>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import { useReducer } from "react";
 import type { Recipe } from "../../data/recipes";
+import Button from "../shared/Button";
 import LeftToBuyColumn from "./LeftToBuyColumn";
 import RecipeColumn from "./RecipeColumn";
 import ShoppingColumn from "./ShoppingColumn";
@@ -44,13 +45,13 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
         {/* Reset button */}
         {(state.selectedRecipeIds.length > 0 ||
           state.ownedIngredientIds.length > 0) && (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             onClick={handleResetSelections}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+            leftIcon="reset"
           >
             Reset All Selections
-          </button>
+          </Button>
         )}
       </div>
 

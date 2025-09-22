@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Button from "../shared/Button";
 import Icon from "../shared/Icon";
 import type { EditableRecipeIngredient } from "./utils/editRecipeUtils";
 
@@ -197,19 +198,14 @@ export default function IngredientEditForm({
           </div>
 
           {hasChanges && (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={handleReset}
-              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              leftIcon="reset"
+              size="sm"
             >
-              <Icon
-                name="reset"
-                size="xs"
-                className="mr-2"
-                aria-label="Reset icon"
-              />
               Reset
-            </button>
+            </Button>
           )}
         </div>
 

@@ -1,3 +1,4 @@
+import CheckboxCard from "../shared/CheckboxCard";
 import type { AggregatedIngredient } from "./utils/mealPlannerUtils";
 import { separateIngredientsByShelf } from "./utils/mealPlannerUtils";
 
@@ -19,22 +20,7 @@ function IngredientItem({
   onToggle,
 }: IngredientItemProps) {
   return (
-    <button
-      type="button"
-      tabIndex={-1}
-      className={`block w-full border rounded-lg p-3 cursor-pointer transition-colors ${
-        isOwned
-          ? "border-green-500 bg-green-50"
-          : "border-gray-300 hover:border-gray-400"
-      }`}
-      onClick={() => onToggle(ingredient.id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggle(ingredient.id);
-        }
-      }}
-    >
+    <CheckboxCard checked={isOwned} onToggle={() => onToggle(ingredient.id)}>
       <div className="flex items-start space-x-3">
         <input
           type="checkbox"
@@ -64,7 +50,7 @@ function IngredientItem({
           </div>
         </div>
       </div>
-    </button>
+    </CheckboxCard>
   );
 }
 

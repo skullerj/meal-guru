@@ -1,4 +1,6 @@
+import Button from "../shared/Button";
 import Icon from "../shared/Icon";
+import IconButton from "../shared/IconButton";
 import type { EditableRecipeIngredient } from "./utils/editRecipeUtils";
 
 interface IngredientListColumnProps {
@@ -118,37 +120,27 @@ export default function IngredientListColumn({
 
                   <div className="flex items-center space-x-2">
                     {ingredient.isDeleted ? (
-                      <button
-                        type="button"
+                      <IconButton
+                        icon="reset"
+                        variant="success"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           onIngredientRestore(ingredient.id);
                         }}
-                        className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded text-green-600 hover:text-green-700 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                        title="Restore ingredient"
-                      >
-                        <Icon
-                          name="reset"
-                          size="xs"
-                          aria-label="Restore ingredient"
-                        />
-                      </button>
+                        aria-label="Restore ingredient"
+                      />
                     ) : (
-                      <button
-                        type="button"
+                      <IconButton
+                        icon="delete"
+                        variant="danger"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           onIngredientDelete(ingredient.id);
                         }}
-                        className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded text-red-600 hover:text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        title="Delete ingredient"
-                      >
-                        <Icon
-                          name="delete"
-                          size="xs"
-                          aria-label="Delete ingredient"
-                        />
-                      </button>
+                        aria-label="Delete ingredient"
+                      />
                     )}
                   </div>
                 </div>
@@ -159,16 +151,14 @@ export default function IngredientListColumn({
 
         {/* Add ingredient button */}
         <div className="mt-4 space-y-3">
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             onClick={onAddIngredient}
-            className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
+            leftIcon="add"
+            className="w-full border-2 border-dashed"
           >
-            <div className="flex items-center justify-center space-x-2">
-              <Icon name="add" size="sm" aria-label="Add ingredient" />
-              <span className="text-sm font-medium">Add Ingredient</span>
-            </div>
-          </button>
+            Add Ingredient
+          </Button>
 
           {/* Selection instruction */}
           {!selectedIngredientId &&

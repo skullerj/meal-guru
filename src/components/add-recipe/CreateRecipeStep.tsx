@@ -1,5 +1,6 @@
 import { actions } from "astro:actions";
 import { useState } from "react";
+import Button from "../shared/Button";
 import type { EditableIngredient } from "./utils/addRecipeReducer";
 
 interface CreateRecipeStepProps {
@@ -143,13 +144,9 @@ export default function CreateRecipeStep({
           >
             Go to Meal Planner
           </a>
-          <button
-            type="button"
-            onClick={onReset}
-            className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-          >
+          <Button variant="secondary" onClick={onReset} leftIcon="add">
             Add Another Recipe
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -159,26 +156,15 @@ export default function CreateRecipeStep({
     <div className="space-y-6">
       {/* Navigation */}
       <div className="flex justify-between items-center">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           onClick={onBackToEdit}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
           disabled={isCreating}
+          leftIcon="arrow-left"
+          size="sm"
         >
-          <svg
-            className="h-5 w-5 mr-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            role="graphics-symbol"
-          >
-            <path
-              fillRule="evenodd"
-              d="M7.707 14.707a1 1 0 01-1.414 0L2.586 11H13a1 1 0 110 2H2.586l3.707 3.707a1 1 0 01-1.414 1.414l-5.414-5.414a1 1 0 010-1.414L4.879 6.879a1 1 0 011.414 1.414L2.586 12H13a1 1 0 110-2H2.586l3.707-3.707z"
-              clipRule="evenodd"
-            />
-          </svg>
           Back to Edit
-        </button>
+        </Button>
         <h2 className="text-xl font-semibold">Ready to Create Recipe</h2>
         <div></div>
       </div>
@@ -256,66 +242,35 @@ export default function CreateRecipeStep({
           <p className="text-sm text-gray-600 mb-4">
             This will create the recipe in your database with all ingredients
           </p>
-          <button
-            type="button"
+          <Button
+            variant="success"
             onClick={handleCreateRecipe}
-            disabled={isCreating}
-            className={`px-8 py-3 text-white rounded-lg font-medium transition-colors ${
-              isCreating
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
+            loading={isCreating}
+            size="lg"
           >
-            {isCreating ? (
-              <div className="flex items-center">
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  role="graphics-symbol"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Creating Recipe...
-              </div>
-            ) : (
-              "Create Recipe"
-            )}
-          </button>
+            {isCreating ? "Creating Recipe..." : "Create Recipe"}
+          </Button>
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex justify-between items-center pt-6">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           onClick={onBackToEdit}
           disabled={isCreating}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+          leftIcon="edit"
         >
           Edit Recipe
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
           onClick={onReset}
           disabled={isCreating}
-          className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          leftIcon="reset"
         >
           Start Over
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { UnitType } from "../../data/recipes";
 import type { Ingredient } from "../../lib/database";
-import Icon from "../shared/Icon";
+import Button from "../shared/Button";
+import IconButton from "../shared/IconButton";
 import SearchIngredientInput from "../shared/SearchIngredientInput";
 import type { EditableRecipeIngredient } from "./utils/editRecipeUtils";
 
@@ -99,13 +100,12 @@ export default function AddIngredientForm({
             <h3 className="text-lg font-medium text-gray-900">
               Add New Ingredient
             </h3>
-            <button
-              type="button"
+            <IconButton
+              icon="close"
+              variant="ghost"
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <Icon name="close" size="md" aria-label="Close modal" />
-            </button>
+              aria-label="Close modal"
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -287,19 +287,12 @@ export default function AddIngredientForm({
 
             {/* Actions */}
             <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
+              <Button variant="secondary" onClick={onCancel} size="sm">
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
+              </Button>
+              <Button type="submit" leftIcon="add" size="sm">
                 Add Ingredient
-              </button>
+              </Button>
             </div>
           </form>
         </div>
