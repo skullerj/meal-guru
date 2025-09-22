@@ -1,3 +1,4 @@
+import Icon from "../shared/Icon";
 import type { EditableRecipeIngredient } from "./utils/editRecipeUtils";
 
 interface IngredientListColumnProps {
@@ -34,21 +35,12 @@ export default function IngredientListColumn({
 
         {sortedIngredients.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <Icon
+              name="package"
+              size="xl"
+              className="mx-auto text-gray-400"
               aria-label="No ingredients"
-              role="graphics-symbol"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-4 4m0 0l-4-4m4 4V3"
-              />
-            </svg>
+            />
             <p className="mt-2">No ingredients found</p>
           </div>
         ) : (
@@ -135,21 +127,11 @@ export default function IngredientListColumn({
                         className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded text-green-600 hover:text-green-700 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         title="Restore ingredient"
                       >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                        <Icon
+                          name="reset"
+                          size="xs"
                           aria-label="Restore ingredient"
-                          role="graphics-symbol"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
+                        />
                       </button>
                     ) : (
                       <button
@@ -161,21 +143,11 @@ export default function IngredientListColumn({
                         className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded text-red-600 hover:text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         title="Delete ingredient"
                       >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                        <Icon
+                          name="delete"
+                          size="xs"
                           aria-label="Delete ingredient"
-                          role="graphics-symbol"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
+                        />
                       </button>
                     )}
                   </div>
@@ -193,21 +165,7 @@ export default function IngredientListColumn({
             className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
           >
             <div className="flex items-center justify-center space-x-2">
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-label="Add ingredient"
-                role="graphics-symbol"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
+              <Icon name="add" size="sm" aria-label="Add ingredient" />
               <span className="text-sm font-medium">Add Ingredient</span>
             </div>
           </button>
@@ -217,21 +175,12 @@ export default function IngredientListColumn({
             sortedIngredients.some((ing) => !ing.isDeleted) && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-700">
-                  <svg
-                    className="inline w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  <Icon
+                    name="info"
+                    size="xs"
+                    className="inline mr-2"
                     aria-label="Info icon"
-                    role="graphics-symbol"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  />
                   Click on an ingredient to edit its details
                 </p>
               </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { UnitType } from "../../data/recipes";
 import type { Ingredient } from "../../lib/database";
+import Icon from "../shared/Icon";
 import SearchIngredientInput from "../shared/SearchIngredientInput";
 import type { EditableRecipeIngredient } from "./utils/editRecipeUtils";
 
@@ -103,20 +104,7 @@ export default function AddIngredientForm({
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                role="graphics-symbol"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <Icon name="close" size="md" aria-label="Close modal" />
             </button>
           </div>
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Icon from "../shared/Icon";
 import type { EditableRecipeIngredient } from "./utils/editRecipeUtils";
 
 const ALLOWED_UNITS = [
@@ -77,21 +78,7 @@ export default function IngredientEditForm({
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6">
           <div className="text-center py-12 text-gray-500">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-label="No ingredient selected"
-              role="graphics-symbol"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
+            <Icon name="edit" size="xl" className="mx-auto text-grey-500" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">
               No ingredient selected
             </h3>
@@ -215,21 +202,12 @@ export default function IngredientEditForm({
               onClick={handleReset}
               className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <Icon
+                name="reset"
+                size="xs"
+                className="mr-2"
                 aria-label="Reset icon"
-                role="graphics-symbol"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
+              />
               Reset
             </button>
           )}
@@ -449,19 +427,12 @@ export default function IngredientEditForm({
           <div className="mt-6 p-3 bg-amber-50 border border-amber-200 rounded-md">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-amber-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+                <Icon
+                  name="warning"
+                  size="sm"
+                  className="text-amber-400"
                   aria-label="Warning icon"
-                  role="graphics-symbol"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                />
               </div>
               <div className="ml-3">
                 <p className="text-sm text-amber-800">

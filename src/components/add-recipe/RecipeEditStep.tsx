@@ -1,4 +1,5 @@
 import type { Ingredient } from "../../lib/database";
+import Icon from "../shared/Icon";
 import IngredientInput from "./IngredientInput";
 import type { EditableIngredient } from "./utils/addRecipeReducer";
 
@@ -44,19 +45,12 @@ export default function RecipeEditStep({
           onClick={onBackToUpload}
           className="flex items-center text-gray-600 hover:text-gray-800"
         >
-          <svg
-            className="h-5 w-5 mr-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
+          <Icon
+            name="arrow-left"
+            size="sm"
+            className="mr-2"
             aria-label="Back arrow"
-            role="graphics-symbol"
-          >
-            <path
-              fillRule="evenodd"
-              d="M7.707 14.707a1 1 0 01-1.414 0L2.586 11H13a1 1 0 110 2H2.586l3.707 3.707a1 1 0 01-1.414 1.414l-5.414-5.414a1 1 0 010-1.414L4.879 6.879a1 1 0 011.414 1.414L2.586 12H13a1 1 0 110-2H2.586l3.707-3.707z"
-              clipRule="evenodd"
-            />
-          </svg>
+          />
           Back to Upload
         </button>
         <h2 className="text-xl font-semibold">Recipe Details</h2>

@@ -1,4 +1,5 @@
 import { type DragEvent, useRef } from "react";
+import Icon from "../shared/Icon";
 
 interface PdfUploadStepProps {
   uploadedFile: File | null;
@@ -70,38 +71,22 @@ export default function PdfUploadStep({
 
         {uploadedFile ? (
           <div className="flex items-center justify-center" role="alert">
-            <svg
-              className="h-6 w-6 text-green-500 mr-2"
-              fill="none"
-              stroke="currentColor"
-              role="graphics-symbol"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <Icon
+              name="check-circle"
+              size="md"
+              className="text-green-500 mr-2"
+              aria-label="File uploaded successfully"
+            />
             <span className="text-sm text-gray-600">{uploadedFile.name}</span>
           </div>
         ) : (
           <>
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              stroke="currentColor"
-              fill="none"
-              role="graphics-symbol"
-              viewBox="0 0 48 48"
-            >
-              <path
-                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Icon
+              name="upload"
+              size="xl"
+              className="mx-auto text-gray-400"
+              aria-label="Upload file"
+            />
             <p className="mt-2 text-sm text-gray-600">
               <span className="font-medium text-blue-600 hover:text-blue-500">
                 Click to upload
@@ -121,27 +106,12 @@ export default function PdfUploadStep({
       >
         {isLoading ? (
           <div className="flex items-center justify-center">
-            <svg
-              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              role="graphics-symbol"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
+            <Icon
+              name="loading"
+              size="sm"
+              className="animate-spin -ml-1 mr-3 text-white"
+              aria-label="Loading"
+            />
             Parsing with AI...
           </div>
         ) : (
