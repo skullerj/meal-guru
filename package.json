@@ -24,7 +24,7 @@
     "@astrojs/react": "^4.3.0",
     "@supabase/supabase-js": "^2.55.0",
     "@tailwindcss/vite": "^4.1.11",
-    "astro": "^5.12.8",
+    "astro": "^5.14.0",
     "lucide-react": "^0.544.0",
     "pdf-parse-new": "^1.4.1",
     "react": "^19.1.1",
