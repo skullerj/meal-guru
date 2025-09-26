@@ -1,7 +1,10 @@
 import type { Recipe } from "../../data/recipes";
 import CheckboxCard from "../shared/CheckboxCard";
 import Icon from "../shared/Icon";
-import { calculateRecipePrice } from "./utils/mealPlannerUtils";
+import {
+  calculateRecipePrice,
+  sortRecipesByRecommendation,
+} from "./utils/mealPlannerUtils";
 
 interface RecipeColumnProps {
   recipes: Recipe[];
@@ -14,11 +17,13 @@ export default function RecipeColumn({
   selectedRecipeIds,
   onRecipeToggle,
 }: RecipeColumnProps) {
+  const sortedRecipes = sortRecipesByRecommendation(recipes, selectedRecipeIds);
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Recipes</h2>
       <div className="space-y-4">
-        {recipes.map((recipe) => {
+        {sortedRecipes.map((recipe) => {
           const isSelected = selectedRecipeIds.includes(recipe.id);
           const recipePrice = calculateRecipePrice(recipe);
 
@@ -39,7 +44,7 @@ export default function RecipeColumn({
                 />
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
-                    <div>
+                    <div className="text-start">
                       <h3 className="font-semibold text-gray-900">
                         {recipe.name}
                       </h3>

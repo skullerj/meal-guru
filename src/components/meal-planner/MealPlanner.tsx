@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useMemo, useReducer } from "react";
 import type { Recipe } from "../../data/recipes";
 import Button from "../shared/Button";
 import LeftToBuyColumn from "./LeftToBuyColumn";
@@ -8,6 +8,7 @@ import {
   createInitialState,
   createMealPlannerReducer,
 } from "./utils/mealPlannerReducer";
+import { calculateGeneralSimilarityScore } from "./utils/mealPlannerUtils";
 
 interface MealPlannerProps {
   recipes: Recipe[];
@@ -32,6 +33,11 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
     dispatch({ type: "RESET_SELECTIONS" });
   };
 
+  const similarityScore = useMemo(
+    () => calculateGeneralSimilarityScore(recipes),
+    [recipes]
+  );
+
   return (
     <div className="container mx-auto p-6">
       {/* Header */}
@@ -41,18 +47,29 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
           <p className="text-gray-600 mb-4">
             Plan your meals, aggregate ingredients, and optimize your shopping
           </p>
+          <p className="text-grey-600">
+            General Recipe Similarity: {similarityScore.toFixed(2)}%
+          </p>
         </div>
-        {/* Reset button */}
-        {(state.selectedRecipeIds.length > 0 ||
-          state.ownedIngredientIds.length > 0) && (
-          <Button
-            variant="secondary"
-            onClick={handleResetSelections}
-            leftIcon="reset"
-          >
-            Reset All Selections
-          </Button>
-        )}
+        <div className="flex gap-3">
+          {/* Reset button */}
+          {(state.selectedRecipeIds.length > 0 ||
+            state.ownedIngredientIds.length > 0) && (
+            <Button
+              variant="secondary"
+              onClick={handleResetSelections}
+              leftIcon="reset"
+            >
+              Reset All Selections
+            </Button>
+          )}
+          {/* Add Recipe button */}
+          <a href="/add-recipe">
+            <Button variant="primary" leftIcon="add">
+              Add Recipe
+            </Button>
+          </a>
+        </div>
       </div>
 
       {/* Three-column layout */}

@@ -110,7 +110,9 @@ export function createMealPlannerReducer(allRecipes: Recipe[]) {
       }
 
       case "RESET_SELECTIONS": {
-        return createInitialState();
+        return {
+          ...createInitialState(),
+        };
       }
 
       default:

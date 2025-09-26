@@ -113,3 +113,114 @@ export function separateIngredientsByShelf(
     nonShelfIngredients: ingredients.filter((ing) => !ing.ingredient.shelf),
   };
 }
+
+/**
+ * Calculate Jaccard similarity between two sets
+ * Returns a value between 0 (no overlap) and 1 (identical sets)
+ */
+export function calculateJaccardSimilarity(
+  setA: string[],
+  setB: string[]
+): number {
+  if (setA.length === 0 && setB.length === 0) return 1;
+  if (setA.length === 0 || setB.length === 0) return 0;
+
+  const setAUnique = new Set(setA);
+  const setBUnique = new Set(setB);
+
+  const intersection = new Set(
+    [...setAUnique].filter((x) => setBUnique.has(x))
+  );
+  const union = new Set([...setAUnique, ...setBUnique]);
+
+  return intersection.size / union.size;
+}
+
+/**
+ * Calculate similarity between two recipes based on their ingredients
+ */
+export function calculateRecipeSimilarity(
+  recipeA: Recipe,
+  recipeB: Recipe
+): number {
+  const ingredientIdsA = recipeA.ingredients.map((ing) => ing.ingredient.id);
+  const ingredientIdsB = recipeB.ingredients.map((ing) => ing.ingredient.id);
+
+  return calculateJaccardSimilarity(ingredientIdsA, ingredientIdsB);
+}
+
+/**
+ * Calculate recommendation score for a recipe against selected recipes
+ * Returns the maximum similarity score with any selected recipe
+ */
+export function calculateRecommendationScore(
+  recipe: Recipe,
+  selectedRecipes: Recipe[]
+): number {
+  if (selectedRecipes.length === 0) return 0;
+
+  const similarities = selectedRecipes.map((selectedRecipe) =>
+    calculateRecipeSimilarity(recipe, selectedRecipe)
+  );
+
+  return Math.max(...similarities);
+}
+
+/**
+ * Sort recipes with selected recipes first, then by recommendation score
+ * Unselected recipes are sorted by similarity to selected recipes (highest first)
+ */
+export function sortRecipesByRecommendation(
+  recipes: Recipe[],
+  selectedRecipeIds: string[]
+): Recipe[] {
+  // Get selected recipes, filtering out any undefined values
+  const selectedRecipes = selectedRecipeIds
+    .map((id) => recipes.find((r) => r.id === id))
+    .filter((recipe): recipe is Recipe => recipe !== undefined);
+  const unselectedRecipes = recipes.filter(
+    (recipe) => !selectedRecipeIds.includes(recipe.id)
+  );
+
+  // If no recipes are selected, return original order
+  if (selectedRecipes.length === 0) {
+    return [...recipes].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // Sort unselected recipes by recommendation score (highest first)
+  const sortedUnselected = unselectedRecipes
+    .map((recipe) => ({
+      recipe,
+      score: calculateRecommendationScore(recipe, selectedRecipes),
+    }))
+    .sort((a, b) => {
+      // Primary sort: by recommendation score (descending)
+      if (b.score !== a.score) return b.score - a.score;
+      // Tie-breaker: alphabetical by name
+      return a.recipe.name.localeCompare(b.recipe.name);
+    })
+    .map((item) => item.recipe);
+
+  // Return selected recipes first, then sorted unselected recipes
+  return [...selectedRecipes, ...sortedUnselected];
+}
+
+/**
+ * Calculate general similarity score for entire recipe collection
+ * Returns average pairwise similarity between all recipes (0-1 scale)
+ */
+export function calculateGeneralSimilarityScore(recipes: Recipe[]): number {
+  if (recipes.length < 2) return 0;
+
+  let totalSimilarity = 0;
+  let pairCount = 0;
+
+  for (let i = 0; i < recipes.length; i++) {
+    for (let j = i + 1; j < recipes.length; j++) {
+      totalSimilarity += calculateRecipeSimilarity(recipes[i], recipes[j]);
+      pairCount++;
+    }
+  }
+
+  return pairCount > 0 ? totalSimilarity / pairCount : 0;
+}
