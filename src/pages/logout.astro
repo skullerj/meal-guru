@@ -1,0 +1,18 @@
+---
+import { clearAuthCookies, getUserFromCookies } from "../lib/auth";
+import { supabase } from "../lib/supabase";
+
+const { cookies, redirect } = Astro;
+
+// Get current user and sign them out
+const user = await getUserFromCookies(cookies);
+
+if (user) {
+  await supabase.auth.signOut();
+}
+
+// Clear cookies and redirect
+clearAuthCookies(cookies);
+
+return redirect("/signin");
+---

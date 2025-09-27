@@ -9,3 +9,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare namespace App {
+  interface SessionData {
+    access_token: string;
+    refresh_token: string;
+  }
+}
