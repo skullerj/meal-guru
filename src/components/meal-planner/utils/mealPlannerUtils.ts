@@ -141,10 +141,17 @@ export function calculateJaccardSimilarity(
  */
 export function calculateRecipeSimilarity(
   recipeA: Recipe,
-  recipeB: Recipe
+  recipeB: Recipe,
+  avoidShelfItems = true
 ): number {
-  const ingredientIdsA = recipeA.ingredients.map((ing) => ing.ingredient.id);
-  const ingredientIdsB = recipeB.ingredients.map((ing) => ing.ingredient.id);
+  const filterShelf = (ing: RecipeIngredient) =>
+    avoidShelfItems ? !ing.ingredient.shelf : true;
+  const ingredientIdsA = recipeA.ingredients
+    .filter(filterShelf)
+    .map((ing) => ing.ingredient.id);
+  const ingredientIdsB = recipeB.ingredients
+    .filter(filterShelf)
+    .map((ing) => ing.ingredient.id);
 
   return calculateJaccardSimilarity(ingredientIdsA, ingredientIdsB);
 }
