@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { AggregatedIngredient } from "./utils/mealPlannerUtils";
 import {
   calculateRemainingToTarget,
@@ -10,20 +11,32 @@ interface LeftToBuyColumnProps {
   targetAmount?: number;
 }
 
-function openSmallWindow(e: React.MouseEvent<HTMLAnchorElement>) {
-  window.open(
-    e.currentTarget.href,
-    "_blank",
-    "width=800,height=600,scrollbars=yes,resizable=yes"
-  );
-  return false;
-}
-
 export default function LeftToBuyColumn({
   remainingIngredients,
   totalPrice,
   targetAmount = 40,
 }: LeftToBuyColumnProps) {
+  const [visitedUrls, setVisitedUrls] = useState<Set<string>>(new Set());
+
+  function openSmallWindow(
+    e: React.MouseEvent<HTMLAnchorElement>,
+    url: string
+  ) {
+    e.preventDefault();
+    setVisitedUrls((prev) => new Set(prev).add(url));
+    window.open(
+      url,
+      "_blank",
+      "width=800,height=600,scrollbars=yes,resizable=yes"
+    );
+    return false;
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We need to reset visitedUrls only when totalPrice changes
+  useEffect(() => {
+    setVisitedUrls(new Set());
+  }, [totalPrice]);
+
   const remainingToTarget = calculateRemainingToTarget(
     totalPrice,
     targetAmount
@@ -44,7 +57,15 @@ export default function LeftToBuyColumn({
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Left to Buy</h2>
+      <div className="flex justify-between *:">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Left to Buy</h2>
+
+        {visitedUrls.size > 0 && (
+          <p className="border rounded-sm border-purple-400 bg-purple-50 self-center px-2">
+            Visited Items
+          </p>
+        )}
+      </div>
 
       {/* Price summary */}
       <div className="border-t border-gray-200 pt-4 space-y-2">
@@ -71,44 +92,57 @@ export default function LeftToBuyColumn({
             Fresh Ingredients
           </h3>
           <div className="space-y-2">
-            {nonShelfIngredients.map(({ ingredient, totalCost, amount }) => (
-              <div
-                key={ingredient.id}
-                className="border border-gray-200 rounded-lg p-3"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">
-                      {ingredient.name}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      <span>
-                        Buy&nbsp;
-                        {Math.ceil(amount / ingredient.source.amount)}
-                        &nbsp;
-                      </span>
-                      <span>
-                        ({amount} {ingredient.unit} needed)
-                      </span>
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-700">
-                      £{totalCost.toFixed(2)}
-                    </p>
-                    <a
-                      href={ingredient.source.url}
-                      onClick={openSmallWindow}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm underline mt-1 inline-block"
-                    >
-                      Buy on Ocado
-                    </a>
+            {nonShelfIngredients.map(({ ingredient, totalCost, amount }) => {
+              const isVisited = visitedUrls.has(ingredient.source.url);
+              return (
+                <div
+                  key={ingredient.id}
+                  className={`border rounded-lg p-3 ${
+                    isVisited
+                      ? "border-purple-400 bg-purple-50"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">
+                        {ingredient.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        <span>
+                          Buy&nbsp;
+                          {Math.ceil(amount / ingredient.source.amount)}
+                          &nbsp;
+                        </span>
+                        <span>
+                          ({amount} {ingredient.unit} needed)
+                        </span>
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-gray-700">
+                        £{totalCost.toFixed(2)}
+                      </p>
+                      <a
+                        href={ingredient.source.url}
+                        onClick={(e) =>
+                          openSmallWindow(e, ingredient.source.url)
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`text-sm underline mt-1 inline-block ${
+                          isVisited
+                            ? "text-blue-500 hover:text-blue-700"
+                            : "text-blue-600 hover:text-blue-800"
+                        }`}
+                      >
+                        Buy on Ocado
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -120,37 +154,48 @@ export default function LeftToBuyColumn({
             Pantry Items
           </h3>
           <div className="space-y-2">
-            {shelfIngredients.map(({ totalCost, ingredient, amount }) => (
-              <div
-                key={ingredient.id}
-                className="border border-gray-200 rounded-lg p-3"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">
-                      {ingredient.name}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {amount} {ingredient.unit}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-700">
-                      £{totalCost.toFixed(2)}
-                    </p>
-                    <a
-                      href={ingredient.source.url}
-                      onClick={openSmallWindow}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm underline mt-1 inline-block"
-                    >
-                      Buy on Ocado
-                    </a>
+            {shelfIngredients.map(({ totalCost, ingredient, amount }) => {
+              const isVisited = visitedUrls.has(ingredient.source.url);
+              return (
+                <div
+                  key={ingredient.id}
+                  className={`border rounded-lg p-3 ${
+                    isVisited ? "border-gray-400 bg-gray-50" : "border-gray-200"
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">
+                        {ingredient.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {amount} {ingredient.unit}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-gray-700">
+                        £{totalCost.toFixed(2)}
+                      </p>
+                      <a
+                        href={ingredient.source.url}
+                        onClick={(e) =>
+                          openSmallWindow(e, ingredient.source.url)
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`text-sm underline mt-1 inline-block ${
+                          isVisited
+                            ? "text-blue-500 hover:text-blue-700"
+                            : "text-blue-600 hover:text-blue-800"
+                        }`}
+                      >
+                        Buy on Ocado
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
