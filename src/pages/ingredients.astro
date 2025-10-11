@@ -1,0 +1,11 @@
+---
+import IngredientManager from "../components/ingredient-manager/IngredientManager";
+import Layout from "../layouts/Layout.astro";
+import { getAllIngredients } from "../lib/database";
+
+const ingredients = await getAllIngredients();
+---
+
+<Layout>
+    <IngredientManager ingredients={ingredients} client:load />
+</Layout>
