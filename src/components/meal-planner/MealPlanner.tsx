@@ -1,5 +1,5 @@
 import { useMemo, useReducer } from "react";
-import type { Recipe } from "../../data/recipes";
+import type { Ingredient, Recipe } from "../../data/recipes";
 import Button from "../shared/Button";
 import LeftToBuyColumn from "./LeftToBuyColumn";
 import RecipeColumn from "./RecipeColumn";
@@ -12,9 +12,13 @@ import { calculateGeneralSimilarityScore } from "./utils/mealPlannerUtils";
 
 interface MealPlannerProps {
   recipes: Recipe[];
+  ingredients: Ingredient[];
 }
 
-export default function MealPlanner({ recipes }: MealPlannerProps) {
+export default function MealPlanner({
+  recipes,
+  ingredients: availableIngredients,
+}: MealPlannerProps) {
   const mealPlannerReducer = createMealPlannerReducer(recipes);
   const [state, dispatch] = useReducer(
     mealPlannerReducer,
@@ -31,6 +35,17 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
 
   const handleResetSelections = () => {
     dispatch({ type: "RESET_SELECTIONS" });
+  };
+
+  const handleAddExtraIngredient = (
+    ingredient: Omit<Ingredient, "amount">,
+    amount: number
+  ) => {
+    dispatch({ type: "ADD_EXTRA_INGREDIENT", ingredient, amount });
+  };
+
+  const handleRemoveExtraIngredient = (ingredientId: string) => {
+    dispatch({ type: "REMOVE_EXTRA_INGREDIENT", ingredientId });
   };
 
   const similarityScore = useMemo(
@@ -54,7 +69,8 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
         <div className="flex gap-3">
           {/* Reset button */}
           {(state.selectedRecipeIds.length > 0 ||
-            state.ownedIngredientIds.length > 0) && (
+            state.ownedIngredientIds.length > 0 ||
+            state.extraIngredients.length > 0) && (
             <Button
               variant="secondary"
               onClick={handleResetSelections}
@@ -83,7 +99,11 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
         <ShoppingColumn
           aggregatedIngredients={state.aggregatedIngredients}
           ownedIngredientIds={state.ownedIngredientIds}
+          extraIngredients={state.extraIngredients}
+          availableIngredients={availableIngredients}
           onIngredientToggle={handleIngredientToggle}
+          onAddExtraIngredient={handleAddExtraIngredient}
+          onRemoveExtraIngredient={handleRemoveExtraIngredient}
         />
 
         <LeftToBuyColumn
@@ -102,6 +122,14 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
           </p>
           <p>
             Owned Ingredients: {state.ownedIngredientIds.join(", ") || "None"}
+          </p>
+          <p>
+            Extra Ingredients:{" "}
+            {state.extraIngredients
+              .map(
+                (e) => `${e.ingredient.name} (${e.amount}${e.ingredient.unit})`
+              )
+              .join(", ") || "None"}
           </p>
           <p>
             Total Aggregated: {state.aggregatedIngredients.length} ingredients

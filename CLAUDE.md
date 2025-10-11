@@ -12,6 +12,8 @@ Meal Guru is an Astro-based web application designed to reduce the mental strain
 - **Database**: Supabase (PostgreSQL)
 - **Package Manager**: npm
 - **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui (Radix UI primitives + Tailwind)
+- **Icons**: Lucide React
 - **Linter/Formatter**: Biome
 - **Git Hooks**: Lefthook
 - **AI Integration**: Anthropic Claude API for recipe parsing
@@ -67,25 +69,36 @@ To get Supabase credentials:
 ├── src/
 │   ├── assets/
 │   ├── components/
-│   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
-│   │   ├── RecipeColumn.tsx         # Recipe selection column
-│   │   ├── ShoppingColumn.tsx       # Aggregated ingredients column
-│   │   ├── LeftToBuyColumn.tsx      # Items to buy column
-│   │   ├── AddRecipeForm.tsx        # Main React component for recipe creation
-│   │   ├── PdfUploadStep.tsx        # Pure component for PDF upload
-│   │   ├── RecipeEditStep.tsx       # Pure component for recipe editing
-│   │   ├── IngredientInput.tsx      # Pure component with autocomplete
-│   │   ├── JsonOutputStep.tsx       # Pure component for JSON output
-│   │   └── utils/
-│   │       ├── mealPlannerUtils.ts  # Price calculations & ingredient aggregation
-│   │       ├── mealPlannerReducer.ts # State management with useReducer
-│   │       ├── addRecipeUtils.ts    # Recipe form business logic
-│   │       └── addRecipeReducer.ts  # Add recipe state management
+│   │   ├── meal-planner/
+│   │   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
+│   │   │   ├── RecipeColumn.tsx         # Recipe selection column
+│   │   │   ├── ShoppingColumn.tsx       # Aggregated ingredients column
+│   │   │   ├── LeftToBuyColumn.tsx      # Items to buy column
+│   │   │   ├── AddIngredientDialog.tsx  # Dialog for adding extra ingredients
+│   │   │   └── utils/
+│   │   │       ├── mealPlannerUtils.ts  # Price calculations & ingredient aggregation
+│   │   │       └── mealPlannerReducer.ts # State management with useReducer
+│   │   ├── add-recipe/
+│   │   │   ├── AddRecipeForm.tsx        # Main React component for recipe creation
+│   │   │   ├── PdfUploadStep.tsx        # Pure component for PDF upload
+│   │   │   ├── RecipeEditStep.tsx       # Pure component for recipe editing
+│   │   │   ├── IngredientInput.tsx      # Pure component with autocomplete
+│   │   │   ├── JsonOutputStep.tsx       # Pure component for JSON output
+│   │   │   └── utils/
+│   │   │       ├── addRecipeUtils.ts    # Recipe form business logic
+│   │   │       └── addRecipeReducer.ts  # Add recipe state management
+│   │   ├── shared/
+│   │   │   ├── Button.tsx               # Reusable button component
+│   │   │   ├── Icon.tsx                 # Centralized icon component (Lucide)
+│   │   │   └── IconButton.tsx           # Interactive icon button component
+│   │   └── ui/
+│   │       └── dialog.tsx               # shadcn Dialog component (Radix UI)
 │   ├── data/
 │   │   └── recipes.ts               # TypeScript interfaces only
 │   ├── lib/
 │   │   ├── supabase.ts              # Supabase client configuration
-│   │   └── database.ts              # Database access functions
+│   │   ├── database.ts              # Database access functions
+│   │   └── utils.ts                 # Utility functions (cn for className merging)
 │   ├── layouts/
 │   │   └── Layout.astro
 │   ├── pages/
@@ -100,6 +113,7 @@ To get Supabase credentials:
 ├── .env (create this file)
 ├── astro.config.mjs
 ├── biome.json
+├── components.json                  # shadcn/ui configuration
 ├── lefthook.yml
 ├── package.json
 └── tsconfig.json
@@ -292,6 +306,51 @@ This architecture provides:
 - **Scalability**: Easy to add new features without affecting existing components
 - **Performance**: Efficient re-renders through proper state structure
 
+## UI Component Libraries
+
+### shadcn/ui Integration
+This project uses shadcn/ui for accessible, customizable UI components built on Radix UI primitives.
+
+**Configuration** (`components.json`):
+- **Style**: New York
+- **Base Color**: Neutral
+- **Icon Library**: Lucide React
+- **Path Aliases**: `@/components`, `@/lib`, `@/ui`
+- **CSS Variables**: Enabled for theme customization
+
+**Utility Function** (`src/lib/utils.ts`):
+```typescript
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+The `cn()` function combines `clsx` and `tailwind-merge` for conditional className merging.
+
+**Installed Components**:
+- **Dialog** (`src/components/ui/dialog.tsx`): Modal dialog component for forms and overlays
+  - Uses `@radix-ui/react-dialog` primitives
+  - Includes: Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription
+  - Fully accessible with keyboard navigation and focus management
+
+**Dependencies**:
+- `@radix-ui/react-dialog`: Dialog primitives
+- `class-variance-authority`: Component variant styling
+- `clsx`: Conditional className construction
+- `tailwind-merge`: Smart Tailwind class merging
+- `lucide-react`: Icon library
+
+**Usage Pattern**:
+```typescript
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+```
+
+### Shared Components
+Centralized reusable components in `src/components/shared/`:
+- **Button.tsx**: Styled button with variants (primary, secondary, success, danger, card) and sizes
+- **Icon.tsx**: Centralized icon component using Lucide React
+- **IconButton.tsx**: Interactive icon-only button with variants
+
 ## Notes for Claude
 - This is a meal planning and batch cooking application
 - Uses Astro framework with React integration for interactive components
@@ -301,10 +360,12 @@ This architecture provides:
 - Column components use callback props pattern for state management decoupling
 - **Standardized Units**: Ingredient units restricted to: 'g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit'
 - Tailwind CSS is configured via Vite plugin with global CSS import in Layout.astro
+- **UI Components**: Use shadcn/ui components from `@/components/ui/` and shared components from `@/components/shared/`
+- **Class Merging**: Use the `cn()` utility function for conditional className merging
 - Current state: Full-featured meal planning interface with Supabase backend
 - No testing framework currently configured
 - Uses Biome for linting and formatting
-- Lefthook configured for pre-commit hooks (runs `npx biome check` on staged files)
+- Lefthook configured for pre-commit hooks (runs `npx biome check --write` on staged files with `stage_fixed: true`)
 - Complex business logic separated into utility functions for reusability and testing
 - **Setup Required**: Run SQL scripts in `database-schema.sql` and `migrate-data.sql` in Supabase SQL Editor
 
@@ -316,3 +377,4 @@ This architecture provides:
 - Use the @src/components/shared/Button.tsx component for buttons
 - Use The @src/components/shared/Icon.tsx for icons
 - Use the @src/components/shared/IconButton.tsx for interactive icon components
+- For modal dialogs, use shadcn/ui Dialog component from @/components/ui/dialog

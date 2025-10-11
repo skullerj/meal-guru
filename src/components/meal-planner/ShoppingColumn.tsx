@@ -1,17 +1,33 @@
+import type { Ingredient } from "../../lib/database";
+import Button from "../shared/Button";
 import CheckboxCard from "../shared/CheckboxCard";
+import IconButton from "../shared/IconButton";
+import AddIngredientDialog from "./AddIngredientDialog";
+import type { ExtraIngredient } from "./utils/mealPlannerReducer";
 import type { AggregatedIngredient } from "./utils/mealPlannerUtils";
 import { separateIngredientsByShelf } from "./utils/mealPlannerUtils";
 
 interface ShoppingColumnProps {
   aggregatedIngredients: AggregatedIngredient[];
   ownedIngredientIds: string[];
+  extraIngredients: ExtraIngredient[];
+  availableIngredients: Omit<Ingredient, "amount">[];
   onIngredientToggle: (ingredientId: string) => void;
+  onAddExtraIngredient: (ingredient: Omit<Ingredient, "amount">, amount: number) => void;
+  onRemoveExtraIngredient: (ingredientId: string) => void;
 }
 
 interface IngredientItemProps {
   ingredient: AggregatedIngredient;
   isOwned: boolean;
   onToggle: (ingredientId: string) => void;
+}
+
+interface ExtraIngredientItemProps {
+  extraIngredient: ExtraIngredient;
+  isOwned: boolean;
+  onToggle: (ingredientId: string) => void;
+  onRemove: (ingredientId: string) => void;
 }
 
 function IngredientItem({
@@ -54,22 +70,99 @@ function IngredientItem({
   );
 }
 
+function ExtraIngredientItem({
+  extraIngredient,
+  isOwned,
+  onToggle,
+  onRemove,
+}: ExtraIngredientItemProps) {
+  const totalCost = extraIngredient.ingredient.shelf
+    ? extraIngredient.ingredient.source.price
+    : Math.max(
+        (extraIngredient.amount * extraIngredient.ingredient.source.price) / extraIngredient.ingredient.source.amount,
+        extraIngredient.ingredient.source.price
+      );
+
+  return (
+    <CheckboxCard checked={isOwned} onToggle={() => onToggle(extraIngredient.ingredient.id)}>
+      <div className="flex items-start space-x-3">
+        <input
+          type="checkbox"
+          checked={isOwned}
+          onChange={() => onToggle(extraIngredient.ingredient.id)}
+          className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+        />
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <div className="text-start">
+              <h4
+                className={`font-medium ${isOwned ? "text-green-900" : "text-gray-900"}`}
+              >
+                {extraIngredient.ingredient.name}
+                <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">
+                  Extra
+                </span>
+              </h4>
+              <p
+                className={`text-sm ${isOwned ? "text-green-700" : "text-gray-600"}`}
+              >
+                {extraIngredient.amount} {extraIngredient.ingredient.unit}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <p
+                className={`text-sm font-medium ${isOwned ? "text-green-600" : "text-gray-700"}`}
+              >
+                £{totalCost.toFixed(2)}
+              </p>
+              <IconButton
+                icon="close"
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemove(extraIngredient.ingredient.id)}
+                aria-label="Remove extra ingredient"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </CheckboxCard>
+  );
+}
+
 export default function ShoppingColumn({
   aggregatedIngredients,
   ownedIngredientIds,
+  extraIngredients,
+  availableIngredients,
   onIngredientToggle,
+  onAddExtraIngredient,
+  onRemoveExtraIngredient,
 }: ShoppingColumnProps) {
   const { shelfIngredients, nonShelfIngredients } = separateIngredientsByShelf(
     aggregatedIngredients
   );
 
-  if (aggregatedIngredients.length === 0) {
+  if (aggregatedIngredients.length === 0 && extraIngredients.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Shopping List</h2>
         <p className="text-gray-500 text-center py-8">
-          Select recipes to see aggregated ingredients
+          Select recipes to see aggregated ingredients or add your own items
         </p>
+
+        {/* Add Item button - always visible */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <AddIngredientDialog
+            availableIngredients={availableIngredients}
+            onAddIngredient={onAddExtraIngredient}
+            trigger={
+              <Button variant="secondary" leftIcon="add" className="w-full">
+                Add Item to List
+              </Button>
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -99,7 +192,7 @@ export default function ShoppingColumn({
 
       {/* Shelf ingredients (not aggregated) */}
       {shelfIngredients.length > 0 && (
-        <div>
+        <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3 text-gray-700">
             Pantry Items
           </h3>
@@ -116,7 +209,40 @@ export default function ShoppingColumn({
         </div>
       )}
 
-      <div className="mt-4 pt-4 border-t border-gray-200">
+      {/* Extra ingredients (manually added) */}
+      {extraIngredients.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-700">
+            Extra Items
+          </h3>
+          <div className="space-y-2">
+            {extraIngredients.map((extra) => (
+              <ExtraIngredientItem
+                key={extra.ingredient.id}
+                extraIngredient={extra}
+                isOwned={ownedIngredientIds.includes(extra.ingredient.id)}
+                onToggle={onIngredientToggle}
+                onRemove={onRemoveExtraIngredient}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Add Item button */}
+      <div className="mb-4">
+        <AddIngredientDialog
+          availableIngredients={availableIngredients}
+          onAddIngredient={onAddExtraIngredient}
+          trigger={
+            <Button variant="secondary" leftIcon="add" className="w-full">
+              Add Item to List
+            </Button>
+          }
+        />
+      </div>
+
+      <div className="pt-4 border-t border-gray-200">
         <p className="text-sm text-gray-600">
           Check items you already have at home
         </p>

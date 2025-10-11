@@ -1,11 +1,14 @@
 ---
 import MealPlanner from "../components/meal-planner/MealPlanner";
 import Layout from "../layouts/Layout.astro";
-import { getRecipes } from "../lib/database";
+import { getAllIngredients, getRecipes } from "../lib/database";
 
-const recipes = await getRecipes();
+const [recipes, ingredients] = await Promise.all([
+  getRecipes(),
+  getAllIngredients(),
+]);
 ---
 
 <Layout>
-    <MealPlanner recipes={recipes} client:load />
+    <MealPlanner recipes={recipes} ingredients={ingredients} client:load />
 </Layout>
