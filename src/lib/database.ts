@@ -229,3 +229,121 @@ export async function searchIngredients(
     source: sourceSchema.parse(ingredient.source),
   }));
 }
+
+// Shop types (will be generated in database.ts after running migration)
+export type ShopIngredient = {
+  id: string;
+  ingredient_id: string;
+  amount: number;
+  cost: number;
+  order_index: number;
+  ingredient: Ingredient;
+};
+
+export type Shop = {
+  id: string;
+  created_at: string;
+  total_cost: number;
+  ingredients: ShopIngredient[];
+  recipes: { id: string; name: string }[];
+};
+
+export type ShopSummary = {
+  id: string;
+  created_at: string;
+  total_cost: number;
+  recipe_names: string[];
+  ingredient_count: number;
+};
+
+// Get all shops with summary data
+export async function getShops(): Promise<ShopSummary[]> {
+  const { data, error } = await supabase
+    .from("shops")
+    .select(
+      `
+      id,
+      created_at,
+      total_cost,
+      shop_recipes!inner (
+        recipes (name)
+      ),
+      shop_ingredients (id)
+    `
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching shops:", error);
+    throw error;
+  }
+
+  if (!data) return [];
+
+  return data.map((shop) => ({
+    id: shop.id,
+    created_at: shop.created_at,
+    total_cost: shop.total_cost,
+    recipe_names: shop.shop_recipes.map((sr) => sr.recipes.name),
+    ingredient_count: shop.shop_ingredients.length,
+  }));
+}
+
+// Get a single shop by ID with full ingredient details
+export async function getShopById(id: string): Promise<Shop | null> {
+  const { data, error } = await supabase
+    .from("shops")
+    .select(
+      `
+      id,
+      created_at,
+      total_cost,
+      shop_ingredients (
+        id,
+        ingredient_id,
+        amount,
+        cost,
+        order_index,
+        ingredients (*)
+      ),
+      shop_recipes (
+        recipes (id, name)
+      )
+    `
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("Error fetching shop:", error);
+    throw error;
+  }
+
+  if (!data) return null;
+
+  // Parse ingredients
+  const ingredients: ShopIngredient[] = data.shop_ingredients
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((si) => ({
+      id: si.id,
+      ingredient_id: si.ingredient_id,
+      amount: si.amount,
+      cost: si.cost,
+      order_index: si.order_index,
+      ingredient: {
+        ...si.ingredients,
+        source: sourceSchema.parse(si.ingredients.source),
+      },
+    }));
+
+  // Parse recipes
+  const recipes = data.shop_recipes.map((sr) => sr.recipes);
+
+  return {
+    id: data.id,
+    created_at: data.created_at,
+    total_cost: data.total_cost,
+    ingredients,
+    recipes,
+  };
+}

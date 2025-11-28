@@ -378,3 +378,4 @@ Centralized reusable components in `src/components/shared/`:
 - Use The @src/components/shared/Icon.tsx for icons
 - Use the @src/components/shared/IconButton.tsx for interactive icon components
 - For modal dialogs, use shadcn/ui Dialog component from @/components/ui/dialog
+- Never add biome-ignore comments. If you encounter biome issues that can't be solved, without an ignore just report them at the end and let me handle them

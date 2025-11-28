@@ -1,9 +1,9 @@
 import { useMemo, useReducer } from "react";
 import type { Ingredient, Recipe } from "../../data/recipes";
 import Button from "../shared/Button";
-import LeftToBuyColumn from "./LeftToBuyColumn";
 import RecipeColumn from "./RecipeColumn";
 import ShoppingColumn from "./ShoppingColumn";
+import ShopSummaryColumn from "./ShopSummaryColumn";
 import {
   createInitialState,
   createMealPlannerReducer,
@@ -106,9 +106,11 @@ export default function MealPlanner({
           onRemoveExtraIngredient={handleRemoveExtraIngredient}
         />
 
-        <LeftToBuyColumn
+        <ShopSummaryColumn
           remainingIngredients={state.remainingToBuy}
           totalPrice={state.totalPrice}
+          selectedRecipeIds={state.selectedRecipeIds}
+          onShopCreated={handleResetSelections}
           targetAmount={40}
         />
       </div>

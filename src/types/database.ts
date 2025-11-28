@@ -98,6 +98,99 @@ export type Database = {
         };
         Relationships: [];
       };
+      shop_ingredients: {
+        Row: {
+          amount: number;
+          cost: number;
+          id: string;
+          ingredient_id: string;
+          order_index: number;
+          shop_id: string;
+        };
+        Insert: {
+          amount: number;
+          cost: number;
+          id?: string;
+          ingredient_id: string;
+          order_index: number;
+          shop_id: string;
+        };
+        Update: {
+          amount?: number;
+          cost?: number;
+          id?: string;
+          ingredient_id?: string;
+          order_index?: number;
+          shop_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_ingredients_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_ingredients_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "shops";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_recipes: {
+        Row: {
+          id: string;
+          recipe_id: string;
+          shop_id: string;
+        };
+        Insert: {
+          id?: string;
+          recipe_id: string;
+          shop_id: string;
+        };
+        Update: {
+          id?: string;
+          recipe_id?: string;
+          shop_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_recipes_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_recipes_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "shops";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shops: {
+        Row: {
+          created_at: string;
+          id: string;
+          total_cost: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          total_cost: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          total_cost?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

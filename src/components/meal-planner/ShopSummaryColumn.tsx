@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { actions } from "astro:actions";
+import type { AggregatedIngredient } from "./utils/mealPlannerUtils";
+import {
+  calculateRemainingToTarget,
+  separateIngredientsByShelf,
+} from "./utils/mealPlannerUtils";
+import Button from "../shared/Button";
+
+interface ShopSummaryColumnProps {
+  remainingIngredients: AggregatedIngredient[];
+  totalPrice: number;
+  selectedRecipeIds: string[];
+  onShopCreated: () => void;
+  targetAmount?: number;
+}
+
+export default function ShopSummaryColumn({
+  remainingIngredients,
+  totalPrice,
+  selectedRecipeIds,
+  onShopCreated,
+  targetAmount = 40,
+}: ShopSummaryColumnProps) {
+  const [isCreating, setIsCreating] = useState(false);
+
+  const remainingToTarget = calculateRemainingToTarget(
+    totalPrice,
+    targetAmount
+  );
+  const { shelfIngredients, nonShelfIngredients } =
+    separateIngredientsByShelf(remainingIngredients);
+
+  async function handleGoToPurchase() {
+    if (remainingIngredients.length === 0) return;
+
+    setIsCreating(true);
+    try {
+      // Prepare ingredients data for the shop
+      const ingredientsData = remainingIngredients.map((agg) => ({
+        ingredientId: agg.ingredient.id,
+        amount: agg.amount,
+        cost: agg.totalCost,
+      }));
+
+      // Create the shop
+      const result = await actions.createShop({
+        recipeIds: selectedRecipeIds,
+        ingredients: ingredientsData,
+        totalCost: totalPrice,
+      });
+
+      if (result.data?.success) {
+        // Navigate to the shop detail page
+        window.location.href = `/shops/${result.data.shopId}`;
+        // Call the callback to reset state
+        onShopCreated();
+      } else {
+        console.error("Failed to create shop:", result.error);
+        alert("Failed to create shop. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error creating shop:", error);
+      alert("An error occurred while creating the shop.");
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
+  if (remainingIngredients.length === 0) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">
+          Shopping Summary
+        </h2>
+        <p className="text-gray-500 text-center py-8">
+          Select recipes and mark owned ingredients to see your shopping summary
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Shopping Summary</h2>
+
+      {/* Price summary */}
+      <div className="border-t border-gray-200 pt-4 mb-6 space-y-2">
+        <div className="flex justify-between text-lg font-semibold">
+          <span>Total:</span>
+          <span className="text-green-600">£{totalPrice.toFixed(2)}</span>
+        </div>
+
+        {remainingToTarget > 0 ? (
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Remaining to £{targetAmount}:</span>
+            <span>£{remainingToTarget.toFixed(2)}</span>
+          </div>
+        ) : (
+          <div className="text-sm text-green-600 text-center">
+            ✅ Target of £{targetAmount} reached!
+          </div>
+        )}
+      </div>
+
+      {/* Go to Purchase Button */}
+      <div className="border-t border-gray-200 py-2">
+        <Button
+          variant="success"
+          size="lg"
+          className="w-full"
+          onClick={handleGoToPurchase}
+          loading={isCreating}
+          disabled={isCreating || remainingIngredients.length === 0}
+        >
+          Go to Purchase
+        </Button>
+      </div>
+      {/* Fresh ingredients */}
+      {nonShelfIngredients.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-700">
+            Fresh Ingredients
+          </h3>
+          <div className="space-y-2">
+            {nonShelfIngredients.map(({ ingredient, totalCost, amount }) => (
+              <div
+                key={ingredient.id}
+                className="border rounded-lg p-3 border-gray-200"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">
+                      {ingredient.name}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      <span>
+                        Buy&nbsp;
+                        {Math.ceil(amount / ingredient.source.amount)}
+                        &nbsp;
+                      </span>
+                      <span>
+                        ({amount} {ingredient.unit} needed)
+                      </span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-gray-700">
+                      £{totalCost.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Pantry items */}
+      {shelfIngredients.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-700">
+            Pantry Items
+          </h3>
+          <div className="space-y-2">
+            {shelfIngredients.map(({ totalCost, ingredient, amount }) => (
+              <div
+                key={ingredient.id}
+                className="border rounded-lg p-3 border-gray-200"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">
+                      {ingredient.name}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {amount} {ingredient.unit}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-gray-700">
+                      £{totalCost.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

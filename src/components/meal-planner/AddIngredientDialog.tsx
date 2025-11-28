@@ -14,7 +14,10 @@ import {
 
 interface AddIngredientDialogProps {
   availableIngredients: Omit<Ingredient, "amount">[];
-  onAddIngredient: (ingredient: Omit<Ingredient, "amount">, amount: number) => void;
+  onAddIngredient: (
+    ingredient: Omit<Ingredient, "amount">,
+    amount: number
+  ) => void;
   trigger: React.ReactNode;
 }
 
@@ -24,7 +27,10 @@ export default function AddIngredientDialog({
   trigger,
 }: AddIngredientDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedIngredient, setSelectedIngredient] = useState<Omit<Ingredient, "amount"> | null>(null);
+  const [selectedIngredient, setSelectedIngredient] = useState<Omit<
+    Ingredient,
+    "amount"
+  > | null>(null);
   const [ingredientName, setIngredientName] = useState("");
   const [amount, setAmount] = useState<number>(1);
 
@@ -109,19 +115,17 @@ export default function AddIngredientDialog({
                 {selectedIngredient.name}
               </div>
               <div className="text-xs text-blue-700">
-                Unit: {selectedIngredient.unit} |
-                Shelf item: {selectedIngredient.shelf ? "Yes" : "No"} |
-                Price: £{selectedIngredient.source.price.toFixed(2)} per {selectedIngredient.source.amount} {selectedIngredient.unit}
+                Unit: {selectedIngredient.unit} | Shelf item:{" "}
+                {selectedIngredient.shelf ? "Yes" : "No"} | Price: £
+                {selectedIngredient.source.price.toFixed(2)} per{" "}
+                {selectedIngredient.source.amount} {selectedIngredient.unit}
               </div>
             </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button
-            variant="secondary"
-            onClick={() => setOpen(false)}
-          >
+          <Button variant="secondary" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button

@@ -13,7 +13,10 @@ interface ShoppingColumnProps {
   extraIngredients: ExtraIngredient[];
   availableIngredients: Omit<Ingredient, "amount">[];
   onIngredientToggle: (ingredientId: string) => void;
-  onAddExtraIngredient: (ingredient: Omit<Ingredient, "amount">, amount: number) => void;
+  onAddExtraIngredient: (
+    ingredient: Omit<Ingredient, "amount">,
+    amount: number
+  ) => void;
   onRemoveExtraIngredient: (ingredientId: string) => void;
 }
 
@@ -79,12 +82,16 @@ function ExtraIngredientItem({
   const totalCost = extraIngredient.ingredient.shelf
     ? extraIngredient.ingredient.source.price
     : Math.max(
-        (extraIngredient.amount * extraIngredient.ingredient.source.price) / extraIngredient.ingredient.source.amount,
+        (extraIngredient.amount * extraIngredient.ingredient.source.price) /
+          extraIngredient.ingredient.source.amount,
         extraIngredient.ingredient.source.price
       );
 
   return (
-    <CheckboxCard checked={isOwned} onToggle={() => onToggle(extraIngredient.ingredient.id)}>
+    <CheckboxCard
+      checked={isOwned}
+      onToggle={() => onToggle(extraIngredient.ingredient.id)}
+    >
       <div className="flex items-start space-x-3">
         <input
           type="checkbox"

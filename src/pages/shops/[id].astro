@@ -1,0 +1,27 @@
+---
+import ShopDetail from "../../components/shop/ShopDetail";
+import Layout from "../../layouts/Layout.astro";
+import { getShopById } from "../../lib/database";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return new Response(null, {
+    status: 404,
+    statusText: "Shop not found",
+  });
+}
+
+const shop = await getShopById(id);
+
+if (!shop) {
+  return new Response(null, {
+    status: 404,
+    statusText: "Shop not found",
+  });
+}
+---
+
+<Layout title={`Shop - ${new Date(shop.created_at).toLocaleDateString()} | Meal Guru`}>
+    <ShopDetail shop={shop} client:load />
+</Layout>
