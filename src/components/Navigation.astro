@@ -1,0 +1,54 @@
+---
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { href: "/", label: "Meal Planner" },
+  { href: "/add-recipe", label: "Add Recipe" },
+  { href: "/ingredients", label: "Ingredients" },
+  { href: "/shops", label: "Shops" },
+];
+
+const isActive = (href: string) => {
+  if (href === "/") {
+    return currentPath === "/";
+  }
+  return currentPath.startsWith(href);
+};
+---
+
+<nav class="bg-white border-b border-gray-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center space-x-1">
+        <a
+          href="/"
+          class="text-xl font-bold text-blue-600 hover:text-blue-700 mr-8"
+        >
+          Meal Guru
+        </a>
+        {
+          navItems.map((item) => (
+            <a
+              href={item.href}
+              class={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isActive(item.href)
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              }`}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </div>
+      <div>
+        <a
+          href="/logout"
+          class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+        >
+          Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
