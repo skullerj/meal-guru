@@ -1,6 +1,7 @@
 import type { Ingredient } from "../../lib/database";
 import Button from "../shared/Button";
 import CheckboxCard from "../shared/CheckboxCard";
+import Icon from "../shared/Icon";
 import IconButton from "../shared/IconButton";
 import AddIngredientDialog from "./AddIngredientDialog";
 import type { ExtraIngredient } from "./utils/mealPlannerReducer";
@@ -39,30 +40,39 @@ function IngredientItem({
   onToggle,
 }: IngredientItemProps) {
   return (
-    <CheckboxCard checked={isOwned} onToggle={() => onToggle(ingredient.id)}>
+    <CheckboxCard
+      checked={isOwned}
+      variant="yellow"
+      onToggle={() => onToggle(ingredient.id)}
+    >
       <div className="flex items-start space-x-3">
         <input
           type="checkbox"
           checked={isOwned}
           onChange={() => onToggle(ingredient.id)}
-          className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+          className="mt-1 h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded accent-yellow-500"
         />
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div className="text-start">
               <h4
-                className={`font-medium ${isOwned ? "text-green-900" : "text-gray-900"}`}
+                className={`font-medium ${isOwned ? "text-yellow-900" : "text-gray-900"}`}
               >
                 {ingredient.ingredient.name}
+                {isOwned && (
+                  <span className="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">
+                    Already have
+                  </span>
+                )}
               </h4>
               <p
-                className={`text-sm ${isOwned ? "text-green-700" : "text-gray-600"}`}
+                className={`text-sm ${isOwned ? "text-yellow-700" : "text-gray-600"}`}
               >
                 {ingredient.amount} {ingredient.ingredient.unit}
               </p>
             </div>
             <p
-              className={`text-sm font-medium ${isOwned ? "text-green-600" : "text-gray-700"}`}
+              className={`text-sm font-medium ${isOwned ? "text-yellow-600 line-through" : "text-gray-700"}`}
             >
               £{ingredient.totalCost.toFixed(2)}
             </p>
@@ -90,6 +100,7 @@ function ExtraIngredientItem({
   return (
     <CheckboxCard
       checked={isOwned}
+      variant="yellow"
       onToggle={() => onToggle(extraIngredient.ingredient.id)}
     >
       <div className="flex items-start space-x-3">
@@ -97,28 +108,33 @@ function ExtraIngredientItem({
           type="checkbox"
           checked={isOwned}
           onChange={() => onToggle(extraIngredient.ingredient.id)}
-          className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+          className="mt-1 h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded accent-yellow-500"
         />
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div className="text-start">
               <h4
-                className={`font-medium ${isOwned ? "text-green-900" : "text-gray-900"}`}
+                className={`font-medium ${isOwned ? "text-yellow-900" : "text-gray-900"}`}
               >
                 {extraIngredient.ingredient.name}
                 <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">
                   Extra
                 </span>
+                {isOwned && (
+                  <span className="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">
+                    Already have
+                  </span>
+                )}
               </h4>
               <p
-                className={`text-sm ${isOwned ? "text-green-700" : "text-gray-600"}`}
+                className={`text-sm ${isOwned ? "text-yellow-700" : "text-gray-600"}`}
               >
                 {extraIngredient.amount} {extraIngredient.ingredient.unit}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <p
-                className={`text-sm font-medium ${isOwned ? "text-green-600" : "text-gray-700"}`}
+                className={`text-sm font-medium ${isOwned ? "text-yellow-600 line-through" : "text-gray-700"}`}
               >
                 £{totalCost.toFixed(2)}
               </p>
@@ -177,6 +193,14 @@ export default function ShoppingColumn({
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Shopping List</h2>
+
+      {/* Info banner */}
+      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+        <Icon name="info" size="sm" className="text-amber-600 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-amber-800">
+          Check items you already have at home. Checked items will be excluded from your final shopping list.
+        </p>
+      </div>
 
       {/* Non-shelf ingredients (aggregated quantities) */}
       {nonShelfIngredients.length > 0 && (
@@ -237,7 +261,7 @@ export default function ShoppingColumn({
       )}
 
       {/* Add Item button */}
-      <div className="mb-4">
+      <div>
         <AddIngredientDialog
           availableIngredients={availableIngredients}
           onAddIngredient={onAddExtraIngredient}
@@ -247,12 +271,6 @@ export default function ShoppingColumn({
             </Button>
           }
         />
-      </div>
-
-      <div className="pt-4 border-t border-gray-200">
-        <p className="text-sm text-gray-600">
-          Check items you already have at home
-        </p>
       </div>
     </div>
   );

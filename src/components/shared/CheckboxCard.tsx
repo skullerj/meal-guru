@@ -1,6 +1,6 @@
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
 
-export type CheckboxCardVariant = "blue" | "green";
+export type CheckboxCardVariant = "blue" | "green" | "yellow";
 
 interface CheckboxCardProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
@@ -23,6 +23,11 @@ const variantStyles: Record<
     checked: "border-blue-500 bg-blue-50",
     unchecked: "border-gray-300 hover:border-gray-400",
     focus: "focus:ring-blue-500",
+  },
+  yellow: {
+    checked: "border-yellow-500 bg-yellow-50",
+    unchecked: "border-gray-300 hover:border-gray-400",
+    focus: "focus:ring-yellow-500",
   },
 };
 
