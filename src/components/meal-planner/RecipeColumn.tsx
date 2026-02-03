@@ -30,7 +30,7 @@ export default function RecipeColumn({
           return (
             <CheckboxCard
               key={recipe.id}
-              variant="amber"
+              variant="emerald"
               checked={isSelected}
               onToggle={() => onRecipeToggle(recipe.id)}
               className="p-4"
