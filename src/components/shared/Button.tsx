@@ -19,12 +19,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "bg-blue-600 hover:bg-blue-700 text-white border border-transparent",
-  secondary: "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50",
+  primary:
+    "bg-amber-400 hover:bg-amber-500 text-stone-900 border-2 border-amber-600 shadow-md shadow-amber-900/20",
+  secondary:
+    "bg-stone-100 border-2 border-stone-400 text-stone-800 hover:bg-stone-200",
   success:
-    "bg-green-600 hover:bg-green-700 text-white border border-transparent",
-  danger: "border border-red-300 text-red-700 hover:bg-red-50 bg-white",
-  card: "border border-gray-300 hover:border-gray-400 bg-white text-gray-900",
+    "bg-emerald-500 hover:bg-emerald-600 text-stone-900 border-2 border-emerald-700 shadow-md shadow-emerald-900/20",
+  danger: "border-2 border-red-400 text-red-800 hover:bg-red-100 bg-red-50",
+  card: "border-2 border-stone-400 hover:border-stone-500 bg-stone-50 text-stone-900",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -37,6 +39,13 @@ const iconSizes: Record<ButtonSize, "xs" | "sm" | "md"> = {
   sm: "xs",
   md: "sm",
   lg: "md",
+};
+
+// Organic/asymmetric border radius for tribal style
+const borderRadiusStyles: Record<ButtonSize, string> = {
+  sm: "8px 3px 10px 5px",
+  md: "12px 4px 16px 8px",
+  lg: "16px 6px 20px 10px",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -57,7 +66,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isDisabled = disabled || loading;
 
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
+      "inline-flex items-center justify-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500";
     const disabledStyles = "disabled:opacity-50 disabled:cursor-not-allowed";
 
     const buttonClasses = [
@@ -73,6 +82,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={isDisabled}
         className={buttonClasses}
+        style={{ borderRadius: borderRadiusStyles[size] }}
         {...props}
       >
         {loading && (

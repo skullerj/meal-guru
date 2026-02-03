@@ -1,6 +1,6 @@
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
 
-export type CheckboxCardVariant = "blue" | "green" | "yellow";
+export type CheckboxCardVariant = "amber" | "emerald" | "stone";
 
 interface CheckboxCardProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
@@ -12,30 +12,30 @@ interface CheckboxCardProps
 
 const variantStyles: Record<
   CheckboxCardVariant,
-  { checked: string; unchecked: string; focus: string }
+  { checked: string; unchecked: string }
 > = {
-  green: {
-    checked: "border-green-500 bg-green-50",
-    unchecked: "border-gray-300 hover:border-gray-400",
-    focus: "focus:ring-green-500",
+  emerald: {
+    checked: "border-emerald-500 bg-emerald-50",
+    unchecked: "border-stone-300 bg-stone-50 hover:border-stone-400",
   },
-  blue: {
-    checked: "border-blue-500 bg-blue-50",
-    unchecked: "border-gray-300 hover:border-gray-400",
-    focus: "focus:ring-blue-500",
+  amber: {
+    checked: "border-amber-500 bg-amber-50",
+    unchecked: "border-stone-300 bg-stone-50 hover:border-stone-400",
   },
-  yellow: {
-    checked: "border-yellow-500 bg-yellow-50",
-    unchecked: "border-gray-300 hover:border-gray-400",
-    focus: "focus:ring-yellow-500",
+  stone: {
+    checked: "border-stone-500 bg-stone-100",
+    unchecked: "border-stone-300 bg-stone-50 hover:border-stone-400",
   },
 };
+
+// Organic/asymmetric border radius for tribal style
+const borderRadius = "12px 4px 16px 8px";
 
 const CheckboxCard = forwardRef<HTMLButtonElement, CheckboxCardProps>(
   (
     {
       checked = false,
-      variant = "green",
+      variant = "emerald",
       onToggle,
       disabled,
       className = "",
@@ -46,17 +46,15 @@ const CheckboxCard = forwardRef<HTMLButtonElement, CheckboxCardProps>(
   ) => {
     const variantStyle = variantStyles[variant];
     const baseStyles =
-      "block w-full border rounded-lg p-3 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+      "block w-full border-2 p-3 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500";
     const checkedStyles = checked
       ? variantStyle.checked
       : variantStyle.unchecked;
-    const focusStyles = variantStyle.focus;
     const disabledStyles = "disabled:opacity-50 disabled:cursor-not-allowed";
 
     const buttonClasses = [
       baseStyles,
       checkedStyles,
-      focusStyles,
       disabledStyles,
       className,
     ].join(" ");
@@ -75,6 +73,7 @@ const CheckboxCard = forwardRef<HTMLButtonElement, CheckboxCardProps>(
         tabIndex={-1}
         disabled={disabled}
         className={buttonClasses}
+        style={{ borderRadius }}
         onClick={onToggle}
         onKeyDown={handleKeyDown}
         {...props}

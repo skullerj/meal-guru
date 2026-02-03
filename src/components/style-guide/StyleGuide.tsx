@@ -92,7 +92,7 @@ const iconButtonVariants: IconButtonVariant[] = [
 
 const iconButtonSizes: IconButtonSize[] = ["sm", "md", "lg"];
 
-const checkboxCardVariants: CheckboxCardVariant[] = ["blue", "green", "yellow"];
+const checkboxCardVariants: CheckboxCardVariant[] = ["amber", "emerald", "stone"];
 
 const mockIngredients: Omit<Ingredient, "amount">[] = [
   {
@@ -332,7 +332,7 @@ export default function StyleGuide() {
         <SubSection title="Disabled State">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl">
             <CheckboxCard
-              variant="blue"
+              variant="amber"
               checked={false}
               onToggle={() => {}}
               disabled
@@ -346,7 +346,7 @@ export default function StyleGuide() {
               </div>
             </CheckboxCard>
             <CheckboxCard
-              variant="green"
+              variant="emerald"
               checked
               onToggle={() => {}}
               disabled

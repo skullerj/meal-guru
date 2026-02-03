@@ -18,13 +18,15 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<IconButtonVariant, string> = {
-  primary: "bg-blue-600 hover:bg-blue-700 text-white border border-transparent",
-  secondary: "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50",
+  primary:
+    "bg-amber-400 hover:bg-amber-500 text-stone-900 border-2 border-amber-600 shadow-md shadow-amber-900/20",
+  secondary:
+    "bg-stone-100 border-2 border-stone-400 text-stone-800 hover:bg-stone-200",
   success:
-    "bg-green-600 hover:bg-green-700 text-white border border-transparent",
-  danger: "border border-red-300 text-red-700 hover:bg-red-50 bg-white",
+    "bg-emerald-500 hover:bg-emerald-600 text-stone-900 border-2 border-emerald-700 shadow-md shadow-emerald-900/20",
+  danger: "border-2 border-red-400 text-red-800 hover:bg-red-100 bg-red-50",
   ghost:
-    "text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-transparent",
+    "text-stone-600 hover:text-stone-800 hover:bg-stone-100 border-2 border-transparent",
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {
@@ -37,6 +39,13 @@ const iconSizes: Record<IconButtonSize, "xs" | "sm" | "md"> = {
   sm: "xs",
   md: "sm",
   lg: "md",
+};
+
+// Organic/asymmetric border radius for tribal style
+const borderRadiusStyles: Record<IconButtonSize, string> = {
+  sm: "6px 3px 8px 4px",
+  md: "8px 4px 10px 6px",
+  lg: "10px 5px 14px 8px",
 };
 
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
@@ -56,7 +65,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     const isDisabled = disabled || loading;
 
     const baseStyles =
-      "inline-flex items-center justify-center rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
+      "inline-flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500";
     const disabledStyles = "disabled:opacity-50 disabled:cursor-not-allowed";
 
     const buttonClasses = [
@@ -72,6 +81,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         ref={ref}
         disabled={isDisabled}
         className={buttonClasses}
+        style={{ borderRadius: borderRadiusStyles[size] }}
         aria-label={ariaLabel}
         {...props}
       >

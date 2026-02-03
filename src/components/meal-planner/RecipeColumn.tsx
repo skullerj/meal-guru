@@ -21,7 +21,7 @@ export default function RecipeColumn({
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Recipes</h2>
+      <h2 className="text-xl font-bold mb-4 text-stone-800">Recipes</h2>
       <div className="space-y-4">
         {sortedRecipes.map((recipe) => {
           const isSelected = selectedRecipeIds.includes(recipe.id);
@@ -30,7 +30,7 @@ export default function RecipeColumn({
           return (
             <CheckboxCard
               key={recipe.id}
-              variant="blue"
+              variant="amber"
               checked={isSelected}
               onToggle={() => onRecipeToggle(recipe.id)}
               className="p-4"
@@ -40,25 +40,25 @@ export default function RecipeColumn({
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => onRecipeToggle(recipe.id)}
-                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="mt-1 h-4 w-4 text-amber-600 focus:ring-amber-500 border-stone-300 rounded accent-amber-500"
                 />
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div className="text-start">
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-stone-900">
                         {recipe.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-stone-600 mt-1">
                         {recipe.ingredients.length} ingredients
                       </p>
-                      <p className="text-lg font-medium text-green-600 mt-2">
+                      <p className="text-lg font-medium text-emerald-600 mt-2">
                         £{recipePrice.toFixed(2)}
                       </p>
                     </div>
                     <a
                       href={`/recipe/${recipe.id}/edit`}
                       onClick={(e) => e.stopPropagation()}
-                      className="ml-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      className="ml-2 p-1.5 text-stone-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
                       title="Edit recipe"
                     >
                       <Icon name="edit" size="xs" aria-label="Edit recipe" />
