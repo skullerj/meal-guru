@@ -19,7 +19,7 @@ export default function EditRecipeHeader({
   onReset,
 }: EditRecipeHeaderProps) {
   return (
-    <div className="bg-white shadow-sm border-b border-gray-200 p-6">
+    <div className="rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex justify-between items-end gap-2">
         {/* Recipe Name */}
         <div className="flex-1 max-w-lg">

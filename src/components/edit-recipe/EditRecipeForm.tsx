@@ -155,7 +155,7 @@ export default function EditRecipeForm({
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex-1 container p-6 lg:p-8 mx-auto">
       {/* Header */}
       <EditRecipeHeader
         recipeName={state.recipeName}
@@ -203,7 +203,7 @@ export default function EditRecipeForm({
       )}
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="py-4 mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Ingredients List */}
           <IngredientListColumn

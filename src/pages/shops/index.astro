@@ -1,4 +1,5 @@
 ---
+import Button from "../../components/shared/Button.tsx";
 import Layout from "../../layouts/Layout.astro";
 import { getShops } from "../../lib/database";
 
@@ -6,77 +7,100 @@ const shops = await getShops();
 ---
 
 <Layout title="Shop History | Meal Guru">
-    <div class="container mx-auto p-6">
+    <div class="container mx-auto p-6 lg:p-8">
         <!-- Header -->
         <div class="mb-8 flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Shop History</h1>
-                <p class="text-gray-600">View all your previous shopping lists</p>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    Shop History
+                </h1>
+                <p class="text-gray-600">
+                    View all your previous shopping lists
+                </p>
             </div>
-            <a href="/" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-                Plan New Shop
+            <a href="/">
+                <Button>Plan New Shop</Button>
             </a>
         </div>
 
         <!-- Shops list -->
-        {shops.length === 0 ? (
-            <div class="bg-white p-12 rounded-lg shadow-md text-center">
-                <p class="text-gray-500 text-lg mb-4">No shops found</p>
-                <p class="text-gray-400 mb-6">Create your first shop by planning meals and ingredients</p>
-                <a href="/" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-                    Get Started
-                </a>
-            </div>
-        ) : (
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {shops.map((shop) => (
-                    <a href={`/shops/${shop.id}`} class="block">
-                        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 hover:border-blue-300">
-                            {/* Date */}
-                            <div class="mb-4">
-                                <p class="text-sm text-gray-500 mb-1">Created</p>
-                                <p class="text-lg font-semibold text-gray-900">
-                                    {new Date(shop.created_at).toLocaleDateString('en-GB', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    {new Date(shop.created_at).toLocaleTimeString('en-GB', {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </p>
-                            </div>
-
-                            {/* Recipes */}
-                            <div class="mb-4">
-                                <p class="text-sm text-gray-500 mb-1">Recipes</p>
-                                <p class="text-gray-700 line-clamp-2">
-                                    {shop.recipe_names.join(', ')}
-                                </p>
-                            </div>
-
-                            {/* Stats */}
-                            <div class="flex justify-between items-end border-t border-gray-200 pt-4">
-                                <div>
-                                    <p class="text-sm text-gray-500">Items</p>
-                                    <p class="text-xl font-semibold text-gray-900">
-                                        {shop.ingredient_count}
-                                    </p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm text-gray-500">Total</p>
-                                    <p class="text-2xl font-bold text-green-600">
-                                        £{shop.total_cost.toFixed(2)}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+        {
+            shops.length === 0 ? (
+                <div class="bg-white p-12 rounded-lg shadow-md text-center">
+                    <p class="text-gray-500 text-lg mb-4">No shops found</p>
+                    <p class="text-gray-400 mb-6">
+                        Create your first shop by planning meals and ingredients
+                    </p>
+                    <a
+                        href="/"
+                        class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                    >
+                        Get Started
                     </a>
-                ))}
-            </div>
-        )}
+                </div>
+            ) : (
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {shops.map((shop) => (
+                        <a href={`/shops/${shop.id}`} class="block">
+                            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 hover:border-blue-300">
+                                {/* Date */}
+                                <div class="mb-4">
+                                    <p class="text-sm text-gray-500 mb-1">
+                                        Created
+                                    </p>
+                                    <p class="text-lg font-semibold text-gray-900">
+                                        {new Date(
+                                            shop.created_at,
+                                        ).toLocaleDateString("en-GB", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
+                                    </p>
+                                    <p class="text-sm text-gray-600">
+                                        {new Date(
+                                            shop.created_at,
+                                        ).toLocaleTimeString("en-GB", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })}
+                                    </p>
+                                </div>
+
+                                {/* Recipes */}
+                                <div class="mb-4">
+                                    <p class="text-sm text-gray-500 mb-1">
+                                        Recipes
+                                    </p>
+                                    <p class="text-gray-700 line-clamp-2">
+                                        {shop.recipe_names.join(", ")}
+                                    </p>
+                                </div>
+
+                                {/* Stats */}
+                                <div class="flex justify-between items-end border-t border-gray-200 pt-4">
+                                    <div>
+                                        <p class="text-sm text-gray-500">
+                                            Items
+                                        </p>
+                                        <p class="text-xl font-semibold text-gray-900">
+                                            {shop.ingredient_count}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-gray-500">
+                                            Total
+                                        </p>
+                                        <p class="text-2xl font-bold text-green-600">
+                                            £{shop.total_cost.toFixed(2)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            )
+        }
     </div>
 </Layout>

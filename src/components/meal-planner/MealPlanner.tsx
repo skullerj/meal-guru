@@ -54,7 +54,7 @@ export default function MealPlanner({
   );
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 lg:px-8">
       {/* Header */}
       <div className="mb-8 flex justify-between items-end">
         <div className="flex flex-col">
