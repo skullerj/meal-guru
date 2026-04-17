@@ -1,12 +1,13 @@
-import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import Icon, { type IconName } from "./Icon";
 
 export type ButtonVariant =
   | "primary"
   | "secondary"
+  | "ghost"
   | "success"
-  | "danger"
-  | "card";
+  | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,32 +21,27 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-amber-400 hover:bg-amber-500 text-stone-900 border-2 border-amber-600 shadow-md shadow-amber-900/20",
+    "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
   secondary:
-    "bg-stone-100 border-2 border-stone-400 text-stone-800 hover:bg-stone-200",
+    "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
+  ghost:
+    "text-foreground hover:bg-accent hover:text-accent-foreground",
   success:
-    "bg-emerald-500 hover:bg-emerald-600 text-stone-900 border-2 border-emerald-700 shadow-md shadow-emerald-900/20",
-  danger: "border-2 border-red-400 text-red-800 hover:bg-red-100 bg-red-50",
-  card: "border-2 border-stone-400 hover:border-stone-500 bg-stone-50 text-stone-900",
+    "bg-[var(--success)] text-[var(--success-foreground)] hover:bg-[var(--success)]/90 shadow-sm",
+  danger:
+    "bg-transparent text-destructive border border-destructive/40 hover:bg-destructive/10",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-base",
-  lg: "px-6 py-3 text-lg",
+  sm: "h-8 px-3 text-sm gap-1.5",
+  md: "h-9 px-4 text-sm gap-2",
+  lg: "h-11 px-6 text-base gap-2",
 };
 
-const iconSizes: Record<ButtonSize, "xs" | "sm" | "md"> = {
+const iconSizes: Record<ButtonSize, "xs" | "sm"> = {
   sm: "xs",
-  md: "sm",
-  lg: "md",
-};
-
-// Organic/asymmetric border radius for tribal style
-const borderRadiusStyles: Record<ButtonSize, string> = {
-  sm: "8px 3px 10px 5px",
-  md: "12px 4px 16px 8px",
-  lg: "16px 6px 20px 10px",
+  md: "xs",
+  lg: "sm",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -57,7 +53,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       leftIcon,
       rightIcon,
       disabled,
-      className = "",
+      className,
       children,
       ...props
     },
@@ -65,40 +61,29 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const isDisabled = disabled || loading;
 
-    const baseStyles =
-      "inline-flex items-center justify-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500";
-    const disabledStyles = "disabled:opacity-50 disabled:cursor-not-allowed";
-
-    const buttonClasses = [
-      baseStyles,
-      variantStyles[variant],
-      sizeStyles[size],
-      disabledStyles,
-      className,
-    ].join(" ");
-
     return (
       <button
         ref={ref}
         disabled={isDisabled}
-        className={buttonClasses}
-        style={{ borderRadius: borderRadiusStyles[size] }}
+        className={cn(
+          "inline-flex items-center justify-center rounded-md font-medium",
+          "transition-colors focus-visible:outline-none focus-visible:ring-2",
+          "focus-visible:ring-ring focus-visible:ring-offset-2",
+          "disabled:pointer-events-none disabled:opacity-50",
+          variantStyles[variant],
+          sizeStyles[size],
+          className
+        )}
         {...props}
       >
-        {loading && (
-          <Icon
-            name="loading"
-            size={iconSizes[size]}
-            className="mr-2 animate-spin"
-            aria-label="Loading"
-          />
-        )}
-        {!loading && leftIcon && (
-          <Icon name={leftIcon} size={iconSizes[size]} className="mr-2" />
+        {loading ? (
+          <Icon name="loader" size={iconSizes[size]} className="animate-spin" />
+        ) : (
+          leftIcon && <Icon name={leftIcon} size={iconSizes[size]} />
         )}
         {children}
         {!loading && rightIcon && (
-          <Icon name={rightIcon} size={iconSizes[size]} className="ml-2" />
+          <Icon name={rightIcon} size={iconSizes[size]} />
         )}
       </button>
     );

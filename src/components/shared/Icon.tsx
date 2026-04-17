@@ -1,33 +1,29 @@
 import {
-  AlertTriangle,
   ArrowLeft,
-  CheckCircle,
+  Check,
+  ChefHat,
+  ChevronRight,
   Edit3,
-  Info,
   Loader2,
-  Package,
   Plus,
-  RotateCcw,
-  Save,
+  ShoppingCart,
+  Sparkles,
   Trash2,
-  Upload,
   X,
 } from "lucide-react";
 
 export type IconName =
-  | "check-circle"
-  | "upload"
-  | "loading"
-  | "warning"
   | "arrow-left"
-  | "reset"
-  | "save"
+  | "check"
+  | "chef-hat"
+  | "chevron-right"
   | "edit"
-  | "delete"
-  | "add"
-  | "info"
-  | "close"
-  | "package";
+  | "loader"
+  | "plus"
+  | "shopping-cart"
+  | "sparkles"
+  | "trash"
+  | "x";
 
 export type IconSize = "xs" | "sm" | "md" | "lg" | "xl";
 
@@ -35,59 +31,48 @@ interface IconProps {
   name: IconName;
   size?: IconSize;
   className?: string;
-  color?: string;
   "aria-label"?: string;
 }
 
 const iconMap = {
-  "check-circle": CheckCircle,
-  upload: Upload,
-  loading: Loader2,
-  warning: AlertTriangle,
   "arrow-left": ArrowLeft,
-  reset: RotateCcw,
-  save: Save,
+  check: Check,
+  "chef-hat": ChefHat,
+  "chevron-right": ChevronRight,
   edit: Edit3,
-  delete: Trash2,
-  add: Plus,
-  info: Info,
-  close: X,
-  package: Package,
+  loader: Loader2,
+  plus: Plus,
+  "shopping-cart": ShoppingCart,
+  sparkles: Sparkles,
+  trash: Trash2,
+  x: X,
 } as const;
 
 const sizeMap: Record<IconSize, number> = {
-  xs: 16, // h-4 w-4
-  sm: 20, // h-5 w-5
-  md: 24, // h-6 w-6
-  lg: 32, // h-8 w-8
-  xl: 48, // h-12 w-12
+  xs: 14,
+  sm: 16,
+  md: 20,
+  lg: 24,
+  xl: 32,
 };
 
 export default function Icon({
   name,
   size = "md",
   className = "",
-  color = "currentColor",
   "aria-label": ariaLabel,
-  ...props
 }: IconProps) {
   const IconComponent = iconMap[name];
-  const iconSize = sizeMap[size];
+  const px = sizeMap[size];
 
-  if (!IconComponent) {
-    console.warn(`Icon "${name}" not found`);
-    return null;
-  }
+  if (!IconComponent) return null;
 
   return (
     <IconComponent
-      size={iconSize}
-      color={color}
+      size={px}
       className={className}
       aria-label={ariaLabel}
-      role="img"
       aria-hidden={!ariaLabel}
-      {...props}
     />
   );
 }

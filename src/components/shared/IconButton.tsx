@@ -1,12 +1,12 @@
-import { type ButtonHTMLAttributes, forwardRef } from "react";
+import { forwardRef, type ButtonHTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 import Icon, { type IconName } from "./Icon";
 
 export type IconButtonVariant =
   | "primary"
   | "secondary"
-  | "success"
-  | "danger"
-  | "ghost";
+  | "ghost"
+  | "danger";
 export type IconButtonSize = "sm" | "md" | "lg";
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,20 +19,19 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<IconButtonVariant, string> = {
   primary:
-    "bg-amber-400 hover:bg-amber-500 text-stone-900 border-2 border-amber-600 shadow-md shadow-amber-900/20",
+    "bg-primary text-primary-foreground hover:bg-primary/90",
   secondary:
-    "bg-stone-100 border-2 border-stone-400 text-stone-800 hover:bg-stone-200",
-  success:
-    "bg-emerald-500 hover:bg-emerald-600 text-stone-900 border-2 border-emerald-700 shadow-md shadow-emerald-900/20",
-  danger: "border-2 border-red-400 text-red-800 hover:bg-red-100 bg-red-50",
+    "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
   ghost:
-    "text-stone-600 hover:text-stone-800 hover:bg-stone-100 border-2 border-transparent",
+    "text-muted-foreground hover:text-foreground hover:bg-accent",
+  danger:
+    "text-destructive hover:bg-destructive/10",
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {
-  sm: "p-1.5",
-  md: "p-2",
-  lg: "p-3",
+  sm: "size-7",
+  md: "size-8",
+  lg: "size-10",
 };
 
 const iconSizes: Record<IconButtonSize, "xs" | "sm" | "md"> = {
@@ -41,54 +40,40 @@ const iconSizes: Record<IconButtonSize, "xs" | "sm" | "md"> = {
   lg: "md",
 };
 
-// Organic/asymmetric border radius for tribal style
-const borderRadiusStyles: Record<IconButtonSize, string> = {
-  sm: "6px 3px 8px 4px",
-  md: "8px 4px 10px 6px",
-  lg: "10px 5px 14px 8px",
-};
-
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   (
     {
       icon,
-      variant = "secondary",
+      variant = "ghost",
       size = "md",
       loading = false,
       disabled,
-      className = "",
+      className,
       "aria-label": ariaLabel,
       ...props
     },
     ref
   ) => {
-    const isDisabled = disabled || loading;
-
-    const baseStyles =
-      "inline-flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500";
-    const disabledStyles = "disabled:opacity-50 disabled:cursor-not-allowed";
-
-    const buttonClasses = [
-      baseStyles,
-      variantStyles[variant],
-      sizeStyles[size],
-      disabledStyles,
-      className,
-    ].join(" ");
-
     return (
       <button
         ref={ref}
-        disabled={isDisabled}
-        className={buttonClasses}
-        style={{ borderRadius: borderRadiusStyles[size] }}
+        disabled={disabled || loading}
         aria-label={ariaLabel}
+        className={cn(
+          "inline-flex items-center justify-center rounded-md",
+          "transition-colors focus-visible:outline-none focus-visible:ring-2",
+          "focus-visible:ring-ring focus-visible:ring-offset-2",
+          "disabled:pointer-events-none disabled:opacity-50",
+          variantStyles[variant],
+          sizeStyles[size],
+          className
+        )}
         {...props}
       >
         <Icon
-          name={loading ? "loading" : icon}
+          name={loading ? "loader" : icon}
           size={iconSizes[size]}
-          className={loading ? "animate-spin" : ""}
+          className={loading ? "animate-spin" : undefined}
           aria-label={loading ? "Loading" : ariaLabel}
         />
       </button>

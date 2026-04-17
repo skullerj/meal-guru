@@ -1,14 +1,18 @@
 ---
-import MealPlanner from "../components/meal-planner/MealPlanner";
 import Layout from "../layouts/Layout.astro";
-import { getAllIngredients, getRecipes } from "../lib/database";
-
-const [recipes, ingredients] = await Promise.all([
-  getRecipes(),
-  getAllIngredients(),
-]);
 ---
 
-<Layout>
-    <MealPlanner recipes={recipes} ingredients={ingredients} client:load />
+<Layout title="Home">
+  <main class="min-h-screen bg-background">
+    <div class="max-w-5xl mx-auto px-4 py-12">
+      <header class="mb-10">
+        <h1 class="text-3xl font-bold text-foreground">Meal Guru</h1>
+        <p class="text-muted-foreground mt-1">What are you cooking this week?</p>
+      </header>
+
+      <p class="text-muted-foreground">
+        Meal planner coming soon. Start by <a href="/recipes" class="text-primary underline underline-offset-4">managing your recipes</a>.
+      </p>
+    </div>
+  </main>
 </Layout>
