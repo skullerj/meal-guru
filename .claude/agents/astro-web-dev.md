@@ -137,6 +137,16 @@ components/
 - **Icons**: Always add new icons to `Icon.tsx` iconMap before using them
 - **No hardcoded colors**: Use Tailwind semantic classes (`bg-primary`, `text-muted-foreground`, etc.)
 
+## shadcn Skill
+
+When you need to add a new shadcn/ui component to the project, use the `shadcn` skill via the Skill tool:
+
+```
+Skill({ skill: "shadcn", args: "add <component-name>" })
+```
+
+This skill knows about the project's `components.json` config, handles the CLI invocation, and ensures the component lands in the right path (`src/components/ui/`). Use it instead of running `npx shadcn` manually.
+
 ## Execution Workflow
 
 1. **Read first.** Before editing any file, read it.
