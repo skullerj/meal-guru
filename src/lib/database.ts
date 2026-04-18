@@ -1,5 +1,17 @@
-import type { Ingredient, Recipe, Shop } from "../data/types";
+import type {
+  Ingredient,
+  Recipe,
+  RecipeIngredient,
+  Shop,
+  Unit,
+} from "../data/types";
 import { supabase } from "./supabase";
+
+export interface IngredientInput {
+  name: string;
+  amount: number;
+  unit: Unit;
+}
 
 export async function getRecipes(): Promise<Recipe[]> {
   const { data, error } = await supabase
@@ -93,6 +105,70 @@ export async function upsertIngredient(
     .single();
   if (error) throw error;
   return data as Ingredient;
+}
+
+export async function setRecipeIngredients(
+  recipeId: string,
+  ingredients: IngredientInput[]
+): Promise<RecipeIngredient[]> {
+  const { error: deleteError } = await supabase
+    .from("recipe_ingredients")
+    .delete()
+    .eq("recipe_id", recipeId);
+  if (deleteError) throw deleteError;
+
+  const result: RecipeIngredient[] = [];
+
+  for (let i = 0; i < ingredients.length; i++) {
+    const { name, amount, unit } = ingredients[i];
+
+    const { data: ingredient, error: ingError } = await supabase
+      .from("ingredients")
+      .upsert({ name, unit }, { onConflict: "name" })
+      .select()
+      .single();
+    if (ingError) throw ingError;
+
+    const { data: ri, error: riError } = await supabase
+      .from("recipe_ingredients")
+      .insert({
+        recipe_id: recipeId,
+        ingredient_id: ingredient.id,
+        amount,
+        order_index: i,
+      })
+      .select(
+        `id, recipe_id, ingredient_id, amount, order_index,
+         ingredient:ingredients(id, name, unit, shelf, created_at)`
+      )
+      .single();
+    if (riError) throw riError;
+
+    result.push(ri as unknown as RecipeIngredient);
+  }
+
+  return result;
+}
+
+export async function createRecipeWithIngredients(
+  name: string,
+  ingredients: IngredientInput[]
+): Promise<Recipe> {
+  const recipe = await createRecipe(name);
+  const recipeIngredients = await setRecipeIngredients(recipe.id, ingredients);
+  return { ...recipe, ingredients: recipeIngredients };
+}
+
+export async function updateRecipeWithIngredients(
+  id: string,
+  name: string,
+  ingredients: IngredientInput[]
+): Promise<Recipe> {
+  await updateRecipe(id, name);
+  const recipeIngredients = await setRecipeIngredients(id, ingredients);
+  const recipe = await getRecipe(id);
+  if (!recipe) throw new Error(`Recipe ${id} not found after update`);
+  return { ...recipe, ingredients: recipeIngredients };
 }
 
 export async function getRecentShops(limit = 4): Promise<Shop[]> {

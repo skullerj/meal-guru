@@ -64,6 +64,8 @@ Follow the useReducer pattern from CLAUDE.md for state management.
 
 ---
 
+### `astro-backend-dev` (project agent — invoke via Agent tool with `subagent_type: "astro-backend-dev"` ... actually this is a project-level agent and cannot be invoked via the Agent tool. Use `general-purpose` for all backend work instead, with the same rules.)
+
 ### `general-purpose`
 **Use for:** Everything that isn't UI — database functions, business logic, Supabase migrations, algorithms.
 
@@ -72,6 +74,8 @@ Follow the useReducer pattern from CLAUDE.md for state management.
 - Creating Supabase migration SQL files
 - Implementing scoring algorithms (suggestion feature)
 - Utility functions in `src/lib/` or component `utils/` files
+
+**Critical rule for backend work**: All `supabase.from()` calls must live in `src/lib/database.ts`. Action handlers in `src/actions/` only call exported database functions — never inline Supabase queries. Never define local helper functions inside action files that call Supabase; those helpers belong in `database.ts`.
 
 **Example: Creating a migration**
 ```

@@ -112,12 +112,39 @@ export async function createRecipe(name: string): Promise<Recipe> {
 
 ## Hard Rules
 
-1. **Zod always**: Every `defineAction` must have an `input` schema — no exceptions, even for actions with a single field
+1. **Zod always**: Every `defineAction` must have an `input` schema — no exceptions, even for actions with a single field. Always import `z` from `astro:schema`, not from the `zod` package.
 2. **ActionError for expected failures**: Throw `new ActionError({ code: 'NOT_FOUND' | 'UNAUTHORIZED' | 'BAD_REQUEST', message: '...' })` for known error conditions; let unexpected errors propagate naturally
-3. **database.ts owns queries**: All Supabase `.from()` calls live in `database.ts`. Action handlers only call those exported functions — no inline queries inside `handler`
+3. **database.ts owns ALL queries — no exceptions**: Every single `supabase.from()` call must live in `database.ts`. Action handlers call exported database functions only. This is the most commonly violated rule — watch for it.
 4. **TypeScript strict**: No `any` types. Use interfaces from `src/data/types.ts`
 5. **No biome-ignore comments**: Fix the root cause instead
 6. **Commit prefix**: `feat:` for new actions/functions, `fix:` for bug fixes, `chore:` for refactors
+
+### Rule 3 — Concrete example
+
+**Wrong** — querying Supabase inside an action handler:
+```typescript
+// src/actions/recipes.ts ❌
+handler: async ({ name, ingredients }) => {
+  const { data, error } = await supabase.from('recipes').insert({ name }).select().single();
+  if (error) throw error;
+  // ... more inline queries
+}
+```
+
+**Right** — handler calls a database.ts function:
+```typescript
+// src/lib/database.ts ✅ — query lives here
+export async function createRecipeWithIngredients(name: string, ingredients: IngredientInput[]): Promise<Recipe> {
+  // all supabase.from() calls go here
+}
+
+// src/actions/recipes.ts ✅ — handler is thin
+handler: async ({ name, ingredients }) => {
+  return await createRecipeWithIngredients(name, ingredients);
+}
+```
+
+This also means: never define helper functions inside action files that call `supabase` — move those helpers to `database.ts` instead.
 
 ## Database Schema Summary
 
