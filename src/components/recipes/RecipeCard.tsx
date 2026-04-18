@@ -1,0 +1,40 @@
+import type { Recipe } from "@/data/types";
+import IconButton from "@/components/shared/IconButton";
+
+interface Props {
+  recipe: Recipe;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
+  const count = recipe.ingredients.length;
+
+  return (
+    <div className="flex items-center justify-between border border-border rounded-lg px-4 py-3 hover:shadow-sm transition-shadow bg-card">
+      <div className="flex flex-col gap-0.5">
+        <h3 className="font-semibold text-foreground">{recipe.name}</h3>
+        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit">
+          {count} {count === 1 ? "ingredient" : "ingredients"}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <IconButton
+          icon="edit"
+          variant="ghost"
+          size="sm"
+          aria-label="Edit recipe"
+          onClick={onEdit}
+        />
+        <IconButton
+          icon="trash"
+          variant="danger"
+          size="sm"
+          aria-label="Delete recipe"
+          onClick={onDelete}
+        />
+      </div>
+    </div>
+  );
+}
