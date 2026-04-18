@@ -11,18 +11,18 @@ Old code is preserved on the `archive/v1` branch for reference.
 ### ✅ 0. Archive old code
 - [x] Create `archive/v1` branch with all v1 code
 
-### 🔲 1. Design system foundation
-- [ ] shadcn/ui (New York style) installed and configured
-- [ ] CSS custom properties defined in `global.css` (colors, spacing)
-- [ ] Shared components: `Button`, `IconButton`, `Icon` with clean, consistent styling
-- [ ] Typeface chosen and applied
+### ✅ 1. Design system foundation
+- [x] shadcn/ui (New York style) installed and configured
+- [x] CSS custom properties defined in `global.css` (colors, spacing)
+- [x] Shared components: `Button`, `IconButton`, `Icon` with clean, consistent styling
+- [x] Typeface chosen and applied
 
-### 🔲 2. Recipe list (CRUD)
-- [ ] `/recipes` page — list all recipes
-- [ ] Add recipe form: name + ingredients (name, amount, unit)
-- [ ] Edit recipe
-- [ ] Delete recipe
-- [ ] Data: `recipes`, `ingredients`, `recipe_ingredients` tables in Supabase
+### ✅ 2. Recipe list (CRUD)
+- [x] `/recipes` page — list all recipes
+- [x] Add recipe form: name + ingredients (name, amount, unit)
+- [x] Edit recipe
+- [x] Delete recipe
+- [x] Data: `recipes`, `ingredients`, `recipe_ingredients` tables in Supabase
 
 ### 🔲 3. Weekly meal picker
 - [ ] Recipe grid with toggle selection
