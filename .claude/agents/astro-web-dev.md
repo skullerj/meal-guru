@@ -159,6 +159,7 @@ This skill knows about the project's `components.json` config, handles the CLI i
 ## Hard Rules
 
 - Use `Button.tsx` for all buttons, `Icon.tsx` for all icons, `IconButton.tsx` for icon-only buttons.
+- Add `autoComplete="off"` to all `<input>` elements unless the field is specifically a login/signup credential (email, password).
 - Use shadcn Dialog (`@/components/ui/dialog`) for all modal dialogs.
 - Never pass `dispatch` or `setState` directly to child components — use callback props.
 - Never add `biome-ignore` comments.
