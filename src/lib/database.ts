@@ -15,7 +15,7 @@ export async function getRecipes(): Promise<Recipe[]> {
         ingredient_id,
         amount,
         order_index,
-        ingredient:ingredients(id, name, unit, category, shelf, created_at)
+        ingredient:ingredients(id, name, unit, shelf, created_at)
       )
     `
     )
@@ -39,7 +39,7 @@ export async function getRecipe(id: string): Promise<Recipe | null> {
         ingredient_id,
         amount,
         order_index,
-        ingredient:ingredients(id, name, unit, category, shelf, created_at)
+        ingredient:ingredients(id, name, unit, shelf, created_at)
       )
     `
     )
@@ -113,7 +113,7 @@ export async function getRecentShops(limit = 4): Promise<Shop[]> {
             ingredient_id,
             amount,
             order_index,
-            ingredient:ingredients(id, name, unit, category, shelf, created_at)
+            ingredient:ingredients(id, name, unit, shelf, created_at)
           )
         )
       )

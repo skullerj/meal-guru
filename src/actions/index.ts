@@ -136,7 +136,7 @@ async function upsertAndLinkIngredients(
         ingredient_id,
         amount,
         order_index,
-        ingredient:ingredients(id, name, unit, category, shelf, created_at)
+        ingredient:ingredients(id, name, unit, shelf, created_at)
       `
       )
       .single();
