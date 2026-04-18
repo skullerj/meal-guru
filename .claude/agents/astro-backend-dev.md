@@ -118,6 +118,7 @@ export async function createRecipe(name: string): Promise<Recipe> {
 4. **TypeScript strict**: No `any` types. Use interfaces from `src/data/types.ts`
 5. **No biome-ignore comments**: Fix the root cause instead
 6. **Commit prefix**: `feat:` for new actions/functions, `fix:` for bug fixes, `chore:` for refactors
+7. **Error logging in handlers**: Wrap every database call in a try/catch. Log with `console.error('[action.namespace]', { ...relevantInput }, e)` before re-throwing. Use the action namespace as the tag (e.g. `[recipes.create]`, `[recipes.delete]`). Only include input fields relevant to identifying the failing record — never log full ingredient arrays or large payloads. Do not log `ActionError` throws for expected failures (NOT_FOUND, etc.) — only unexpected database errors.
 
 ### Rule 3 — Concrete example
 

@@ -31,7 +31,12 @@ export const recipes = {
       ingredients: z.array(ingredientInputSchema),
     }),
     handler: async ({ name, ingredients }) => {
-      return await createRecipeWithIngredients(name, ingredients);
+      try {
+        return await createRecipeWithIngredients(name, ingredients);
+      } catch (e) {
+        console.error("[recipes.create]", { name }, e);
+        throw e;
+      }
     },
   }),
 
@@ -48,7 +53,12 @@ export const recipes = {
           code: "NOT_FOUND",
           message: "Recipe not found",
         });
-      return await updateRecipeWithIngredients(id, name, ingredients);
+      try {
+        return await updateRecipeWithIngredients(id, name, ingredients);
+      } catch (e) {
+        console.error("[recipes.update]", { id, name }, e);
+        throw e;
+      }
     },
   }),
 
@@ -57,7 +67,12 @@ export const recipes = {
       id: z.string().uuid(),
     }),
     handler: async ({ id }) => {
-      await deleteRecipe(id);
+      try {
+        await deleteRecipe(id);
+      } catch (e) {
+        console.error("[recipes.delete]", { id }, e);
+        throw e;
+      }
     },
   }),
 };
