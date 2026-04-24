@@ -22,6 +22,7 @@ const ingredientInputSchema = z.object({
     "lb",
     "unit",
   ]),
+  ingredient_id: z.string().uuid().optional(),
 });
 
 export const recipes = {

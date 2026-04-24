@@ -24,13 +24,17 @@ interface KeyedRow {
   data: IngredientInput;
 }
 
-function buildInitialRows(counter: { current: number }, recipe?: Recipe): KeyedRow[] {
+function buildInitialRows(
+  counter: { current: number },
+  recipe?: Recipe,
+): KeyedRow[] {
   const inputs: IngredientInput[] =
     recipe && recipe.ingredients.length > 0
       ? recipe.ingredients.map((ri) => ({
           name: ri.ingredient.name,
           amount: ri.amount,
           unit: ri.ingredient.unit,
+          ingredient_id: ri.ingredient.id,
         }))
       : [{ name: "", amount: 1, unit: "unit" as const }];
 
@@ -48,12 +52,12 @@ export default function RecipeFormDialog({
   const counter = useRef(0);
   const [recipeName, setRecipeName] = useState(recipe?.name ?? "");
   const [rows, setRows] = useState<KeyedRow[]>(() =>
-    buildInitialRows(counter, recipe)
+    buildInitialRows(counter, recipe),
   );
 
   function handleRowChange(index: number, value: IngredientInput) {
     setRows((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, data: value } : r))
+      prev.map((r, i) => (i === index ? { ...r, data: value } : r)),
     );
   }
 
@@ -72,9 +76,7 @@ export default function RecipeFormDialog({
   function handleSubmit() {
     onSave({
       name: recipeName,
-      ingredients: rows
-        .map((r) => r.data)
-        .filter((r) => r.name.trim() !== ""),
+      ingredients: rows.map((r) => r.data).filter((r) => r.name.trim() !== ""),
     });
   }
 
@@ -102,6 +104,7 @@ export default function RecipeFormDialog({
               onChange={(e) => setRecipeName(e.target.value)}
               placeholder="e.g. Chicken stir-fry"
               className="border border-border rounded px-3 py-2 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              autoComplete="off"
             />
           </div>
 

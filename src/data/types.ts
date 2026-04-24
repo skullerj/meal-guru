@@ -17,7 +17,6 @@ export interface Ingredient {
   name: string;
   unit: Unit;
   category: Category;
-  shelf: boolean;
   created_at: string;
 }
 
@@ -35,10 +34,4 @@ export interface Recipe {
   name: string;
   created_at: string;
   ingredients: RecipeIngredient[];
-}
-
-export interface Shop {
-  id: string;
-  created_at: string;
-  recipes: Recipe[];
 }
