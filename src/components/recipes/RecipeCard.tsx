@@ -11,7 +11,7 @@ export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
   const count = recipe.ingredients.length;
 
   return (
-    <div className="flex items-center justify-between border border-border rounded-lg px-4 py-3 hover:shadow-sm transition-shadow bg-card">
+    <div data-testid="recipe-card" className="flex items-center justify-between border border-border rounded-lg px-4 py-3 hover:shadow-sm transition-shadow bg-card">
       <div className="flex flex-col gap-0.5">
         <h3 className="font-semibold text-foreground">{recipe.name}</h3>
         <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit">
