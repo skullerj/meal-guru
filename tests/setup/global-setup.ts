@@ -1,7 +1,12 @@
+import { resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadEnv } from "dotenv";
-import { resolve } from "node:path";
-import { TEST_INGREDIENTS, TEST_RECIPE_NAME } from "../fixtures/data";
+import {
+  TEST_CREATED_INGREDIENTS,
+  TEST_CREATED_RECIPES,
+  TEST_INGREDIENTS,
+  TEST_RECIPE_NAME,
+} from "../fixtures/data";
 
 loadEnv({ path: resolve(process.cwd(), ".env.test") });
 
@@ -10,17 +15,19 @@ export default async function globalSetup() {
   const serviceKey = process.env.SUPABASE_KEY;
 
   if (!url || !serviceKey) {
-    throw new Error(
-      "Missing SUPABASE_URL or SUPABASE_KEY in .env.test"
-    );
+    throw new Error("Missing SUPABASE_URL or SUPABASE_KEY in .env.test");
   }
 
   const supabase = createClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // Remove any leftover test recipe from a previous run (cascades to recipe_ingredients)
-  await supabase.from("recipes").delete().eq("name", TEST_RECIPE_NAME);
+  // Wipe all test-owned records from previous runs (recipes cascade to recipe_ingredients)
+  await supabase.from("recipes").delete().in("name", TEST_CREATED_RECIPES);
+  await supabase
+    .from("ingredients")
+    .delete()
+    .in("name", TEST_CREATED_INGREDIENTS);
 
   // Upsert test ingredients (safe to run repeatedly)
   const { data: ingredients, error: ingError } = await supabase

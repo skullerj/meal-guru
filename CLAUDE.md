@@ -40,6 +40,15 @@ npm run format
 
 # Run Astro CLI commands
 npm run astro ...
+
+# Run E2E tests (requires .env.test — see Testing section)
+npm run test:e2e
+
+# Open Playwright HTML report after a failed run
+npm run test:e2e:report
+
+# Interactive Playwright UI for debugging
+npm run test:e2e:ui
 ```
 
 ## Environment Configuration
@@ -60,6 +69,42 @@ To get Supabase credentials:
 1. Sign up at https://supabase.com
 2. Create a new project
 3. Go to Settings > API to get your URL and anon key
+
+## Testing
+
+The project uses Playwright for E2E tests against the hosted Supabase instance.
+
+### Setup
+
+Create a `.env.test` file in the project root:
+```bash
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_KEY=your_supabase_service_role_key_here  # Secret key (not the publishable one)
+```
+
+The service role key is needed because `global-setup.ts` seeds and cleans test data with elevated permissions.
+
+Install the Playwright browser on first use:
+```bash
+npx playwright install chromium
+```
+
+### Test structure
+
+```
+tests/
+├── e2e/              # Playwright spec files (one per feature area)
+├── fixtures/
+│   └── data.ts       # All test data constants — recipe names, ingredient names, seed data
+└── setup/
+    └── global-setup.ts  # Runs before every test run: wipes then re-seeds test data
+```
+
+### Conventions
+
+- **Cleanup in global-setup**: Any recipe or ingredient name created by a test must be listed in `TEST_CREATED_RECIPES` / `TEST_CREATED_INGREDIENTS` in `tests/fixtures/data.ts` so `global-setup.ts` can wipe it before the next run.
+- **Wait for React hydration**: Astro uses `client:load` for React islands — always call `await page.waitForLoadState('networkidle')` after `page.goto()` before interacting with React-managed buttons.
+- **Prefer `getByRole` over `getByLabel`/`getByText`**: Lucide icons render `aria-label` on the SVG itself, so `getByLabel` matches both the button and the icon. Use `getByRole('button', { name: '...' })` instead. Similarly, use `getByRole('heading', { name: '...' })` instead of `getByText` to avoid matching the same text in hidden JSON/debug output.
 
 ## Project Structure
 ```

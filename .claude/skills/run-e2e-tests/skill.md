@@ -4,12 +4,16 @@ Run the Playwright E2E test suite or generate new tests for a recently implement
 
 ## Prerequisites
 
-Local Supabase must be running. Start it with:
+A `.env.test` file must exist at the project root with:
 ```bash
-npm run db:start
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_KEY=your_supabase_service_role_key_here  # Secret key (not the publishable one)
 ```
 
-The `.env.test` file must exist at the project root. If it doesn't, copy `.env.test.example` and fill in the keys from `npx supabase status`.
+On first use, install the Playwright browser:
+```bash
+npx playwright install chromium
+```
 
 ## Running the test suite
 
@@ -37,11 +41,18 @@ When asked to generate tests for a new feature:
 4. Add a new `test.describe.serial` block to the relevant spec file in `tests/e2e/`
    - If no spec file exists for this area, create `tests/e2e/<feature>.spec.ts`
    - Follow the patterns in `tests/e2e/recipes.spec.ts`
-5. If the new tests need seed data, update `tests/fixtures/data.ts` and add setup logic to `tests/setup/global-setup.ts`
+5. If the new tests create recipes or ingredients, add their names to `TEST_CREATED_RECIPES` / `TEST_CREATED_INGREDIENTS` in `tests/fixtures/data.ts` so global-setup cleans them up before each run
+6. If the new tests need seed data, update `tests/fixtures/data.ts` and add setup logic to `tests/setup/global-setup.ts`
 
 ## Test file locations
 
 - Tests: `tests/e2e/*.spec.ts`
 - Fixtures (test data constants): `tests/fixtures/data.ts`
-- Global setup (DB seeding): `tests/setup/global-setup.ts`
+- Global setup (DB seeding + cleanup): `tests/setup/global-setup.ts`
 - Config: `playwright.config.ts`
+
+## Conventions
+
+- **Wait for hydration**: Always call `await page.waitForLoadState('networkidle')` after `page.goto()` before interacting with React-managed elements (Astro uses `client:load`).
+- **Prefer `getByRole`**: Use `getByRole('button', { name: '...' })` instead of `getByLabel` — Lucide icons render `aria-label` on the SVG, causing strict mode violations. Use `getByRole('heading', { name: '...' })` instead of `getByText` to avoid matching the same string in unrelated elements.
+- **Cleanup is mandatory**: Every piece of data created by tests must be cleaned up in global-setup. Add names to the constants in `tests/fixtures/data.ts` — never hard-code them in `global-setup.ts` directly.
