@@ -4,6 +4,14 @@ import type { Ingredient, Recipe } from "@/data/types";
 import Button from "@/components/shared/Button";
 import RecipeCard from "./RecipeCard";
 import RecipeFormDialog from "./RecipeFormDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import type { IngredientInput } from "./IngredientRow";
 
 interface Props {
@@ -15,6 +23,7 @@ interface State {
   list: Recipe[];
   dialogMode: "add" | "edit" | null;
   editingRecipe: Recipe | null;
+  deletingRecipe: Recipe | null;
   isSubmitting: boolean;
 }
 
@@ -24,6 +33,8 @@ type Action =
   | { type: "CLOSE_DIALOG" }
   | { type: "SET_SUBMITTING"; value: boolean }
   | { type: "SAVE_SUCCESS"; recipe: Recipe }
+  | { type: "CONFIRM_DELETE"; recipe: Recipe }
+  | { type: "CANCEL_DELETE" }
   | { type: "DELETE_SUCCESS"; id: string };
 
 function reducer(state: State, action: Action): State {
@@ -41,6 +52,12 @@ function reducer(state: State, action: Action): State {
         editingRecipe: null,
         isSubmitting: false,
       };
+
+    case "CONFIRM_DELETE":
+      return { ...state, deletingRecipe: action.recipe };
+
+    case "CANCEL_DELETE":
+      return { ...state, deletingRecipe: null };
 
     case "SET_SUBMITTING":
       return { ...state, isSubmitting: action.value };
@@ -64,6 +81,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         list: state.list.filter((r) => r.id !== action.id),
+        deletingRecipe: null,
       };
 
     default:
@@ -76,6 +94,7 @@ export default function RecipeList({ recipes, ingredients }: Props) {
     list: recipes,
     dialogMode: null,
     editingRecipe: null,
+    deletingRecipe: null,
     isSubmitting: false,
   });
 
@@ -113,7 +132,9 @@ export default function RecipeList({ recipes, ingredients }: Props) {
   }
 
   async function handleDelete(id: string) {
+    dispatch({ type: "SET_SUBMITTING", value: true });
     await actions.recipes.delete({ id });
+    dispatch({ type: "SET_SUBMITTING", value: false });
     dispatch({ type: "DELETE_SUCCESS", id });
   }
 
@@ -150,7 +171,7 @@ export default function RecipeList({ recipes, ingredients }: Props) {
                 key={recipe.id}
                 recipe={recipe}
                 onEdit={() => dispatch({ type: "OPEN_EDIT", recipe })}
-                onDelete={() => handleDelete(recipe.id)}
+                onDelete={() => dispatch({ type: "CONFIRM_DELETE", recipe })}
               />
             ))}
           </div>
@@ -166,6 +187,40 @@ export default function RecipeList({ recipes, ingredients }: Props) {
             onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
           />
         )}
+
+        <Dialog
+          open={state.deletingRecipe !== null}
+          onOpenChange={(open) => {
+            if (!open) dispatch({ type: "CANCEL_DELETE" });
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete recipe</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete &ldquo;{state.deletingRecipe?.name}&rdquo;? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                onClick={() => dispatch({ type: "CANCEL_DELETE" })}
+                disabled={state.isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                loading={state.isSubmitting}
+                onClick={() =>
+                  state.deletingRecipe && handleDelete(state.deletingRecipe.id)
+                }
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

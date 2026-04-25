@@ -42,7 +42,7 @@ test.describe
       await expect(page.getByText("Test Pasta Updated")).toBeVisible();
     });
 
-    test("deletes a recipe", async ({ page }) => {
+    test("cancel delete keeps the recipe", async ({ page }) => {
       await page.goto("/recipes");
       await page.waitForLoadState("networkidle");
 
@@ -53,7 +53,28 @@ test.describe
       await card.getByRole("button", { name: "Delete recipe" }).click();
 
       await expect(
-        page.getByRole("heading", { name: "Quick Omelette" })
-      ).not.toBeVisible();
+        page.getByRole("heading", { name: "Delete recipe" })
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Cancel" }).click();
+
+      await expect(card).toBeVisible();
+    });
+
+    test("deletes a recipe after confirmation", async ({ page }) => {
+      await page.goto("/recipes");
+      await page.waitForLoadState("networkidle");
+
+      const card = page
+        .getByTestId("recipe-card")
+        .filter({ hasText: "Quick Omelette" });
+      await expect(card).toBeVisible();
+      await card.getByRole("button", { name: "Delete recipe" }).click();
+
+      await expect(
+        page.getByRole("heading", { name: "Delete recipe" })
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Delete" }).click();
+
+      await expect(card).not.toBeVisible();
     });
   });

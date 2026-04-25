@@ -1,5 +1,14 @@
 # Meal Guru Project
 
+## Agent Delegation Rules
+
+**IMPORTANT — these rules override default behavior and must always be followed:**
+
+- For any UI change, feature implementation, component work, or layout modification: **always delegate to the `astro-web-dev` agent** via the Agent tool. Never implement these directly.
+- For any backend logic, Astro actions, or database functions: **always delegate to the `astro-backend-dev` agent** via the Agent tool. Never implement these directly.
+
+Only handle research, planning, file reading, or coordination yourself. Implementation goes through the agents.
+
 ## Project Overview
 Meal Guru is an Astro-based web application designed to reduce the mental strain of meal planning and preparation. The app helps people efficiently plan and prepare meals for the week through batch cooking, saving time and money while eliminating the frustration of wandering around supermarkets trying to find ingredients for recipes.
 

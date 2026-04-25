@@ -154,7 +154,8 @@ This skill knows about the project's `components.json` config, handles the CLI i
 3. **Verify it builds.** Run `npm run build` from project root. Fix all errors.
 4. **Type check.** Run `npx astro check` for TypeScript errors.
 5. **Lint.** Run `npm run lint` and fix Biome issues. Never add `biome-ignore` comments — if a lint issue can't be resolved, report it.
-6. **Update CLAUDE.md.** For all changes, keep CLAUDE.md up to date with new architecture, components, and rules.
+6. **Check test coverage.** Read `tests/e2e/` and check whether the new or changed functionality is covered by an existing test. If it is not, report the gap to the user — list the specific user interactions or outcomes that lack a test — so they can decide whether to add coverage.
+7. **Update CLAUDE.md.** For all changes, keep CLAUDE.md up to date with new architecture, components, and rules.
 
 ## Hard Rules
 
