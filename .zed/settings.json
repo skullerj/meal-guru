@@ -1,0 +1,10 @@
+{
+  "lsp": {
+    "typescript-language-server": {
+      "binary": {
+        "path": "node_modules/.bin/tsgo",
+        "arguments": ["--lsp"]
+      }
+    }
+  }
+}
