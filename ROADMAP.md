@@ -24,10 +24,10 @@ Old code is preserved on the `archive/v1` branch for reference.
 - [x] Delete recipe
 - [x] Data: `recipes`, `ingredients`, `recipe_ingredients` tables in Supabase
 
-### 🔲 3. Weekly meal picker
-- [ ] Recipe grid with toggle selection
-- [ ] Aggregated ingredient list (grouped by category)
-- [ ] `category` column added to `ingredients` table
+### ✅ 3. Weekly meal picker
+- [x] Recipe grid with toggle selection
+- [x] Aggregated ingredient list (grouped by category)
+- [x] `category` column added to `ingredients` table
 
 ### 🔲 4. Ingredient overlap signal
 - [ ] Shared ingredients show a badge ("used in 2 recipes") in the aggregated list
