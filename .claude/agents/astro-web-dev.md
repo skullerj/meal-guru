@@ -133,6 +133,7 @@ components/
 ## Data Rules
 
 - **Standardized Units**: `'g' | 'kg' | 'ml' | 'l' | 'tsp' | 'tbsp' | 'cup' | 'oz' | 'lb' | 'unit'`
+- **Single source of truth for domain constants**: `UNITS` and `CATEGORIES` are defined as `as const` arrays in `src/data/types.ts`. Import them from there — never redefine them locally in a component or utility file.
 - **Class merging**: Always use `cn()` from `@/lib/utils` for conditional classNames
 - **Icons**: Always add new icons to `Icon.tsx` iconMap before using them
 - **No hardcoded colors**: Use Tailwind semantic classes (`bg-primary`, `text-muted-foreground`, etc.)

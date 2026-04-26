@@ -1,16 +1,25 @@
-export type Unit =
-  | "g"
-  | "kg"
-  | "ml"
-  | "l"
-  | "tsp"
-  | "tbsp"
-  | "cup"
-  | "oz"
-  | "lb"
-  | "unit";
+export const UNITS = [
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "tsp",
+  "tbsp",
+  "cup",
+  "oz",
+  "lb",
+  "unit",
+] as const;
+export type Unit = (typeof UNITS)[number];
 
-export type Category = "produce" | "tins" | "dairy" | "meat" | "pantry" | null;
+export const CATEGORIES = [
+  "produce",
+  "tins",
+  "dairy",
+  "meat",
+  "pantry",
+] as const;
+export type Category = (typeof CATEGORIES)[number] | null;
 
 export interface Ingredient {
   id: string;

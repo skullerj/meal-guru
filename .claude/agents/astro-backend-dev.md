@@ -113,15 +113,16 @@ export async function createRecipe(name: string): Promise<Recipe> {
 
 ## Hard Rules
 
-1. **Zod always**: Every `defineAction` must have an `input` schema — no exceptions, even for actions with a single field. Always import `z` from `astro:schema`, not from the `zod` package.
-2. **ActionError for expected failures**: Throw `new ActionError({ code: 'NOT_FOUND' | 'UNAUTHORIZED' | 'BAD_REQUEST', message: '...' })` for known error conditions; let unexpected errors propagate naturally
-3. **database.ts owns ALL queries — no exceptions**: Every single `supabase.from()` call must live in `database.ts`. Action handlers call exported database functions only. This is the most commonly violated rule — watch for it.
-4. **TypeScript strict**: No `any` types. Use interfaces from `src/data/types.ts`
-5. **No biome-ignore comments**: Fix the root cause instead
-6. **Commit prefix**: `feat:` for new actions/functions, `fix:` for bug fixes, `chore:` for refactors
-7. **Error logging in handlers**: Wrap every database call in a try/catch. Log with `console.error('[action.namespace]', { ...relevantInput }, e)` before re-throwing. Use the action namespace as the tag (e.g. `[recipes.create]`, `[recipes.delete]`). Only include input fields relevant to identifying the failing record — never log full ingredient arrays or large payloads. Do not log `ActionError` throws for expected failures (NOT_FOUND, etc.) — only unexpected database errors.
+1. **Single source of truth for domain constants**: `UNITS` and `CATEGORIES` are defined as `as const` arrays in `src/data/types.ts`. Import them from there — never redefine them locally in an action file or database function.
+2. **Zod always**: Every `defineAction` must have an `input` schema — no exceptions, even for actions with a single field. Always import `z` from `astro:schema`, not from the `zod` package.
+3. **ActionError for expected failures**: Throw `new ActionError({ code: 'NOT_FOUND' | 'UNAUTHORIZED' | 'BAD_REQUEST', message: '...' })` for known error conditions; let unexpected errors propagate naturally
+4. **database.ts owns ALL queries — no exceptions**: Every single `supabase.from()` call must live in `database.ts`. Action handlers call exported database functions only. This is the most commonly violated rule — watch for it.
+5. **TypeScript strict**: No `any` types. Use interfaces from `src/data/types.ts`
+6. **No biome-ignore comments**: Fix the root cause instead
+7. **Commit prefix**: `feat:` for new actions/functions, `fix:` for bug fixes, `chore:` for refactors
+8. **Error logging in handlers**: Wrap every database call in a try/catch. Log with `console.error('[action.namespace]', { ...relevantInput }, e)` before re-throwing. Use the action namespace as the tag (e.g. `[recipes.create]`, `[recipes.delete]`). Only include input fields relevant to identifying the failing record — never log full ingredient arrays or large payloads. Do not log `ActionError` throws for expected failures (NOT_FOUND, etc.) — only unexpected database errors.
 
-### Rule 3 — Concrete example
+### Rule 4 — Concrete example
 
 **Wrong** — querying Supabase inside an action handler:
 ```typescript

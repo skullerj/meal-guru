@@ -144,7 +144,7 @@ Use snake_case. Prefer `list_` over `get_` for plural/collection reads.
 
 ## Shared Schemas
 
-The existing `mcp.ts` defines `UNITS`, `CATEGORIES`, and `ingredientInputShape`. Reuse these for any tool involving ingredients. Add new shared shapes above `createMcpServer()` if the same shape is needed by more than one tool.
+`UNITS` and `CATEGORIES` are imported from `src/data/types.ts` — that is the single source of truth for these constants. Never redefine them locally in `mcp.ts`. The existing `mcp.ts` also defines `ingredientInputShape` (a Zod object shape for ingredient inputs); reuse it for any tool involving ingredients. Add new shared shapes above `createMcpServer()` if the same shape is needed by more than one tool.
 
 ## Hard Rules
 

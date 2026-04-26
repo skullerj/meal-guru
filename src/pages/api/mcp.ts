@@ -3,6 +3,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import type { Category } from "@/data/types";
+import { CATEGORIES, UNITS } from "@/data/types";
 import {
   createRecipeWithIngredients,
   deleteRecipe,
@@ -12,20 +13,6 @@ import {
   updateRecipeWithIngredients,
   upsertIngredient,
 } from "@/lib/database";
-
-const UNITS = [
-  "g",
-  "kg",
-  "ml",
-  "l",
-  "tsp",
-  "tbsp",
-  "cup",
-  "oz",
-  "lb",
-  "unit",
-] as const;
-const CATEGORIES = ["produce", "tins", "dairy", "meat", "pantry"] as const;
 
 const ingredientInputShape = {
   name: z

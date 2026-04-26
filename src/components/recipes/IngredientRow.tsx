@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { UNITS } from "@/data/types";
 import type { Ingredient, Unit } from "@/data/types";
 import type { IngredientInput } from "@/lib/database";
 export type { IngredientInput } from "@/lib/database";
@@ -19,9 +20,6 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
-const UNITS: Unit[] = [
-  "g", "kg", "ml", "l", "tsp", "tbsp", "cup", "oz", "lb", "unit",
-];
 
 interface Props {
   index: number;
