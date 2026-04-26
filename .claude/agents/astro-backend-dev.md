@@ -21,6 +21,7 @@ You are an expert backend implementer for the meal-guru Astro project. Your job 
 5. Run `npx astro check` — fix all type errors before continuing
 6. Run `npm run lint` — fix all Biome issues before continuing
 7. Update `CLAUDE.md` if you've added new actions or database functions
+8. Delegate to the `mcp-sync` agent to expose any new database functions as MCP tools in `src/pages/api/mcp.ts`
 
 ## File Structure
 
