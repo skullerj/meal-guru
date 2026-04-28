@@ -1,6 +1,8 @@
 # Meal Guru — Roadmap
 
-**Core problem:** Tell me what to cook this week so I spend money wisely and waste as little food as possible.
+**Vision:** Get someone to their shopping list in under 30 seconds with no decisions required.
+
+**Core scenario:** It's Monday, you're near the supermarket, you forgot to plan. You open the app, tap one button, get a shopping list, and walk in. The planning UI (manual recipe picker) is a power-user escape hatch — not the primary flow.
 
 Old code is preserved on the `archive/v1` branch for reference.
 
@@ -24,28 +26,49 @@ Old code is preserved on the `archive/v1` branch for reference.
 - [x] Delete recipe
 - [x] Data: `recipes`, `ingredients`, `recipe_ingredients` tables in Supabase
 
-### ✅ 3. Weekly meal picker
+### ✅ 3. Weekly meal picker (power-user mode)
 - [x] Recipe grid with toggle selection
 - [x] Aggregated ingredient list (grouped by category)
 - [x] `category` column added to `ingredients` table
 
-### 🔲 4. Ingredient overlap signal
+### ✅ 4. Recipe library seeded
+- [x] 13 recipes added to the database (sufficient for random selection to feel useful)
+
+### 🔲 5. "Shop Now" — auto-pick flow (primary flow)
+The main entry point. One tap → app picks recipes → shopping list. No decisions.
+
+- [ ] "Shop Now" button on the home screen — prominent, above the fold
+- [ ] Auto-selects 2 recipes at random from the library
+- [ ] Takes the user directly to the shopping list (skips the manual picker)
+- [ ] "Change recipes" link at the top of the list drops into the existing manual picker (escape hatch)
+- [ ] Shopping list: ingredients aggregated across selected recipes, grouped by category
+
+**Verification:** Tap "Shop Now" → get a list in under 3 seconds → list shows all ingredients grouped by category.
+
+### 🔲 6. Shopping mode — consumption view
+The in-store experience. Fast, scannable, zero configuration required.
+
+- [ ] Checkbox per ingredient — tap to mark as bought
+- [ ] Checked items move to the bottom (or are visually struck through)
+- [ ] Layout optimised for mobile: large tap targets, high contrast
+- [ ] "Done" button to complete/dismiss the shop
+
+**Verification:** Load the list on a phone → can check off items one-handed while walking through the supermarket.
+
+### 🔲 7. Recency memory — avoid repeating recipes
+Prevents the app from suggesting the same thing two weeks in a row.
+
+- [ ] "Commit to this week" creates a shop record (`shops` + `shop_recipes`)
+- [ ] Auto-pick excludes recipes cooked in the last 2 weeks
+- [ ] Shop history is the only data stored — no ratings, no preferences
+
+**Verification:** Commit a shop → next "Shop Now" does not suggest the same recipes.
+
+### 🔲 8. Ingredient overlap signal (power-user enhancement)
+Visible hint in the manual picker that two selected recipes share ingredients.
+
 - [ ] Shared ingredients show a badge ("used in 2 recipes") in the aggregated list
-- [ ] Makes waste-reduction visible when picking recipe combinations
-
-### 🔲 5. Week suggestion ("Suggest my week" button)
-- [ ] Button suggests 2 recipes based on:
-  - Ingredient synergy (recipes sharing ingredients score higher)
-  - Recency penalty (recently cooked recipes score lower)
-- [ ] Suggestions pre-populate the meal picker
-- [ ] "Commit to this week" button creates a shop record (`shops` + `shop_recipes`)
-- [ ] Shop history drives next week's recency scoring
-
-### 🔲 6. Shopping list output
-- [ ] Ingredients grouped by category
-- [ ] Checkbox per item (tick off while shopping)
-- [ ] Total estimated cost displayed
-- [ ] Clean, readable on a phone
+- [ ] Makes the waste-reduction benefit visible when picking combinations manually
 
 ---
 
@@ -67,8 +90,9 @@ Old code is preserved on the `archive/v1` branch for reference.
 ## What's Explicitly Out of Scope
 
 - PDF recipe import
-- Ocado £40 threshold optimization
+- Store pack size / excess quantity tracking (revisit after feature 7)
 - Multi-store support
 - User authentication / multi-user
 - Shopping history analytics
 - Step-by-step recipe instructions
+- Preference settings, dietary filters, or ratings
