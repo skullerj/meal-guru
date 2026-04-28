@@ -185,11 +185,36 @@ tests/
 - **Supabase Integration**: Centralized database with ingredient library and standardized units
 - **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
+- **Ingredient Management Actions**: `ingredients.update` (edit name/unit/category) and `ingredients.delete` (with referential integrity guard) in `src/actions/ingredients.ts`
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
 - **Ingredients**: Master ingredient library with standardized units ('g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit')
 - **Database**: PostgreSQL via Supabase with proper relationships and RLS security
+
+## Backend API Reference
+
+### `src/lib/database.ts` functions
+| Function | Description |
+|----------|-------------|
+| `getRecipes()` | Fetch all recipes with nested ingredients |
+| `getRecipe(id)` | Fetch a single recipe by UUID |
+| `createRecipe(name)` | Insert a new recipe row |
+| `updateRecipe(id, name)` | Update recipe name |
+| `deleteRecipe(id)` | Delete a recipe (cascades to recipe_ingredients) |
+| `getIngredients()` | Fetch all ingredients ordered by name |
+| `upsertIngredient(ingredient)` | Insert or update ingredient by name |
+| `updateIngredient(id, data)` | Update an ingredient's name, unit, and category by UUID |
+| `deleteIngredient(id)` | Delete an ingredient; throws if referenced by any recipe |
+| `setRecipeIngredients(recipeId, ingredients)` | Replace all ingredients for a recipe |
+| `createRecipeWithIngredients(name, ingredients)` | Create recipe + set ingredients atomically |
+| `updateRecipeWithIngredients(id, name, ingredients)` | Update recipe + replace ingredients |
+
+### `src/actions/` namespaces
+| Namespace | Actions |
+|-----------|---------|
+| `recipes` | `create`, `update`, `delete` |
+| `ingredients` | `update`, `delete` |
 
 ## React Architecture Guidelines
 

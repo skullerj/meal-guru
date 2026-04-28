@@ -1,5 +1,6 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
+import { CATEGORIES, UNITS } from "@/data/types";
 import {
   createRecipeWithIngredients,
   deleteRecipe,
@@ -10,18 +11,8 @@ import {
 const ingredientInputSchema = z.object({
   name: z.string().min(1),
   amount: z.number().positive(),
-  unit: z.enum([
-    "g",
-    "kg",
-    "ml",
-    "l",
-    "tsp",
-    "tbsp",
-    "cup",
-    "oz",
-    "lb",
-    "unit",
-  ]),
+  unit: z.enum(UNITS),
+  category: z.enum(CATEGORIES).nullable().optional(),
   ingredient_id: z.string().uuid().optional(),
 });
 

@@ -1,0 +1,22 @@
+---
+import IngredientList from "../components/ingredients/IngredientList";
+import Layout from "../layouts/Layout.astro";
+import { getIngredients } from "../lib/database";
+
+const ingredients = await getIngredients();
+---
+
+<Layout title="Ingredients">
+  <main class="min-h-screen bg-background">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+      <header class="mb-8">
+        <h1 class="text-3xl font-bold text-foreground">Ingredients</h1>
+        <p class="text-muted-foreground mt-1">
+          Master ingredient library — {ingredients.length} ingredient{ingredients.length !== 1 ? "s" : ""}
+        </p>
+      </header>
+
+      <IngredientList client:load ingredients={ingredients} />
+    </div>
+  </main>
+</Layout>

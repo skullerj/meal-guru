@@ -1,10 +1,17 @@
-import type { Ingredient, Recipe, RecipeIngredient, Unit } from "../data/types";
+import type {
+  Category,
+  Ingredient,
+  Recipe,
+  RecipeIngredient,
+  Unit,
+} from "../data/types";
 import { supabase } from "./supabase";
 
 export interface IngredientInput {
   name: string;
   amount: number;
   unit: Unit;
+  category?: Category | null;
   ingredient_id?: string;
 }
 
@@ -102,6 +109,33 @@ export async function upsertIngredient(
   return data as Ingredient;
 }
 
+export async function updateIngredient(
+  id: string,
+  data: { name: string; unit: Unit; category: Category | null }
+): Promise<Ingredient> {
+  const { data: updated, error } = await supabase
+    .from("ingredients")
+    .update(data)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return updated as Ingredient;
+}
+
+export async function deleteIngredient(id: string): Promise<void> {
+  const { count, error: countError } = await supabase
+    .from("recipe_ingredients")
+    .select("id", { count: "exact", head: true })
+    .eq("ingredient_id", id);
+  if (countError) throw countError;
+  if (count && count > 0) {
+    throw new Error(`Cannot delete: ingredient is used in ${count} recipe(s)`);
+  }
+  const { error } = await supabase.from("ingredients").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export async function setRecipeIngredients(
   recipeId: string,
   ingredients: IngredientInput[]
@@ -115,7 +149,7 @@ export async function setRecipeIngredients(
   const result: RecipeIngredient[] = [];
 
   for (let i = 0; i < ingredients.length; i++) {
-    const { name, amount, unit, ingredient_id } = ingredients[i];
+    const { name, amount, unit, category, ingredient_id } = ingredients[i];
 
     let resolvedId: string;
 
@@ -124,7 +158,10 @@ export async function setRecipeIngredients(
     } else {
       const { data: ingredient, error: ingError } = await supabase
         .from("ingredients")
-        .upsert({ name: name.trim(), unit }, { onConflict: "name" })
+        .upsert(
+          { name: name.trim(), unit, category: category ?? null },
+          { onConflict: "name" }
+        )
         .select()
         .single();
       if (ingError) throw ingError;

@@ -55,13 +55,13 @@ The in-store experience. Fast, scannable, zero configuration required.
 
 **Verification:** Load the list on a phone → can check off items one-handed while walking through the supermarket.
 
-### 🔲 7. Ingredient management — view and edit ingredient library
+### ✅ 7. Ingredient management — view and edit ingredient library
 Fix ingredients that got imported with wrong categories or units.
 
-- [ ] `/ingredients` page — list all ingredients (name, category, unit)
-- [ ] Inline edit: name, category, unit per ingredient
-- [ ] Delete ingredient (only if not referenced by any recipe)
-- [ ] MCP tools: `update_ingredient`, `delete_ingredient` exposed via `/api/mcp`
+- [x] `/ingredients` page — list all ingredients (name, category, unit)
+- [x] Inline edit: name, category, unit per ingredient
+- [x] Delete ingredient (only if not referenced by any recipe)
+- [x] MCP tools: `update_ingredient`, `delete_ingredient` exposed via `/api/mcp`
 
 **Verification:** Navigate to `/ingredients` → find an ingredient with category "other" → update its category → save → category reflects in the shopping list.
 

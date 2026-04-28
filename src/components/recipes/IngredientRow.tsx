@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { UNITS } from "@/data/types";
-import type { Ingredient, Unit } from "@/data/types";
+import { UNITS, CATEGORIES } from "@/data/types";
+import type { Ingredient, Unit, Category } from "@/data/types";
 import type { IngredientInput } from "@/lib/database";
 export type { IngredientInput } from "@/lib/database";
 import IconButton from "@/components/shared/IconButton";
@@ -155,6 +155,25 @@ export default function IngredientRow({
         {UNITS.map((u) => (
           <option key={u} value={u}>
             {u}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={value.category ?? ""}
+        disabled={isExisting}
+        onChange={(e) =>
+          onChange(index, { ...value, category: (e.target.value as Category) || null })
+        }
+        className={cn(
+          "border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+          isExisting && "opacity-50 cursor-not-allowed"
+        )}
+      >
+        <option value="">Category</option>
+        {CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {c}
           </option>
         ))}
       </select>

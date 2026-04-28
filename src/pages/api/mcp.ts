@@ -6,10 +6,12 @@ import type { Category } from "@/data/types";
 import { CATEGORIES, UNITS } from "@/data/types";
 import {
   createRecipeWithIngredients,
+  deleteIngredient,
   deleteRecipe,
   getIngredients,
   getRecipe,
   getRecipes,
+  updateIngredient,
   updateRecipeWithIngredients,
   upsertIngredient,
 } from "@/lib/database";
@@ -184,6 +186,58 @@ function createMcpServer() {
       return {
         content: [{ type: "text", text: JSON.stringify(ingredient, null, 2) }],
       };
+    }
+  );
+
+  server.registerTool(
+    "update_ingredient",
+    {
+      title: "Update Ingredient",
+      description:
+        "Updates an ingredient's name, unit, and/or category by its UUID. Use this to fix ingredients that were imported with the wrong category or unit. Unlike upsert_ingredient (which matches by name), this targets a specific record by ID. Call list_ingredients first to get the ID.",
+      inputSchema: {
+        id: z.string().uuid().describe("The ingredient UUID to update"),
+        name: z.string().min(1).describe("New ingredient name"),
+        unit: z
+          .enum(UNITS)
+          .describe(
+            "Unit of measurement. Dry weights: g, kg, oz, lb. Liquids: ml, l. Small measures: tsp (teaspoon), tbsp (tablespoon), cup. Countable items: unit."
+          ),
+        category: z
+          .enum(CATEGORIES)
+          .nullable()
+          .optional()
+          .describe(
+            "Grocery category: produce, tins, dairy, meat, pantry, or null"
+          ),
+      },
+    },
+    async ({ id, name, unit, category }) => {
+      const ingredient = await updateIngredient(id, {
+        name,
+        unit,
+        category: (category ?? null) as Category,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(ingredient, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "delete_ingredient",
+    {
+      title: "Delete Ingredient",
+      description:
+        "Permanently deletes an ingredient from the master library. Will fail if the ingredient is still referenced by any recipe — remove it from all recipes first. This cannot be undone.",
+      inputSchema: {
+        id: z.string().uuid().describe("The ingredient UUID to delete"),
+      },
+      annotations: { destructiveHint: true },
+    },
+    async ({ id }) => {
+      await deleteIngredient(id);
+      return { content: [{ type: "text", text: `Ingredient ${id} deleted.` }] };
     }
   );
 

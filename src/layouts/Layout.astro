@@ -21,6 +21,14 @@ const { title = "Meal Guru" } = Astro.props;
     <title>{title} — Meal Guru</title>
   </head>
   <body>
+    <nav class="border-b border-border bg-background">
+      <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-6">
+        <a href="/" class="text-sm font-semibold text-foreground hover:text-primary transition-colors">Meal Guru</a>
+        <a href="/pick" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Plan</a>
+        <a href="/add-recipe" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Add Recipe</a>
+        <a href="/ingredients" class="text-sm text-muted-foreground hover:text-foreground transition-colors">Ingredients</a>
+      </div>
+    </nav>
     <slot />
   </body>
 </html>

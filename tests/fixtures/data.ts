@@ -11,7 +11,8 @@ export const TEST_CREATED_RECIPES = [
   TEST_RECIPE_NAME,
   "Quick Omelette",
   "Test Pasta Updated",
+  "Category Test Recipe",
 ];
 
 // All ingredient names created during the E2E test suite.
-export const TEST_CREATED_INGREDIENTS = ["Eggs"];
+export const TEST_CREATED_INGREDIENTS = ["Eggs", "TestCategoryIng"];
