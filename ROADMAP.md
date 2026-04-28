@@ -45,17 +45,27 @@ The main entry point. One tap → app picks recipes → shopping list. No decisi
 
 **Verification:** Tap "Shop Now" → get a list in under 3 seconds → list shows all ingredients grouped by category.
 
-### 🔲 6. Shopping mode — consumption view
+### ✅ 6. Shopping mode — consumption view
 The in-store experience. Fast, scannable, zero configuration required.
 
-- [ ] Checkbox per ingredient — tap to mark as bought
-- [ ] Checked items move to the bottom (or are visually struck through)
-- [ ] Layout optimised for mobile: large tap targets, high contrast
-- [ ] "Done" button to complete/dismiss the shop
+- [x] Checkbox per ingredient — tap to mark as bought
+- [x] Checked items move to the bottom (or are visually struck through)
+- [x] Layout optimised for mobile: large tap targets, high contrast
+- [x] "Done" button to complete/dismiss the shop
 
 **Verification:** Load the list on a phone → can check off items one-handed while walking through the supermarket.
 
-### 🔲 7. Recency memory — avoid repeating recipes
+### 🔲 7. Ingredient management — view and edit ingredient library
+Fix ingredients that got imported with wrong categories or units.
+
+- [ ] `/ingredients` page — list all ingredients (name, category, unit)
+- [ ] Inline edit: name, category, unit per ingredient
+- [ ] Delete ingredient (only if not referenced by any recipe)
+- [ ] MCP tools: `update_ingredient`, `delete_ingredient` exposed via `/api/mcp`
+
+**Verification:** Navigate to `/ingredients` → find an ingredient with category "other" → update its category → save → category reflects in the shopping list.
+
+### 🔲 8. Recency memory — avoid repeating recipes
 Prevents the app from suggesting the same thing two weeks in a row.
 
 - [ ] "Commit to this week" creates a shop record (`shops` + `shop_recipes`)
@@ -64,7 +74,7 @@ Prevents the app from suggesting the same thing two weeks in a row.
 
 **Verification:** Commit a shop → next "Shop Now" does not suggest the same recipes.
 
-### 🔲 8. Ingredient overlap signal (power-user enhancement)
+### 🔲 9. Ingredient overlap signal (power-user enhancement)
 Visible hint in the manual picker that two selected recipes share ingredients.
 
 - [ ] Shared ingredients show a badge ("used in 2 recipes") in the aggregated list
