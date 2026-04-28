@@ -1,0 +1,25 @@
+---
+import MealPlanner from "../components/meal-planner/MealPlanner";
+import Layout from "../layouts/Layout.astro";
+import { getRecipes } from "../lib/database";
+
+const recipes = await getRecipes();
+---
+
+<Layout title="Pick Recipes">
+  <main class="min-h-screen bg-background">
+    <div class="max-w-5xl mx-auto px-4 py-12">
+      <header class="mb-10">
+        <a
+          href="/"
+          class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          ← Back
+        </a>
+        <h1 class="text-3xl font-bold text-foreground">Plan your week</h1>
+      </header>
+
+      <MealPlanner client:load recipes={recipes} />
+    </div>
+  </main>
+</Layout>

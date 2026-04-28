@@ -3,8 +3,8 @@ import { TEST_RECIPE_NAME } from "../fixtures/data";
 
 test.describe
   .serial("Meal Planner", () => {
-    test("shows seeded recipe on the home page", async ({ page }) => {
-      await page.goto("/");
+    test("shows seeded recipe on the pick page", async ({ page }) => {
+      await page.goto("/pick");
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -15,7 +15,7 @@ test.describe
     test("selecting a recipe shows its ingredients in the shopping list", async ({
       page,
     }) => {
-      await page.goto("/");
+      await page.goto("/pick");
       await page.waitForLoadState("networkidle");
 
       const shoppingList = page.locator("aside");
@@ -42,7 +42,7 @@ test.describe
     test("selecting a recipe shows category headings in the shopping list", async ({
       page,
     }) => {
-      await page.goto("/");
+      await page.goto("/pick");
       await page.waitForLoadState("networkidle");
 
       const shoppingList = page.locator("aside");
@@ -63,7 +63,7 @@ test.describe
     test("deselecting a recipe removes its ingredients from the shopping list", async ({
       page,
     }) => {
-      await page.goto("/");
+      await page.goto("/pick");
       await page.waitForLoadState("networkidle");
 
       const shoppingList = page.locator("aside");

@@ -34,14 +34,14 @@ Old code is preserved on the `archive/v1` branch for reference.
 ### ✅ 4. Recipe library seeded
 - [x] 13 recipes added to the database (sufficient for random selection to feel useful)
 
-### 🔲 5. "Shop Now" — auto-pick flow (primary flow)
+### ✅ 5. "Shop Now" — auto-pick flow (primary flow)
 The main entry point. One tap → app picks recipes → shopping list. No decisions.
 
-- [ ] "Shop Now" button on the home screen — prominent, above the fold
-- [ ] Auto-selects 2 recipes at random from the library
-- [ ] Takes the user directly to the shopping list (skips the manual picker)
-- [ ] "Change recipes" link at the top of the list drops into the existing manual picker (escape hatch)
-- [ ] Shopping list: ingredients aggregated across selected recipes, grouped by category
+- [x] "Shop Now" button on the home screen — prominent, above the fold
+- [x] Auto-selects 2 recipes at random from the library
+- [x] Takes the user directly to the shopping list (skips the manual picker)
+- [x] "Change recipes" link at the top of the list drops into the existing manual picker (escape hatch)
+- [x] Shopping list: ingredients aggregated across selected recipes, grouped by category
 
 **Verification:** Tap "Shop Now" → get a list in under 3 seconds → list shows all ingredients grouped by category.
 

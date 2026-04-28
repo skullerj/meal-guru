@@ -159,7 +159,9 @@ tests/
 │   │   ├── api/
 │   │   │   └── parse-recipe.ts
 │   │   ├── add-recipe.astro
-│   │   ├── index.astro              # Uses MealPlanner with Supabase data
+│   │   ├── index.astro              # Hero home page: "Shop Now" CTA + link to /pick
+│   │   ├── pick.astro               # Manual recipe picker (MealPlanner)
+│   │   ├── shop.astro               # Auto shopping list (reads ?r= query params)
 │   │   └── recipe/
 │   │       └── [id].astro           # Shopping list page
 │   └── styles/
@@ -175,7 +177,9 @@ tests/
 
 ## Features Implemented
 - **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
-- **3-Column Meal Planning Interface** (`/`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
+- **Hero Home Page** (`/`): "Shop Now" CTA randomly picks 2 recipes and navigates to `/shop`; secondary link to `/pick` for manual selection
+- **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
+- **Auto Shopping List** (`/shop`): Reads `?r=` query params, fetches recipes, renders aggregated category-grouped shopping list
 - **Shopping List Page** (`/recipe/[id]`): Interactive ingredient checklist with shelf item identification
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
 - **Supabase Integration**: Centralized database with ingredient library and standardized units

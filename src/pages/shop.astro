@@ -1,0 +1,63 @@
+---
+import ShoppingList from "../components/meal-planner/ShoppingList";
+import { aggregateIngredients } from "../components/meal-planner/utils/mealPlannerUtils";
+import Layout from "../layouts/Layout.astro";
+import { getRecipe } from "../lib/database";
+
+// Parse ?r= query params — may be repeated or comma-separated
+const rawR = Astro.url.searchParams.getAll("r");
+const ids = rawR.flatMap((v) => v.split(",")).filter(Boolean);
+
+if (ids.length === 0) {
+  return Astro.redirect("/");
+}
+
+const results = await Promise.all(ids.map((id) => getRecipe(id)));
+const recipes = results.filter((r): r is NonNullable<typeof r> => r !== null);
+
+if (recipes.length === 0) {
+  return Astro.redirect("/");
+}
+
+const groups = aggregateIngredients(
+  recipes,
+  recipes.map((r) => r.id)
+);
+const recipeNames = recipes.map((r) => r.name).join(" · ");
+---
+
+<Layout title="Shopping List">
+  <main class="min-h-screen bg-background">
+    <div class="max-w-2xl mx-auto px-4 py-12">
+      <header class="mb-8">
+        <a
+          href="/pick"
+          class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-md px-3 py-1.5 mb-6"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          Change recipes
+        </a>
+        <h1 class="text-3xl font-bold text-foreground">Your shopping list</h1>
+        <p class="text-muted-foreground mt-1">{recipeNames}</p>
+      </header>
+
+      <div class="rounded-lg border border-border bg-card p-6">
+        <ShoppingList client:load groups={groups} />
+      </div>
+    </div>
+  </main>
+</Layout>
