@@ -72,7 +72,20 @@ For a complex feature (e.g., week suggestion algorithm):
 3. astro-web-dev agent → UI implementation
 4. general-purpose agent → algorithm/scoring logic
 
-### Step 5 — Update ROADMAP.md
+### Step 5 — Add E2E tests
+
+**This step is mandatory for every feature, no exceptions.**
+
+After implementation, delegate E2E test writing to the `astro-web-dev` agent. Tests must cover the golden path described in the feature's verification checklist plus any significant error or edge-case states.
+
+Follow the conventions in `tests/` (read existing specs before writing):
+- Add new spec file to `tests/e2e/<feature>.spec.ts`
+- Register any test-created data names in `tests/fixtures/data.ts` for cleanup
+- Update `tests/setup/global-setup.ts` to wipe any new tables the feature introduces
+- Use `await page.waitForLoadState('networkidle')` after `page.goto()`
+- Prefer `getByRole` over `getByText`/`getByLabel`
+
+### Step 6 — Update ROADMAP.md
 
 After each sub-task completes, update the corresponding `[ ]` to `[x]` in ROADMAP.md.
 
@@ -80,7 +93,7 @@ When all sub-tasks for a feature are `[x]`, change the feature's `🔲` to `✅`
 
 Commit the ROADMAP.md update as part of the feature commit, not separately.
 
-### Step 6 — Verify
+### Step 7 — Verify
 
 After implementation, run the verification step listed for that feature in ROADMAP.md. This typically means:
 - Starting the dev server: `npm run dev`

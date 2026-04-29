@@ -65,12 +65,12 @@ Fix ingredients that got imported with wrong categories or units.
 
 **Verification:** Navigate to `/ingredients` → find an ingredient with category "other" → update its category → save → category reflects in the shopping list.
 
-### 🔲 8. Recency memory — avoid repeating recipes
+### ✅ 8. Recency memory — avoid repeating recipes
 Prevents the app from suggesting the same thing two weeks in a row.
 
-- [ ] "Commit to this week" creates a shop record (`shops` + `shop_recipes`)
-- [ ] Auto-pick excludes recipes cooked in the last 2 weeks
-- [ ] Shop history is the only data stored — no ratings, no preferences
+- [x] "Commit to this week" creates a shop record (`shops` + `shop_recipes`)
+- [x] Auto-pick excludes recipes cooked in the last 2 weeks
+- [x] Shop history is the only data stored — no ratings, no preferences
 
 **Verification:** Commit a shop → next "Shop Now" does not suggest the same recipes.
 

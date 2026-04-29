@@ -1,4 +1,5 @@
 ---
+import CommitShopButton from "../components/meal-planner/CommitShopButton";
 import ShoppingList from "../components/meal-planner/ShoppingList";
 import { aggregateIngredients } from "../components/meal-planner/utils/mealPlannerUtils";
 import Layout from "../layouts/Layout.astro";
@@ -57,6 +58,10 @@ const recipeNames = recipes.map((r) => r.name).join(" · ");
 
       <div class="rounded-lg border border-border bg-card p-6">
         <ShoppingList client:load groups={groups} />
+      </div>
+
+      <div class="mt-6">
+        <CommitShopButton client:load recipeIds={ids} />
       </div>
     </div>
   </main>

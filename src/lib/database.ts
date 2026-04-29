@@ -209,3 +209,37 @@ export async function updateRecipeWithIngredients(
   if (!recipe) throw new Error(`Recipe ${id} not found after update`);
   return { ...recipe, ingredients: recipeIngredients };
 }
+
+export async function getRecentRecipeIds(withinDays = 14): Promise<string[]> {
+  const cutoff = new Date(
+    Date.now() - withinDays * 24 * 60 * 60 * 1000
+  ).toISOString();
+
+  const { data, error } = await supabase
+    .from("shop_recipes")
+    .select("recipe_id, shop:shops!inner(created_at)")
+    .gte("shops.created_at", cutoff);
+
+  if (error) throw error;
+  return [...new Set((data ?? []).map((row) => row.recipe_id))];
+}
+
+export async function commitShop(recipeIds: string[]): Promise<{ id: string }> {
+  const { data: shop, error: shopError } = await supabase
+    .from("shops")
+    .insert({})
+    .select("id")
+    .single();
+
+  if (shopError) throw shopError;
+
+  const rows = recipeIds.map((recipe_id) => ({
+    shop_id: shop.id,
+    recipe_id,
+  }));
+  const { error: linkError } = await supabase.from("shop_recipes").insert(rows);
+
+  if (linkError) throw linkError;
+
+  return { id: shop.id };
+}
