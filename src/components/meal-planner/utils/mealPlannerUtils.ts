@@ -6,6 +6,7 @@ export interface AggregatedIngredient {
   unit: Unit;
   category: Category | null;
   totalAmount: number;
+  recipeCount: number;
 }
 
 export interface IngredientGroup {
@@ -29,6 +30,7 @@ export function aggregateIngredients(
       const existing = totals.get(key);
       if (existing) {
         existing.totalAmount += ri.amount;
+        existing.recipeCount += 1;
       } else {
         totals.set(key, {
           ingredient_id: ri.ingredient_id,
@@ -36,6 +38,7 @@ export function aggregateIngredients(
           unit: ri.ingredient.unit,
           category: ri.ingredient.category,
           totalAmount: ri.amount,
+          recipeCount: 1,
         });
       }
     }

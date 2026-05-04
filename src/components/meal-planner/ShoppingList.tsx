@@ -90,13 +90,18 @@ export default function ShoppingList({ groups }: ShoppingListProps) {
                     </div>
                     <span
                       className={cn(
-                        "flex-1 text-base",
+                        "flex-1 text-base inline-flex items-center gap-1.5",
                         isChecked
                           ? "line-through text-muted-foreground"
                           : "text-foreground"
                       )}
                     >
                       {ingredient.name}
+                      {ingredient.recipeCount > 1 && (
+                        <span className="text-xs bg-primary/10 text-primary rounded-full px-1.5 py-0.5 no-underline">
+                          ×{ingredient.recipeCount}
+                        </span>
+                      )}
                     </span>
                     <span
                       className={cn(

@@ -5,6 +5,7 @@ export const TEST_RECIPE_NAME_3 = "Test Rice Bowl";
 export const TEST_INGREDIENTS = [
   { name: "Spaghetti", unit: "g" as const, category: "pantry" as const },
   { name: "Tomato sauce", unit: "ml" as const, category: "tins" as const },
+  { name: "Chicken breast", unit: "g" as const, category: "meat" as const },
 ];
 
 // All recipe names created during the E2E test suite — kept here so
@@ -19,4 +20,8 @@ export const TEST_CREATED_RECIPES = [
 ];
 
 // All ingredient names created during the E2E test suite.
-export const TEST_CREATED_INGREDIENTS = ["Eggs", "TestCategoryIng"];
+export const TEST_CREATED_INGREDIENTS = [
+  "Eggs",
+  "TestCategoryIng",
+  "Chicken breast",
+];

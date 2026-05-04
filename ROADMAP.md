@@ -87,11 +87,11 @@ The shop becomes a durable record, not a transient page. "Shop Now" returns to t
 
 **Verification:** Tap "Shop Now" → shop record is created → refresh the page → same shop loads. Tap "Start new week" → new recipes appear → old shop is replaced.
 
-### 🔲 10. Ingredient overlap signal (power-user enhancement)
+### ✅ 10. Ingredient overlap signal (power-user enhancement)
 Visible hint in the manual picker that two selected recipes share ingredients.
 
-- [ ] Shared ingredients show a badge ("used in 2 recipes") in the aggregated list
-- [ ] Makes the waste-reduction benefit visible when picking combinations manually
+- [x] Shared ingredients show a badge ("used in 2 recipes") in the aggregated list
+- [x] Makes the waste-reduction benefit visible when picking combinations manually
 
 ---
 
