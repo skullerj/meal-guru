@@ -12,12 +12,6 @@ const { title = "Meal Guru" } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
     <title>{title} — Meal Guru</title>
   </head>
   <body>
@@ -32,6 +26,10 @@ const { title = "Meal Guru" } = Astro.props;
     <slot />
   </body>
 </html>
+
+<style is:global>
+  @import "@fontsource-variable/geist";
+</style>
 
 <style is:global>
   @import "../styles/global.css";
