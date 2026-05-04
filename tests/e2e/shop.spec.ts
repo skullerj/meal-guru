@@ -1,45 +1,68 @@
 import { expect, test } from "@playwright/test";
 
 test.describe
-  .serial("Shop commit flow", () => {
-    function shopUrl() {
-      const id1 = process.env.TEST_RECIPE_ID;
-      const id2 = process.env.TEST_RECIPE_ID_2;
-      if (!id1 || !id2) {
-        throw new Error(
-          "TEST_RECIPE_ID / TEST_RECIPE_ID_2 not set — check global-setup.ts"
-        );
-      }
-      return `/shop?r=${id1}&r=${id2}`;
-    }
+  .serial("Persistent weekly shop", () => {
+    let shopUrl: string;
 
-    test("commit button is visible on /shop", async ({ page }) => {
-      await page.goto(shopUrl());
-      await page.waitForLoadState("networkidle");
-
-      await expect(
-        page.getByRole("button", { name: "Commit to this week" })
-      ).toBeVisible();
-    });
-
-    test("clicking commit shows confirmation message", async ({ page }) => {
-      await page.goto(shopUrl());
-      await page.waitForLoadState("networkidle");
-
-      await page.getByRole("button", { name: "Commit to this week" }).click();
-      await page.waitForLoadState("networkidle");
-
-      await expect(page.getByText("Committed!")).toBeVisible();
-    });
-
-    test("after committing, home page shows skipping message", async ({
+    test("Shop Now creates a shop and navigates to /shop/[id]", async ({
       page,
     }) => {
-      // Commit has already been done in the previous test (serial order).
-      // Navigate home and confirm the exclusion UI appears.
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
-      await expect(page.getByText(/Skipping/)).toBeVisible();
+      await page.getByRole("button", { name: "Shop Now" }).click();
+
+      // Should navigate to /shop/<uuid>
+      await page.waitForURL(/\/shop\/[0-9a-f-]+/);
+      await page.waitForLoadState("networkidle");
+
+      // Save the URL for subsequent tests
+      shopUrl = page.url();
+
+      // Should show the shopping list heading
+      await expect(
+        page.getByRole("heading", { name: "Your shopping list" })
+      ).toBeVisible();
+    });
+
+    test("refreshing the page loads the same shop", async ({ page }) => {
+      // Navigate to the same shop URL from previous test
+      await page.goto(new URL(shopUrl).pathname);
+      await page.waitForLoadState("networkidle");
+
+      await expect(
+        page.getByRole("heading", { name: "Your shopping list" })
+      ).toBeVisible();
+    });
+
+    test("Shop Now again returns the same shop (idempotent within the week)", async ({
+      page,
+    }) => {
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+
+      await page.getByRole("button", { name: "Shop Now" }).click();
+      await page.waitForURL(/\/shop\/[0-9a-f-]+/);
+
+      // Should be the same shop URL as before
+      expect(page.url()).toBe(shopUrl);
+    });
+
+    test("Start new week creates a different shop", async ({ page }) => {
+      await page.goto(new URL(shopUrl).pathname);
+      await page.waitForLoadState("networkidle");
+
+      await page.getByRole("button", { name: "Start new week" }).click();
+
+      // Should navigate to a NEW shop URL
+      await page.waitForURL(/\/shop\/[0-9a-f-]+/);
+      await page.waitForLoadState("networkidle");
+
+      // The new URL should be different from the original
+      expect(page.url()).not.toBe(shopUrl);
+
+      await expect(
+        page.getByRole("heading", { name: "Your shopping list" })
+      ).toBeVisible();
     });
   });

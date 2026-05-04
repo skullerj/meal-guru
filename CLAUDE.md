@@ -125,6 +125,7 @@ tests/
 │   ├── components/
 │   │   ├── meal-planner/
 │   │   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
+│   │   │   ├── ShoppingList.tsx         # Reusable shopping list with checkboxes
 │   │   │   ├── RecipeColumn.tsx         # Recipe selection column
 │   │   │   ├── ShoppingColumn.tsx       # Aggregated ingredients column
 │   │   │   ├── LeftToBuyColumn.tsx      # Items to buy column
@@ -161,7 +162,9 @@ tests/
 │   │   ├── add-recipe.astro
 │   │   ├── index.astro              # Hero home page: "Shop Now" CTA + link to /pick
 │   │   ├── pick.astro               # Manual recipe picker (MealPlanner)
-│   │   ├── shop.astro               # Auto shopping list (reads ?r= query params)
+│   │   ├── shop/
+│   │   │   ├── index.astro          # Redirect shim: /shop?r=... → /shop/{id}
+│   │   │   └── [id].astro           # Persistent weekly shop detail page
 │   │   └── recipe/
 │   │       └── [id].astro           # Shopping list page
 │   └── styles/
@@ -177,9 +180,10 @@ tests/
 
 ## Features Implemented
 - **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
-- **Hero Home Page** (`/`): "Shop Now" CTA randomly picks 2 recipes and navigates to `/shop`; secondary link to `/pick` for manual selection
+- **Hero Home Page** (`/`): "Shop Now" CTA calls `shops.getOrCreateWeeklyShop` action and navigates to `/shop/{id}`; secondary link to `/pick` for manual selection
 - **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
-- **Auto Shopping List** (`/shop`): Reads `?r=` query params, fetches recipes, renders aggregated category-grouped shopping list
+- **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record, renders aggregated category-grouped shopping list with "Start new week" button
+- **Shop Redirect Shim** (`/shop`): Backward-compatible redirect — creates a shop from `?r=` query params and redirects to `/shop/{id}`
 - **Shopping List Page** (`/recipe/[id]`): Interactive ingredient checklist with shelf item identification
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
 - **Supabase Integration**: Centralized database with ingredient library and standardized units
@@ -211,13 +215,19 @@ tests/
 | `updateRecipeWithIngredients(id, name, ingredients)` | Update recipe + replace ingredients |
 | `getRecentRecipeIds(withinDays?)` | Return distinct recipe UUIDs from shops created within the last N days (default 14) |
 | `commitShop(recipeIds)` | Insert a new shop row and link the given recipe UUIDs to it; returns `{ id }` |
+| `getWeekMonday(date?)` | Returns ISO date string (YYYY-MM-DD) of the Monday of the given date's week |
+| `getActiveShopForWeek(weekOf?)` | Find the active shop for a given week (defaults to current week); returns `ShopSummary` or `null` |
+| `getShopWithRecipes(id)` | Fetch a shop by ID with full nested Recipe[] data; returns `ShopWithRecipes` or `null` |
+| `createShop(recipeIds, weekOf?)` | Create a new shop with `week_of` and `active=true`, link recipe IDs; returns `{ id }` |
+| `deactivateShopsForWeek(weekOf)` | Set `active = false` on all active shops for the given week |
+| `recommendRecipeIds(count?, excludeDays?)` | Pick random recipe IDs excluding recently cooked ones; falls back to all if too few |
 
 ### `src/actions/` namespaces
 | Namespace | Actions |
 |-----------|---------|
 | `recipes` | `create`, `update`, `delete` |
 | `ingredients` | `update`, `delete` |
-| `shops` | `commit` |
+| `shops` | `commit`, `createFromIds`, `startNewWeek`, `getOrCreateWeeklyShop` |
 
 ## React Architecture Guidelines
 

@@ -1,6 +1,13 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { commitShop } from "@/lib/database";
+import {
+  commitShop,
+  createShop,
+  deactivateShopsForWeek,
+  getActiveShopForWeek,
+  getWeekMonday,
+  recommendRecipeIds,
+} from "@/lib/database";
 
 export const shops = {
   commit: defineAction({
@@ -15,6 +22,63 @@ export const shops = {
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to commit shop",
+        });
+      }
+    },
+  }),
+
+  createFromIds: defineAction({
+    input: z.object({
+      recipeIds: z.array(z.string().uuid()).min(1),
+    }),
+    handler: async ({ recipeIds }) => {
+      try {
+        return await createShop(recipeIds);
+      } catch (e) {
+        console.error("[shops.createFromIds]", { count: recipeIds.length }, e);
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create shop",
+        });
+      }
+    },
+  }),
+
+  startNewWeek: defineAction({
+    input: z.object({}),
+    handler: async () => {
+      try {
+        const weekMonday = getWeekMonday();
+        await deactivateShopsForWeek(weekMonday);
+        const recommendedIds = await recommendRecipeIds();
+        const shop = await createShop(recommendedIds);
+        return { id: shop.id };
+      } catch (e) {
+        console.error("[shops.startNewWeek]", e);
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to start new week",
+        });
+      }
+    },
+  }),
+
+  getOrCreateWeeklyShop: defineAction({
+    input: z.object({}),
+    handler: async () => {
+      try {
+        const existing = await getActiveShopForWeek();
+        if (existing) {
+          return { id: existing.id, created: false };
+        }
+        const ids = await recommendRecipeIds();
+        const shop = await createShop(ids);
+        return { id: shop.id, created: true };
+      } catch (e) {
+        console.error("[shops.getOrCreateWeeklyShop]", e);
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to get or create weekly shop",
         });
       }
     },

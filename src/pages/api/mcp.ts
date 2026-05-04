@@ -11,6 +11,7 @@ import {
   getIngredients,
   getRecipe,
   getRecipes,
+  recommendRecipeIds,
   updateIngredient,
   updateRecipeWithIngredients,
   upsertIngredient,
@@ -238,6 +239,39 @@ function createMcpServer() {
     async ({ id }) => {
       await deleteIngredient(id);
       return { content: [{ type: "text", text: `Ingredient ${id} deleted.` }] };
+    }
+  );
+
+  server.registerTool(
+    "recommend_recipes",
+    {
+      title: "Recommend Recipes",
+      description:
+        "Returns recommended recipe IDs, excluding recently cooked recipes. Uses shop history to avoid repeating meals from the last N days. Falls back to picking from all recipes if too few candidates remain after filtering.",
+      inputSchema: {
+        count: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe("Number of recipe IDs to return (default 2)"),
+        exclude_days: z
+          .number()
+          .int()
+          .nonnegative()
+          .optional()
+          .describe(
+            "Exclude recipes cooked within this many days (default 14)"
+          ),
+      },
+    },
+    async ({ count, exclude_days }) => {
+      const recipeIds = await recommendRecipeIds(count, exclude_days);
+      return {
+        content: [
+          { type: "text", text: JSON.stringify({ recipeIds }, null, 2) },
+        ],
+      };
     }
   );
 

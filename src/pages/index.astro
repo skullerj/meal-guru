@@ -1,11 +1,6 @@
 ---
 import ShopNowButton from "../components/ShopNowButton";
 import Layout from "../layouts/Layout.astro";
-import { getRecentRecipeIds, getRecipes } from "../lib/database";
-
-const recipes = await getRecipes();
-const recipeIds = recipes.map((r) => r.id);
-const recentIds = await getRecentRecipeIds();
 ---
 
 <Layout title="Home">
@@ -15,7 +10,7 @@ const recentIds = await getRecentRecipeIds();
       <p class="text-lg text-muted-foreground mb-10">What are you cooking this week?</p>
 
       <div class="flex flex-col items-center gap-5">
-        <ShopNowButton client:load recipeIds={recipeIds} excludeIds={recentIds} />
+        <ShopNowButton client:load />
         <a href="/pick" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
           Pick recipes manually →
         </a>

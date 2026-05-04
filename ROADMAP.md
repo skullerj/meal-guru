@@ -74,16 +74,16 @@ Prevents the app from suggesting the same thing two weeks in a row.
 
 **Verification:** Commit a shop → next "Shop Now" does not suggest the same recipes.
 
-### 🔲 9. Persistent weekly shop — API-driven recommendations
+### ✅ 9. Persistent weekly shop — API-driven recommendations
 The shop becomes a durable record, not a transient page. "Shop Now" returns to the current week's shop if one exists; only generates a new one when the user explicitly asks.
 
-- [ ] `POST /api/recommend` — API endpoint that returns recommended recipe IDs (excludes recently cooked, random selection logic lives server-side)
-- [ ] Clicking "Shop Now" checks for an existing shop this week; if found, navigates to it instead of generating a new one
-- [ ] When no shop exists for the current week, calls the recommend API, creates a shop record with the returned recipes, then navigates to it
-- [ ] `/shop/[id]` — shop detail page that loads a specific shop record (recipes + aggregated ingredients)
-- [ ] "Start new week" action at the top of the shop page — creates a fresh shop (new recommend call + new record), replacing the current week's active shop
-- [ ] Remove the implicit "commit" step — the shop is persisted on creation, not after the fact
-- [ ] MCP tool: `recommend_recipes` exposed via `/api/mcp` so any agent can trigger a recommendation
+- [x] `POST /api/recommend` — API endpoint that returns recommended recipe IDs (excludes recently cooked, random selection logic lives server-side)
+- [x] Clicking "Shop Now" checks for an existing shop this week; if found, navigates to it instead of generating a new one
+- [x] When no shop exists for the current week, calls the recommend API, creates a shop record with the returned recipes, then navigates to it
+- [x] `/shop/[id]` — shop detail page that loads a specific shop record (recipes + aggregated ingredients)
+- [x] "Start new week" action at the top of the shop page — creates a fresh shop (new recommend call + new record), replacing the current week's active shop
+- [x] Remove the implicit "commit" step — the shop is persisted on creation, not after the fact
+- [x] MCP tool: `recommend_recipes` exposed via `/api/mcp` so any agent can trigger a recommendation
 
 **Verification:** Tap "Shop Now" → shop record is created → refresh the page → same shop loads. Tap "Start new week" → new recipes appear → old shop is replaced.
 

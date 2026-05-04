@@ -243,3 +243,177 @@ export async function commitShop(recipeIds: string[]): Promise<{ id: string }> {
 
   return { id: shop.id };
 }
+
+// --- Feature 9: Persistent Weekly Shop ---
+
+export interface ShopSummary {
+  id: string;
+  week_of: string;
+  active: boolean;
+  created_at: string;
+  recipe_ids: string[];
+}
+
+export interface ShopWithRecipes {
+  id: string;
+  week_of: string;
+  active: boolean;
+  created_at: string;
+  recipes: Recipe[];
+}
+
+/**
+ * Returns the ISO date string (YYYY-MM-DD) of the Monday of the given date's week.
+ * Uses ISO week definition (Monday = start of week).
+ */
+export function getWeekMonday(date?: Date): string {
+  const d = date ? new Date(date) : new Date();
+  const day = d.getDay();
+  // ISO: Monday=1 ... Sunday=7; JS getDay: Sunday=0 ... Saturday=6
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+export async function getActiveShopForWeek(
+  weekOf?: string
+): Promise<ShopSummary | null> {
+  const targetWeek = weekOf ?? getWeekMonday();
+
+  const { data, error } = await supabase
+    .from("shops")
+    .select(
+      `
+      id,
+      week_of,
+      active,
+      created_at,
+      shop_recipes(recipe_id)
+    `
+    )
+    .eq("week_of", targetWeek)
+    .eq("active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const recipeIds = (data.shop_recipes as Array<{ recipe_id: string }>).map(
+    (sr) => sr.recipe_id
+  );
+
+  return {
+    id: data.id as string,
+    week_of: data.week_of as string,
+    active: data.active as boolean,
+    created_at: data.created_at as string,
+    recipe_ids: recipeIds,
+  };
+}
+
+export async function getShopWithRecipes(
+  id: string
+): Promise<ShopWithRecipes | null> {
+  const { data: shop, error: shopError } = await supabase
+    .from("shops")
+    .select("id, week_of, active, created_at")
+    .eq("id", id)
+    .single();
+
+  if (shopError) {
+    if (shopError.code === "PGRST116") return null;
+    throw shopError;
+  }
+
+  const { data: links, error: linkError } = await supabase
+    .from("shop_recipes")
+    .select("recipe_id")
+    .eq("shop_id", id);
+
+  if (linkError) throw linkError;
+
+  const recipeIds = (links ?? []).map(
+    (l: { recipe_id: string }) => l.recipe_id
+  );
+
+  const recipes: Recipe[] = [];
+  for (const recipeId of recipeIds) {
+    const recipe = await getRecipe(recipeId);
+    if (recipe) recipes.push(recipe);
+  }
+
+  return {
+    id: shop.id as string,
+    week_of: shop.week_of as string,
+    active: shop.active as boolean,
+    created_at: shop.created_at as string,
+    recipes,
+  };
+}
+
+export async function createShop(
+  recipeIds: string[],
+  weekOf?: string
+): Promise<{ id: string }> {
+  const targetWeek = weekOf ?? getWeekMonday();
+
+  const { data: shop, error: shopError } = await supabase
+    .from("shops")
+    .insert({ week_of: targetWeek, active: true })
+    .select("id")
+    .single();
+
+  if (shopError) throw shopError;
+
+  const rows = recipeIds.map((recipe_id) => ({
+    shop_id: shop.id,
+    recipe_id,
+  }));
+  const { error: linkError } = await supabase.from("shop_recipes").insert(rows);
+
+  if (linkError) throw linkError;
+
+  return { id: shop.id as string };
+}
+
+export async function deactivateShopsForWeek(weekOf: string): Promise<void> {
+  const { error } = await supabase
+    .from("shops")
+    .update({ active: false })
+    .eq("week_of", weekOf)
+    .eq("active", true);
+
+  if (error) throw error;
+}
+
+export async function recommendRecipeIds(
+  count = 2,
+  excludeDays = 14
+): Promise<string[]> {
+  const recentIds = await getRecentRecipeIds(excludeDays);
+
+  const { data: allRecipes, error } = await supabase
+    .from("recipes")
+    .select("id");
+
+  if (error) throw error;
+
+  const allIds = (allRecipes ?? []).map((r: { id: string }) => r.id);
+
+  let candidates = allIds.filter((id) => !recentIds.includes(id));
+
+  // Fall back to all recipes if not enough candidates after filtering
+  if (candidates.length < count) {
+    candidates = [...allIds];
+  }
+
+  // Fisher-Yates shuffle
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  return candidates.slice(0, count);
+}

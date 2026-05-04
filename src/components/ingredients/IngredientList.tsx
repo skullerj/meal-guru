@@ -15,7 +15,7 @@ interface EditState {
   category: Category;
 }
 
-const CATEGORY_BADGE: Record<string, string> = {
+const CATEGORY_BADGE: Record<NonNullable<Category>, string> = {
   produce: "bg-green-100 text-green-800",
   tins: "bg-orange-100 text-orange-800",
   dairy: "bg-blue-100 text-blue-800",
@@ -23,7 +23,7 @@ const CATEGORY_BADGE: Record<string, string> = {
   pantry: "bg-yellow-100 text-yellow-800",
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
+const CATEGORY_LABELS: Record<NonNullable<Category>, string> = {
   produce: "Produce",
   tins: "Tins",
   dairy: "Dairy",
@@ -31,7 +31,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   pantry: "Pantry",
 };
 
-export default function IngredientList({ ingredients: initial }: IngredientListProps) {
+export default function IngredientList({
+  ingredients: initial,
+}: IngredientListProps) {
   const [ingredients, setIngredients] = useState<Ingredient[]>(initial);
   const [editing, setEditing] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
@@ -70,7 +72,7 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
         return;
       }
       setIngredients((prev) =>
-        prev.map((i) => (i.id === editing.id ? (data as Ingredient) : i))
+        prev.map((i) => (i.id === editing.id ? (data as Ingredient) : i)),
       );
       setEditing(null);
     } finally {
@@ -103,9 +105,15 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/50">
-            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
-            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Category</th>
-            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Unit</th>
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              Name
+            </th>
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              Category
+            </th>
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              Unit
+            </th>
             <th className="px-4 py-3 w-24" />
           </tr>
         </thead>
@@ -119,7 +127,7 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
                 key={ingredient.id}
                 className={cn(
                   "border-b border-border/60 last:border-0 transition-colors",
-                  isEditing ? "bg-accent/30" : "hover:bg-muted/30"
+                  isEditing ? "bg-accent/30" : "hover:bg-muted/30",
                 )}
               >
                 {/* Name */}
@@ -130,11 +138,15 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
                       className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       value={editing.name}
                       onChange={(e) =>
-                        setEditing((prev) => prev && { ...prev, name: e.target.value })
+                        setEditing(
+                          (prev) => prev && { ...prev, name: e.target.value },
+                        )
                       }
                     />
                   ) : (
-                    <span className="text-foreground font-medium">{ingredient.name}</span>
+                    <span className="text-foreground font-medium">
+                      {ingredient.name}
+                    </span>
                   )}
                 </td>
 
@@ -145,11 +157,12 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
                       className="rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       value={editing.category ?? ""}
                       onChange={(e) =>
-                        setEditing((prev) =>
-                          prev && {
-                            ...prev,
-                            category: (e.target.value as Category) || null,
-                          }
+                        setEditing(
+                          (prev) =>
+                            prev && {
+                              ...prev,
+                              category: (e.target.value as Category) || null,
+                            },
                         )
                       }
                     >
@@ -164,10 +177,12 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
                     <span
                       className={cn(
                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        CATEGORY_BADGE[ingredient.category] ?? "bg-muted text-muted-foreground"
+                        CATEGORY_BADGE[ingredient.category] ??
+                          "bg-muted text-muted-foreground",
                       )}
                     >
-                      {CATEGORY_LABELS[ingredient.category] ?? ingredient.category}
+                      {CATEGORY_LABELS[ingredient.category] ??
+                        ingredient.category}
                     </span>
                   ) : (
                     <span className="text-muted-foreground text-xs">—</span>
@@ -181,8 +196,9 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
                       className="rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       value={editing.unit}
                       onChange={(e) =>
-                        setEditing((prev) =>
-                          prev && { ...prev, unit: e.target.value as Unit }
+                        setEditing(
+                          (prev) =>
+                            prev && { ...prev, unit: e.target.value as Unit },
                         )
                       }
                     >
@@ -193,7 +209,9 @@ export default function IngredientList({ ingredients: initial }: IngredientListP
                       ))}
                     </select>
                   ) : (
-                    <span className="text-muted-foreground">{ingredient.unit}</span>
+                    <span className="text-muted-foreground">
+                      {ingredient.unit}
+                    </span>
                   )}
                 </td>
 

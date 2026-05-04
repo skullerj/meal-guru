@@ -1,0 +1,13 @@
+---
+import { createShop } from "../../lib/database";
+
+const rawR = Astro.url.searchParams.getAll("r");
+const ids = rawR.flatMap((v) => v.split(",")).filter(Boolean);
+
+if (ids.length === 0) {
+  return Astro.redirect("/");
+}
+
+const { id } = await createShop(ids);
+return Astro.redirect(`/shop/${id}`);
+---
