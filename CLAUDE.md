@@ -459,7 +459,6 @@ Centralized reusable components in `src/components/shared/`:
 - **UI Components**: Use shadcn/ui components from `@/components/ui/` and shared components from `@/components/shared/`
 - **Class Merging**: Use the `cn()` utility function for conditional className merging
 - Current state: Full-featured meal planning interface with Supabase backend
-- No testing framework currently configured
 - Uses Biome for linting and formatting
 - Lefthook configured for pre-commit hooks (runs `npx biome check --write` on staged files with `stage_fixed: true`)
 - Complex business logic separated into utility functions for reusability and testing
@@ -467,11 +466,7 @@ Centralized reusable components in `src/components/shared/`:
 
 ## Project Maintenance Reminders
 - Always keep CLAUDE.md up to date when adding new libraries
-- The objective of this app is to minimize waste when the user makes their shopping online using Ocado. For that, we first need to parse recipes and allow the user to input the current source information (url,amount and price) so we can compute the excess and use it to group the recipe with other recipes that might use that excess.
+- The objective of this app is to allow users to save time deciding what to cook for the week, by picking the right recipes for the week for them.
 - Commits need to start with the following prefixes: fix, feat, chore depending on the category of the work. example: feat: add new button to reset selection
 - For type checking use npx astro check
-- Use the @src/components/shared/Button.tsx component for buttons
-- Use The @src/components/shared/Icon.tsx for icons
-- Use the @src/components/shared/IconButton.tsx for interactive icon components
-- For modal dialogs, use shadcn/ui Dialog component from @/components/ui/dialog
 - Never add biome-ignore comments. If you encounter biome issues that can't be solved, without an ignore just report them at the end and let me handle them
