@@ -221,6 +221,8 @@ tests/
 | `createShop(recipeIds, weekOf?)` | Create a new shop with `week_of` and `active=true`, link recipe IDs; returns `{ id }` |
 | `deactivateShopsForWeek(weekOf)` | Set `active = false` on all active shops for the given week |
 | `recommendRecipeIds(count?, excludeDays?)` | Pick random recipe IDs excluding recently cooked ones; falls back to all if too few |
+| `getRecipeSteps(recipeId)` | Fetch all steps for a recipe ordered by step_number, with ingredient_ids populated |
+| `setRecipeSteps(recipeId, steps)` | Replace all steps for a recipe atomically (delete + insert); each step has step_number, instruction, ingredient_ids (recipe_ingredient.id values) |
 
 ### `src/actions/` namespaces
 | Namespace | Actions |

@@ -5,6 +5,7 @@ import {
   createRecipeWithIngredients,
   deleteRecipe,
   getRecipe,
+  setRecipeSteps,
   updateRecipeWithIngredients,
 } from "@/lib/database";
 
@@ -65,6 +66,22 @@ export const recipes = {
         console.error("[recipes.delete]", { id }, e);
         throw e;
       }
+    },
+  }),
+
+  saveSteps: defineAction({
+    input: z.object({
+      recipe_id: z.string().uuid(),
+      steps: z.array(
+        z.object({
+          step_number: z.number().int().positive(),
+          instruction: z.string().min(1),
+          ingredient_ids: z.array(z.string().uuid()),
+        })
+      ),
+    }),
+    handler: async ({ recipe_id, steps }) => {
+      return await setRecipeSteps(recipe_id, steps);
     },
   }),
 };

@@ -10,8 +10,10 @@ import {
   deleteRecipe,
   getIngredients,
   getRecipe,
+  getRecipeSteps,
   getRecipes,
   recommendRecipeIds,
+  setRecipeSteps,
   updateIngredient,
   updateRecipeWithIngredients,
   upsertIngredient,
@@ -271,6 +273,72 @@ function createMcpServer() {
         content: [
           { type: "text", text: JSON.stringify({ recipeIds }, null, 2) },
         ],
+      };
+    }
+  );
+
+  server.registerTool(
+    "list_steps",
+    {
+      title: "List Steps",
+      description:
+        "Returns all instruction steps for a recipe, ordered by step_number. Each step includes its id, recipe_id, step_number, instruction text, created_at, and ingredient_ids. The ingredient_ids are recipe_ingredient row UUIDs (the join-table rows from the recipe's ingredients[] array), not master ingredient IDs from list_ingredients — use them to cross-reference which ingredients are used in a given step. Returns an empty array if the recipe has no steps.",
+      inputSchema: {
+        recipe_id: z
+          .string()
+          .uuid()
+          .describe("UUID of the recipe whose steps to fetch"),
+      },
+    },
+    async ({ recipe_id }) => {
+      const steps = await getRecipeSteps(recipe_id);
+      return {
+        content: [{ type: "text", text: JSON.stringify(steps, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "set_steps",
+    {
+      title: "Set Steps",
+      description:
+        "Replaces all instruction steps for a recipe. This is a full replacement — all existing steps are deleted atomically and the provided list is inserted in their place. Use for both initial step creation and subsequent edits. Pass an empty array to clear all steps. Each step requires a step_number (used for ordering and as the key that maps ingredient_ids back to inserted rows — must be unique within the call), an instruction string, and an ingredient_ids array. ingredient_ids must be recipe_ingredient row UUIDs (the id field on items in a recipe's ingredients[] array, obtained from get_recipe or list_recipes) — these are NOT master ingredient IDs from list_ingredients. Omit ingredient_ids or pass an empty array for steps that do not reference specific ingredients.",
+      inputSchema: {
+        recipe_id: z
+          .string()
+          .uuid()
+          .describe("UUID of the recipe whose steps to replace"),
+        steps: z
+          .array(
+            z.object({
+              step_number: z
+                .number()
+                .int()
+                .positive()
+                .describe(
+                  "Step order number (1-based, unique within this call). Drives display order and is used internally to match ingredient_ids to inserted rows."
+                ),
+              instruction: z
+                .string()
+                .min(1)
+                .describe("Full instruction text for this step"),
+              ingredient_ids: z
+                .array(z.string().uuid())
+                .describe(
+                  "recipe_ingredient row UUIDs referenced by this step (from recipe.ingredients[].id, NOT from list_ingredients). Pass an empty array if the step does not highlight specific ingredients."
+                ),
+            })
+          )
+          .describe(
+            "Complete replacement list of steps. Pass an empty array to clear all steps for the recipe."
+          ),
+      },
+    },
+    async ({ recipe_id, steps }) => {
+      const result = await setRecipeSteps(recipe_id, steps);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
       };
     }
   );

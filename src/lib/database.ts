@@ -3,6 +3,7 @@ import type {
   Ingredient,
   Recipe,
   RecipeIngredient,
+  RecipeStep,
   Unit,
 } from "../data/types";
 import { supabase } from "./supabase";
@@ -61,7 +62,10 @@ export async function getRecipe(id: string): Promise<Recipe | null> {
     .single();
 
   if (error) throw error;
-  return data as unknown as Recipe;
+
+  const recipe = data as unknown as Recipe;
+  const steps = await getRecipeSteps(id);
+  return { ...recipe, steps };
 }
 
 export async function createRecipe(name: string): Promise<Recipe> {
@@ -208,6 +212,134 @@ export async function updateRecipeWithIngredients(
   const recipe = await getRecipe(id);
   if (!recipe) throw new Error(`Recipe ${id} not found after update`);
   return { ...recipe, ingredients: recipeIngredients };
+}
+
+// --- Feature 11: Recipe step instructions ---
+
+export async function getRecipeSteps(recipeId: string): Promise<RecipeStep[]> {
+  const { data: steps, error: stepsError } = await supabase
+    .from("recipe_steps")
+    .select("id, recipe_id, step_number, instruction, created_at")
+    .eq("recipe_id", recipeId)
+    .order("step_number");
+
+  if (stepsError) throw stepsError;
+  if (!steps || steps.length === 0) return [];
+
+  const stepIds = steps.map((s: { id: string }) => s.id);
+
+  const { data: links, error: linksError } = await supabase
+    .from("step_ingredients")
+    .select("step_id, recipe_ingredient_id")
+    .in("step_id", stepIds);
+
+  if (linksError) throw linksError;
+
+  const linksByStep = new Map<string, string[]>();
+  for (const link of links ?? []) {
+    const l = link as { step_id: string; recipe_ingredient_id: string };
+    const existing = linksByStep.get(l.step_id) ?? [];
+    existing.push(l.recipe_ingredient_id);
+    linksByStep.set(l.step_id, existing);
+  }
+
+  return steps.map(
+    (s: {
+      id: string;
+      recipe_id: string;
+      step_number: number;
+      instruction: string;
+      created_at: string;
+    }) => ({
+      id: s.id,
+      recipe_id: s.recipe_id,
+      step_number: s.step_number,
+      instruction: s.instruction,
+      created_at: s.created_at,
+      ingredient_ids: linksByStep.get(s.id) ?? [],
+    })
+  );
+}
+
+export interface StepInput {
+  step_number: number;
+  instruction: string;
+  ingredient_ids: string[];
+}
+
+export async function setRecipeSteps(
+  recipeId: string,
+  steps: StepInput[]
+): Promise<RecipeStep[]> {
+  const { error: deleteError } = await supabase
+    .from("recipe_steps")
+    .delete()
+    .eq("recipe_id", recipeId);
+
+  if (deleteError) throw deleteError;
+
+  if (steps.length === 0) return [];
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("recipe_steps")
+    .insert(
+      steps.map((s) => ({
+        recipe_id: recipeId,
+        step_number: s.step_number,
+        instruction: s.instruction,
+      }))
+    )
+    .select("id, recipe_id, step_number, instruction, created_at");
+
+  if (insertError) throw insertError;
+
+  const insertedRows = inserted as Array<{
+    id: string;
+    recipe_id: string;
+    step_number: number;
+    instruction: string;
+    created_at: string;
+  }>;
+
+  // Map step_number → inserted row id so we can match ingredient_ids
+  const byStepNumber = new Map<number, string>();
+  for (const row of insertedRows) {
+    byStepNumber.set(row.step_number, row.id);
+  }
+
+  const linkRows: { step_id: string; recipe_ingredient_id: string }[] = [];
+  for (const s of steps) {
+    if (s.ingredient_ids.length === 0) continue;
+    const stepId = byStepNumber.get(s.step_number);
+    if (!stepId) continue;
+    for (const riId of s.ingredient_ids) {
+      linkRows.push({ step_id: stepId, recipe_ingredient_id: riId });
+    }
+  }
+
+  if (linkRows.length > 0) {
+    const { error: linkError } = await supabase
+      .from("step_ingredients")
+      .insert(linkRows);
+    if (linkError) throw linkError;
+  }
+
+  // Return fully-populated steps with ingredient_ids
+  const linksByStep = new Map<string, string[]>();
+  for (const lr of linkRows) {
+    const existing = linksByStep.get(lr.step_id) ?? [];
+    existing.push(lr.recipe_ingredient_id);
+    linksByStep.set(lr.step_id, existing);
+  }
+
+  return insertedRows.map((row) => ({
+    id: row.id,
+    recipe_id: row.recipe_id,
+    step_number: row.step_number,
+    instruction: row.instruction,
+    created_at: row.created_at,
+    ingredient_ids: linksByStep.get(row.id) ?? [],
+  }));
 }
 
 export async function getRecentRecipeIds(withinDays = 14): Promise<string[]> {

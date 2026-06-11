@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Ingredient, Recipe } from "@/data/types";
+import type { Ingredient, Recipe, RecipeStep } from "@/data/types";
 import {
   Dialog,
   DialogContent,
@@ -8,14 +8,31 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Button from "@/components/shared/Button";
-import IngredientRow, { type IngredientInput } from "./IngredientRow";
+import IconButton from "@/components/shared/IconButton";
+import type { IngredientInput } from "@/lib/database";
+import IngredientRow from "./IngredientRow";
+
+export interface StepDraft {
+  step_number: number;
+  instruction: string;
+  /** KeyedRow.id values for ingredients linked to this step */
+  rowKeys: number[];
+}
+
+export interface SaveData {
+  name: string;
+  ingredients: IngredientInput[];
+  /** parallel to ingredients — the KeyedRow.id for each ingredient row */
+  ingredientRowKeys: number[];
+  steps: StepDraft[];
+}
 
 interface Props {
   mode: "add" | "edit";
   recipe?: Recipe;
   allIngredients: Ingredient[];
   isSubmitting: boolean;
-  onSave: (data: { name: string; ingredients: IngredientInput[] }) => void;
+  onSave: (data: SaveData) => void;
   onClose: () => void;
 }
 
@@ -41,6 +58,25 @@ function buildInitialRows(
   return inputs.map((data) => ({ id: counter.current++, data }));
 }
 
+function buildInitialSteps(
+  recipe: Recipe | undefined,
+  rows: KeyedRow[],
+): StepDraft[] {
+  if (!recipe?.steps || recipe.steps.length === 0) return [];
+  // Map recipe_ingredient.id → KeyedRow.id using the order of recipe.ingredients
+  const riIdToRowKey = new Map<string, number>();
+  recipe.ingredients.forEach((ri, idx) => {
+    if (rows[idx]) riIdToRowKey.set(ri.id, rows[idx].id);
+  });
+  return recipe.steps.map((step: RecipeStep) => ({
+    step_number: step.step_number,
+    instruction: step.instruction,
+    rowKeys: step.ingredient_ids
+      .map((riId) => riIdToRowKey.get(riId))
+      .filter((k): k is number => k !== undefined),
+  }));
+}
+
 export default function RecipeFormDialog({
   mode,
   recipe,
@@ -54,6 +90,11 @@ export default function RecipeFormDialog({
   const [rows, setRows] = useState<KeyedRow[]>(() =>
     buildInitialRows(counter, recipe),
   );
+  const [steps, setSteps] = useState<StepDraft[]>(() => {
+    // rows state is not yet available here — we need to build rows first
+    const initialRows = buildInitialRows({ current: 0 }, recipe);
+    return buildInitialSteps(recipe, initialRows);
+  });
 
   function handleRowChange(index: number, value: IngredientInput) {
     setRows((prev) =>
@@ -62,7 +103,17 @@ export default function RecipeFormDialog({
   }
 
   function handleRowRemove(index: number) {
+    const removedKey = rows[index]?.id;
     setRows((prev) => prev.filter((_, i) => i !== index));
+    if (removedKey !== undefined) {
+      // Remove the deleted row key from all steps
+      setSteps((prev) =>
+        prev.map((s) => ({
+          ...s,
+          rowKeys: s.rowKeys.filter((k) => k !== removedKey),
+        })),
+      );
+    }
   }
 
   function handleAddRow() {
@@ -73,12 +124,52 @@ export default function RecipeFormDialog({
     ]);
   }
 
+  function handleAddStep() {
+    const nextNumber =
+      steps.length > 0 ? Math.max(...steps.map((s) => s.step_number)) + 1 : 1;
+    setSteps((prev) => [
+      ...prev,
+      { step_number: nextNumber, instruction: "", rowKeys: [] },
+    ]);
+  }
+
+  function handleStepInstructionChange(index: number, instruction: string) {
+    setSteps((prev) =>
+      prev.map((s, i) => (i === index ? { ...s, instruction } : s)),
+    );
+  }
+
+  function handleStepIngredientToggle(stepIndex: number, rowKey: number) {
+    setSteps((prev) =>
+      prev.map((s, i) => {
+        if (i !== stepIndex) return s;
+        const already = s.rowKeys.includes(rowKey);
+        return {
+          ...s,
+          rowKeys: already
+            ? s.rowKeys.filter((k) => k !== rowKey)
+            : [...s.rowKeys, rowKey],
+        };
+      }),
+    );
+  }
+
+  function handleRemoveStep(index: number) {
+    setSteps((prev) => prev.filter((_, i) => i !== index));
+  }
+
   function handleSubmit() {
+    const nonEmptyRows = rows.filter((r) => r.data.name.trim() !== "");
     onSave({
       name: recipeName,
-      ingredients: rows.map((r) => r.data).filter((r) => r.name.trim() !== ""),
+      ingredients: nonEmptyRows.map((r) => r.data),
+      ingredientRowKeys: nonEmptyRows.map((r) => r.id),
+      steps,
     });
   }
+
+  // Named rows that have a name — used for step ingredient selectors
+  const namedRows = rows.filter((r) => r.data.name.trim() !== "");
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -131,6 +222,74 @@ export default function RecipeFormDialog({
               className="self-start"
             >
               Add ingredient
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-foreground">Steps</span>
+            {steps.map((step, stepIndex) => (
+              <div
+                key={step.step_number}
+                className="flex flex-col gap-2 border border-border rounded-lg p-3"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Step {stepIndex + 1}
+                  </span>
+                  <IconButton
+                    icon="trash"
+                    variant="danger"
+                    size="sm"
+                    aria-label={`Remove step ${stepIndex + 1}`}
+                    onClick={() => handleRemoveStep(stepIndex)}
+                  />
+                </div>
+                <textarea
+                  value={step.instruction}
+                  onChange={(e) =>
+                    handleStepInstructionChange(stepIndex, e.target.value)
+                  }
+                  placeholder="Describe what to do in this step..."
+                  rows={2}
+                  autoComplete="off"
+                  className="border border-border rounded px-3 py-2 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                />
+                {namedRows.length > 0 && (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
+                      Ingredients used in this step:
+                    </span>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                      {namedRows.map((row) => (
+                        <label
+                          key={row.id}
+                          className="flex items-center gap-1.5 text-sm cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={step.rowKeys.includes(row.id)}
+                            onChange={() =>
+                              handleStepIngredientToggle(stepIndex, row.id)
+                            }
+                            className="rounded border-border"
+                          />
+                          <span>{row.data.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon="plus"
+              onClick={handleAddStep}
+              className="self-start"
+            >
+              Add step
             </Button>
           </div>
         </div>

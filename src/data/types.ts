@@ -38,9 +38,20 @@ export interface RecipeIngredient {
   ingredient: Ingredient;
 }
 
+export interface RecipeStep {
+  id: string;
+  recipe_id: string;
+  step_number: number;
+  instruction: string;
+  created_at: string;
+  // ingredient_ids holds recipe_ingredient.id values used in this step
+  ingredient_ids: string[];
+}
+
 export interface Recipe {
   id: string;
   name: string;
   created_at: string;
   ingredients: RecipeIngredient[];
+  steps?: RecipeStep[];
 }
