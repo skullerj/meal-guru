@@ -105,6 +105,23 @@ export default function RecipeList({ recipes, ingredients }: Props) {
   }: SaveData) {
     dispatch({ type: "SET_SUBMITTING", value: true });
 
+    // Map form row keys → ingredient indices (position in the ingredients array)
+    const rowKeyToIndex = new Map<number, number>();
+    ingredientRowKeys.forEach((rowKey, idx) => {
+      rowKeyToIndex.set(rowKey, idx);
+    });
+
+    // Build steps with ingredient_indices instead of ingredient_ids
+    const stepsToSave = steps
+      .filter((s) => s.instruction.trim() !== "")
+      .map((s, idx) => ({
+        step_number: idx + 1,
+        instruction: s.instruction.trim(),
+        ingredient_indices: s.rowKeys
+          .map((k) => rowKeyToIndex.get(k))
+          .filter((i): i is number => i !== undefined),
+      }));
+
     let savedRecipe: Recipe | undefined;
 
     if (state.editingRecipe) {
@@ -112,6 +129,7 @@ export default function RecipeList({ recipes, ingredients }: Props) {
         id: state.editingRecipe.id,
         name,
         ingredients: ingredientInputs,
+        steps: stepsToSave,
       });
       if (error || !data) {
         dispatch({ type: "SET_SUBMITTING", value: false });
@@ -122,6 +140,7 @@ export default function RecipeList({ recipes, ingredients }: Props) {
       const { data, error } = await actions.recipes.create({
         name,
         ingredients: ingredientInputs,
+        steps: stepsToSave,
       });
       if (error || !data) {
         dispatch({ type: "SET_SUBMITTING", value: false });
@@ -130,30 +149,10 @@ export default function RecipeList({ recipes, ingredients }: Props) {
       savedRecipe = data;
     }
 
-    // Build a map from form row key → saved RecipeIngredient.id
-    const rowKeyToRiId = new Map<number, string>();
-    ingredientRowKeys.forEach((rowKey, idx) => {
-      const ri = savedRecipe?.ingredients[idx];
-      if (ri) rowKeyToRiId.set(rowKey, ri.id);
+    dispatch({
+      type: "SAVE_SUCCESS",
+      recipe: savedRecipe,
     });
-
-    // Save steps — resolve form row keys to actual recipe_ingredient IDs
-    const stepsToSave = steps
-      .filter((s) => s.instruction.trim() !== "")
-      .map((s, idx) => ({
-        step_number: idx + 1,
-        instruction: s.instruction.trim(),
-        ingredient_ids: s.rowKeys
-          .map((k) => rowKeyToRiId.get(k))
-          .filter((id): id is string => id !== undefined),
-      }));
-
-    await actions.recipes.saveSteps({
-      recipe_id: savedRecipe.id,
-      steps: stepsToSave,
-    });
-
-    dispatch({ type: "SAVE_SUCCESS", recipe: savedRecipe });
   }
 
   async function handleDelete(id: string) {

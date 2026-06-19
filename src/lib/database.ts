@@ -37,7 +37,14 @@ export async function getRecipes(): Promise<Recipe[]> {
     .order("name");
 
   if (error) throw error;
-  return (data as unknown as Recipe[]) ?? [];
+  const recipes = (data as unknown as Recipe[]) ?? [];
+
+  // Fetch steps for all recipes in parallel
+  const stepsPerRecipe = await Promise.all(
+    recipes.map((r) => getRecipeSteps(r.id))
+  );
+
+  return recipes.map((r, i) => ({ ...r, steps: stepsPerRecipe[i] }));
 }
 
 export async function getRecipe(id: string): Promise<Recipe | null> {
@@ -195,23 +202,51 @@ export async function setRecipeIngredients(
 
 export async function createRecipeWithIngredients(
   name: string,
-  ingredients: IngredientInput[]
+  ingredients: IngredientInput[],
+  steps?: StepDraftInput[]
 ): Promise<Recipe> {
   const recipe = await createRecipe(name);
   const recipeIngredients = await setRecipeIngredients(recipe.id, ingredients);
-  return { ...recipe, ingredients: recipeIngredients };
+
+  let savedSteps: RecipeStep[] = [];
+  if (steps && steps.length > 0) {
+    const stepInputs: StepInput[] = steps.map((s) => ({
+      step_number: s.step_number,
+      instruction: s.instruction,
+      ingredient_ids: s.ingredient_indices
+        .map((idx) => recipeIngredients[idx]?.id)
+        .filter((id): id is string => id !== undefined),
+    }));
+    savedSteps = await setRecipeSteps(recipe.id, stepInputs);
+  }
+
+  return { ...recipe, ingredients: recipeIngredients, steps: savedSteps };
 }
 
 export async function updateRecipeWithIngredients(
   id: string,
   name: string,
-  ingredients: IngredientInput[]
+  ingredients: IngredientInput[],
+  steps?: StepDraftInput[]
 ): Promise<Recipe> {
   await updateRecipe(id, name);
   const recipeIngredients = await setRecipeIngredients(id, ingredients);
+
+  let savedSteps: RecipeStep[] = [];
+  if (steps && steps.length > 0) {
+    const stepInputs: StepInput[] = steps.map((s) => ({
+      step_number: s.step_number,
+      instruction: s.instruction,
+      ingredient_ids: s.ingredient_indices
+        .map((idx) => recipeIngredients[idx]?.id)
+        .filter((id): id is string => id !== undefined),
+    }));
+    savedSteps = await setRecipeSteps(id, stepInputs);
+  }
+
   const recipe = await getRecipe(id);
   if (!recipe) throw new Error(`Recipe ${id} not found after update`);
-  return { ...recipe, ingredients: recipeIngredients };
+  return { ...recipe, ingredients: recipeIngredients, steps: savedSteps };
 }
 
 // --- Feature 11: Recipe step instructions ---
@@ -265,6 +300,13 @@ export interface StepInput {
   step_number: number;
   instruction: string;
   ingredient_ids: string[];
+}
+
+export interface StepDraftInput {
+  step_number: number;
+  instruction: string;
+  /** Indices into the ingredients array (positional references) */
+  ingredient_indices: number[];
 }
 
 export async function setRecipeSteps(

@@ -5,7 +5,6 @@ import {
   createRecipeWithIngredients,
   deleteRecipe,
   getRecipe,
-  setRecipeSteps,
   updateRecipeWithIngredients,
 } from "@/lib/database";
 
@@ -17,15 +16,22 @@ const ingredientInputSchema = z.object({
   ingredient_id: z.string().uuid().optional(),
 });
 
+const stepDraftSchema = z.object({
+  step_number: z.number().int().positive(),
+  instruction: z.string().min(1),
+  ingredient_indices: z.array(z.number().int().min(0)),
+});
+
 export const recipes = {
   create: defineAction({
     input: z.object({
       name: z.string().min(1),
       ingredients: z.array(ingredientInputSchema),
+      steps: z.array(stepDraftSchema).optional(),
     }),
-    handler: async ({ name, ingredients }) => {
+    handler: async ({ name, ingredients, steps }) => {
       try {
-        return await createRecipeWithIngredients(name, ingredients);
+        return await createRecipeWithIngredients(name, ingredients, steps);
       } catch (e) {
         console.error("[recipes.create]", { name }, e);
         throw e;
@@ -38,8 +44,9 @@ export const recipes = {
       id: z.string().uuid(),
       name: z.string().min(1),
       ingredients: z.array(ingredientInputSchema),
+      steps: z.array(stepDraftSchema).optional(),
     }),
-    handler: async ({ id, name, ingredients }) => {
+    handler: async ({ id, name, ingredients, steps }) => {
       const existing = await getRecipe(id);
       if (!existing)
         throw new ActionError({
@@ -47,7 +54,7 @@ export const recipes = {
           message: "Recipe not found",
         });
       try {
-        return await updateRecipeWithIngredients(id, name, ingredients);
+        return await updateRecipeWithIngredients(id, name, ingredients, steps);
       } catch (e) {
         console.error("[recipes.update]", { id, name }, e);
         throw e;
@@ -66,22 +73,6 @@ export const recipes = {
         console.error("[recipes.delete]", { id }, e);
         throw e;
       }
-    },
-  }),
-
-  saveSteps: defineAction({
-    input: z.object({
-      recipe_id: z.string().uuid(),
-      steps: z.array(
-        z.object({
-          step_number: z.number().int().positive(),
-          instruction: z.string().min(1),
-          ingredient_ids: z.array(z.string().uuid()),
-        })
-      ),
-    }),
-    handler: async ({ recipe_id, steps }) => {
-      return await setRecipeSteps(recipe_id, steps);
     },
   }),
 };

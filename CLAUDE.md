@@ -211,8 +211,8 @@ tests/
 | `updateIngredient(id, data)` | Update an ingredient's name, unit, and category by UUID |
 | `deleteIngredient(id)` | Delete an ingredient; throws if referenced by any recipe |
 | `setRecipeIngredients(recipeId, ingredients)` | Replace all ingredients for a recipe |
-| `createRecipeWithIngredients(name, ingredients)` | Create recipe + set ingredients atomically |
-| `updateRecipeWithIngredients(id, name, ingredients)` | Update recipe + replace ingredients |
+| `createRecipeWithIngredients(name, ingredients, steps?)` | Create recipe + set ingredients + optionally save steps atomically |
+| `updateRecipeWithIngredients(id, name, ingredients, steps?)` | Update recipe + replace ingredients + optionally save steps atomically |
 | `getRecentRecipeIds(withinDays?)` | Return distinct recipe UUIDs from shops created within the last N days (default 14) |
 | `commitShop(recipeIds)` | Insert a new shop row and link the given recipe UUIDs to it; returns `{ id }` |
 | `getWeekMonday(date?)` | Returns ISO date string (YYYY-MM-DD) of the Monday of the given date's week |

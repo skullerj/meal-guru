@@ -19,6 +19,25 @@ import {
   upsertIngredient,
 } from "@/lib/database";
 
+const stepDraftInputShape = {
+  step_number: z
+    .number()
+    .int()
+    .positive()
+    .describe(
+      "Step order number (1-based, unique within this call). Drives display order."
+    ),
+  instruction: z
+    .string()
+    .min(1)
+    .describe("Full instruction text for this step"),
+  ingredient_indices: z
+    .array(z.number().int().min(0))
+    .describe(
+      "Zero-based indices into the ingredients array passed alongside. For example, [0, 2] means the step uses the 1st and 3rd ingredients from the ingredients list in this same request. Pass an empty array if the step does not reference specific ingredients."
+    ),
+};
+
 const ingredientInputShape = {
   name: z
     .string()
@@ -89,16 +108,26 @@ function createMcpServer() {
     {
       title: "Create Recipe",
       description:
-        "Creates a new recipe with a list of ingredients. Ingredients are upserted by name — if an ingredient with that name already exists in the master list it is reused, otherwise a new one is created. To guarantee an exact match, call list_ingredients first and pass ingredient_id. Note: ingredient category is not set here — use upsert_ingredient separately if you need to assign a category to a new ingredient.",
+        "Creates a new recipe with a list of ingredients and optional instruction steps, all in one atomic operation. Ingredients are upserted by name — if an ingredient with that name already exists in the master list it is reused, otherwise a new one is created. To guarantee an exact match, call list_ingredients first and pass ingredient_id. Note: ingredient category is not set here — use upsert_ingredient separately if you need to assign a category to a new ingredient. Steps use ingredient_indices (zero-based positions into the ingredients array) rather than UUIDs, because recipe_ingredient IDs do not exist yet at creation time — the server resolves them automatically.",
       inputSchema: {
         name: z.string().min(1).describe("Recipe name"),
         ingredients: z
           .array(z.object(ingredientInputShape))
           .describe("List of ingredients with amounts and units"),
+        steps: z
+          .array(z.object(stepDraftInputShape))
+          .optional()
+          .describe(
+            "Optional instruction steps to create alongside the recipe. Each step references ingredients by their zero-based index in the ingredients array above. Omit or pass undefined to create a recipe with no steps."
+          ),
       },
     },
-    async ({ name, ingredients }) => {
-      const recipe = await createRecipeWithIngredients(name, ingredients);
+    async ({ name, ingredients, steps }) => {
+      const recipe = await createRecipeWithIngredients(
+        name,
+        ingredients,
+        steps
+      );
       return {
         content: [{ type: "text", text: JSON.stringify(recipe, null, 2) }],
       };
@@ -110,17 +139,28 @@ function createMcpServer() {
     {
       title: "Update Recipe",
       description:
-        "Replaces a recipe's name and full ingredient list. This is a full replacement — all existing ingredient rows are deleted and recreated from scratch. Always pass the complete desired ingredient list, including rows you want to keep. The same ingredient upsert-by-name logic applies as in create_recipe.",
+        "Replaces a recipe's name, full ingredient list, and optionally its instruction steps. This is a full replacement — all existing ingredient rows (and steps, if provided) are deleted and recreated from scratch. Always pass the complete desired ingredient list, including rows you want to keep. The same ingredient upsert-by-name logic applies as in create_recipe. Steps use ingredient_indices (zero-based positions into the ingredients array) rather than UUIDs, because the new recipe_ingredient IDs are generated during this call — the server resolves them automatically. If steps is omitted, existing steps are left unchanged; pass an empty array to explicitly clear all steps.",
       inputSchema: {
         id: z.string().uuid().describe("The recipe UUID to update"),
         name: z.string().min(1).describe("New recipe name"),
         ingredients: z
           .array(z.object(ingredientInputShape))
           .describe("Complete replacement ingredient list"),
+        steps: z
+          .array(z.object(stepDraftInputShape))
+          .optional()
+          .describe(
+            "Optional replacement instruction steps. Each step references ingredients by their zero-based index in the ingredients array above. Omit to leave existing steps unchanged; pass an empty array to clear all steps."
+          ),
       },
     },
-    async ({ id, name, ingredients }) => {
-      const recipe = await updateRecipeWithIngredients(id, name, ingredients);
+    async ({ id, name, ingredients, steps }) => {
+      const recipe = await updateRecipeWithIngredients(
+        id,
+        name,
+        ingredients,
+        steps
+      );
       return {
         content: [{ type: "text", text: JSON.stringify(recipe, null, 2) }],
       };
