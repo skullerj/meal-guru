@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe
   .serial("Persistent weekly shop", () => {
     let shopUrl: string;
+    let newShopUrl: string;
 
     test("Shop Now creates a shop and navigates to /shop/[id]", async ({
       page,
@@ -52,14 +53,20 @@ test.describe
       await page.goto(new URL(shopUrl).pathname);
       await page.waitForLoadState("networkidle");
 
+      const oldPath = new URL(shopUrl).pathname;
+
       await page.getByRole("button", { name: "Start new week" }).click();
 
-      // Should navigate to a NEW shop URL
-      await page.waitForURL(/\/shop\/[0-9a-f-]+/);
+      // Wait until the URL changes away from the current shop
+      await page.waitForFunction(
+        (path) => window.location.pathname !== path,
+        oldPath
+      );
       await page.waitForLoadState("networkidle");
 
       // The new URL should be different from the original
       expect(page.url()).not.toBe(shopUrl);
+      newShopUrl = page.url();
 
       await expect(
         page.getByRole("heading", { name: "Your shopping list" })
@@ -67,11 +74,14 @@ test.describe
     });
 
     test("checking an ingredient persists after reload", async ({ page }) => {
-      // We're on the shop page from the previous test — get the current URL
-      const currentShopUrl = page.url();
+      // Each serial test gets a fresh page — navigate to the shop created by "Start new week"
+      await page.goto(new URL(newShopUrl).pathname);
+      await page.waitForLoadState("networkidle");
 
-      // Find the first ingredient item and click it to check
-      const firstItem = page.locator("li").first();
+      // Scope to the shopping list container to avoid matching nav <li> elements
+      const list = page.locator(".rounded-lg ul").first();
+      await expect(list.locator("li").first()).toBeVisible();
+      const firstItem = list.locator("li").first();
       const itemText = await firstItem.locator("span.flex-1").textContent();
       await firstItem.click();
 
@@ -82,24 +92,27 @@ test.describe
       await page.waitForTimeout(500);
 
       // Reload the page
-      await page.goto(new URL(currentShopUrl).pathname);
+      await page.goto(new URL(newShopUrl).pathname);
       await page.waitForLoadState("networkidle");
 
       // Find the item with the same text — it should still be checked
-      const reloadedItem = page.locator("li", {
+      const reloadedItem = page.locator(".rounded-lg li", {
         hasText: itemText?.trim(),
       });
       await expect(reloadedItem.locator(".bg-green-600")).toBeVisible();
     });
 
     test("unchecking an ingredient persists after reload", async ({ page }) => {
-      const currentShopUrl = page.url();
+      // Navigate to the shop with the checked item
+      await page.goto(new URL(newShopUrl).pathname);
+      await page.waitForLoadState("networkidle");
 
       // Find the checked item (has green circle) and click to uncheck
       const checkedItem = page
-        .locator("li")
+        .locator(".rounded-lg li")
         .filter({ has: page.locator(".bg-green-600") })
         .first();
+      await expect(checkedItem).toBeVisible();
       const itemText = await checkedItem.locator("span.flex-1").textContent();
       await checkedItem.click();
 
@@ -110,11 +123,11 @@ test.describe
       await page.waitForTimeout(500);
 
       // Reload
-      await page.goto(new URL(currentShopUrl).pathname);
+      await page.goto(new URL(newShopUrl).pathname);
       await page.waitForLoadState("networkidle");
 
       // Item should still be unchecked
-      const reloadedItem = page.locator("li", {
+      const reloadedItem = page.locator(".rounded-lg li", {
         hasText: itemText?.trim(),
       });
       await expect(reloadedItem.locator(".bg-green-600")).not.toBeVisible();

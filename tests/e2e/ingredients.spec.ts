@@ -7,21 +7,29 @@ test.describe
       await page.goto("/ingredients");
       await page.waitForLoadState("networkidle");
 
-      await expect(page.getByText(TEST_INGREDIENTS[0].name)).toBeVisible();
+      await expect(
+        page.locator("span", { hasText: TEST_INGREDIENTS[0].name })
+      ).toBeVisible();
     });
 
     test("edits an ingredient category", async ({ page }) => {
       await page.goto("/ingredients");
       await page.waitForLoadState("networkidle");
 
-      // Find the row containing the Spaghetti ingredient
+      // Find the Spaghetti row's Edit button via its cell text
       const row = page
         .getByRole("row")
-        .filter({ hasText: TEST_INGREDIENTS[0].name });
+        .filter({
+          has: page.getByRole("cell", { name: TEST_INGREDIENTS[0].name }),
+        });
       await row.getByRole("button", { name: "Edit" }).click();
 
-      // The category select is now visible in edit mode; change it to "produce"
-      await row.getByRole("combobox").first().selectOption("produce");
+      // Wait for edit mode — combobox appears
+      const categoryCombobox = row.getByRole("combobox").first();
+      await expect(categoryCombobox).toBeVisible({ timeout: 10000 });
+
+      // Change category to produce
+      await categoryCombobox.selectOption("produce");
 
       await row.getByRole("button", { name: "Save" }).click();
 
