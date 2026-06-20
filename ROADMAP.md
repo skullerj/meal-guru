@@ -30,6 +30,27 @@ Features 0–12 shipped. Summary:
 
 ## Backlog
 
+### 13. Persisted shopping checks
+Save shopping list checkbox state to the database so progress survives page reloads.
+
+- [ ] Create `shop_ingredients` table (shop_id, ingredient_id, quantity, unit, checked boolean)
+- [ ] Populate `shop_ingredients` when a shop is created (snapshot of aggregated ingredients)
+- [ ] Load checks from database on shop page instead of local state
+- [ ] Toggle endpoint to flip `checked` on individual items
+- [ ] E2E tests
+
+**Verification:** Open a shop, check some ingredients, reload the page — checks should persist. Create a new shop and confirm its items start unchecked.
+
+### 14. Shop cooking mode
+After finishing shopping, switch the shop page to show recipes to cook instead of the ingredient list.
+
+- [ ] Add `status` column to `shops` table (default `'shopping'`, transitions to `'cooking'`)
+- [ ] "Done shopping" button on shop page that sets status to `'cooking'`
+- [ ] When status is `'cooking'`, render recipe cards with links to `/recipe/[id]` instead of the ingredient checklist
+- [ ] E2E tests
+
+**Verification:** Open a shop, click "Done shopping", confirm the page now shows recipe cards linking to cooking views. Reload and confirm the cooking mode persists.
+
 ---
 
 ## Supabase Data Model
