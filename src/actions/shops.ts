@@ -5,8 +5,10 @@ import {
   createShop,
   deactivateShopsForWeek,
   getActiveShopForWeek,
+  getShopIngredients,
   getWeekMonday,
   recommendRecipeIds,
+  toggleShopIngredient,
 } from "@/lib/database";
 
 export const shops = {
@@ -79,6 +81,42 @@ export const shops = {
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to get or create weekly shop",
+        });
+      }
+    },
+  }),
+
+  getIngredients: defineAction({
+    input: z.object({
+      shopId: z.string().uuid(),
+    }),
+    handler: async ({ shopId }) => {
+      try {
+        return await getShopIngredients(shopId);
+      } catch (e) {
+        console.error("[shops.getIngredients]", { shopId }, e);
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch shop ingredients",
+        });
+      }
+    },
+  }),
+
+  toggleIngredient: defineAction({
+    input: z.object({
+      id: z.string().uuid(),
+      checked: z.boolean(),
+    }),
+    handler: async ({ id, checked }) => {
+      try {
+        await toggleShopIngredient(id, checked);
+        return { success: true };
+      } catch (e) {
+        console.error("[shops.toggleIngredient]", { id, checked }, e);
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to toggle shop ingredient",
         });
       }
     },

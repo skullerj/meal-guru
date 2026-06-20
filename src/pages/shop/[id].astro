@@ -3,13 +3,15 @@ import ShoppingList from "../../components/meal-planner/ShoppingList";
 import { aggregateIngredients } from "../../components/meal-planner/utils/mealPlannerUtils";
 import StartNewWeekButton from "../../components/StartNewWeekButton";
 import Layout from "../../layouts/Layout.astro";
-import { getShopWithRecipes } from "../../lib/database";
+import { getShopIngredients, getShopWithRecipes } from "../../lib/database";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/");
 
 const shop = await getShopWithRecipes(id);
 if (!shop) return Astro.redirect("/");
+
+const shopIngredients = await getShopIngredients(id);
 
 const groups = aggregateIngredients(
   shop.recipes,
@@ -46,7 +48,7 @@ const groups = aggregateIngredients(
       </header>
 
       <div class="rounded-lg border border-border bg-card p-6">
-        <ShoppingList client:load groups={groups} />
+        <ShoppingList client:load groups={groups} shopIngredients={shopIngredients} />
       </div>
     </div>
   </main>

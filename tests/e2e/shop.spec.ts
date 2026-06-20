@@ -65,4 +65,58 @@ test.describe
         page.getByRole("heading", { name: "Your shopping list" })
       ).toBeVisible();
     });
+
+    test("checking an ingredient persists after reload", async ({ page }) => {
+      // We're on the shop page from the previous test — get the current URL
+      const currentShopUrl = page.url();
+
+      // Find the first ingredient item and click it to check
+      const firstItem = page.locator("li").first();
+      const itemText = await firstItem.locator("span.flex-1").textContent();
+      await firstItem.click();
+
+      // Verify it's checked (green circle appears)
+      await expect(firstItem.locator(".bg-green-600")).toBeVisible();
+
+      // Wait a moment for the toggle to persist
+      await page.waitForTimeout(500);
+
+      // Reload the page
+      await page.goto(new URL(currentShopUrl).pathname);
+      await page.waitForLoadState("networkidle");
+
+      // Find the item with the same text — it should still be checked
+      const reloadedItem = page.locator("li", {
+        hasText: itemText?.trim(),
+      });
+      await expect(reloadedItem.locator(".bg-green-600")).toBeVisible();
+    });
+
+    test("unchecking an ingredient persists after reload", async ({ page }) => {
+      const currentShopUrl = page.url();
+
+      // Find the checked item (has green circle) and click to uncheck
+      const checkedItem = page
+        .locator("li")
+        .filter({ has: page.locator(".bg-green-600") })
+        .first();
+      const itemText = await checkedItem.locator("span.flex-1").textContent();
+      await checkedItem.click();
+
+      // Verify it's unchecked (no green circle)
+      await expect(checkedItem.locator(".bg-green-600")).not.toBeVisible();
+
+      // Wait for persist
+      await page.waitForTimeout(500);
+
+      // Reload
+      await page.goto(new URL(currentShopUrl).pathname);
+      await page.waitForLoadState("networkidle");
+
+      // Item should still be unchecked
+      const reloadedItem = page.locator("li", {
+        hasText: itemText?.trim(),
+      });
+      await expect(reloadedItem.locator(".bg-green-600")).not.toBeVisible();
+    });
   });

@@ -125,7 +125,7 @@ tests/
 │   ├── components/
 │   │   ├── meal-planner/
 │   │   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
-│   │   │   ├── ShoppingList.tsx         # Reusable shopping list with checkboxes
+│   │   │   ├── ShoppingList.tsx         # Reusable shopping list with checkboxes (supports persisted checks via shopIngredients prop)
 │   │   │   ├── RecipeColumn.tsx         # Recipe selection column
 │   │   │   ├── ShoppingColumn.tsx       # Aggregated ingredients column
 │   │   │   ├── LeftToBuyColumn.tsx      # Items to buy column
@@ -216,22 +216,25 @@ tests/
 | `createRecipeWithIngredients(name, ingredients, steps?)` | Create recipe + set ingredients + optionally save steps atomically |
 | `updateRecipeWithIngredients(id, name, ingredients, steps?)` | Update recipe + replace ingredients + optionally save steps atomically |
 | `getRecentRecipeIds(withinDays?)` | Return distinct recipe UUIDs from shops created within the last N days (default 14) |
-| `commitShop(recipeIds)` | Insert a new shop row and link the given recipe UUIDs to it; returns `{ id }` |
+| `commitShop(recipeIds)` | Insert a new shop row, link recipe UUIDs, and populate `shop_ingredients` snapshot; returns `{ id }` |
 | `getWeekMonday(date?)` | Returns ISO date string (YYYY-MM-DD) of the Monday of the given date's week |
 | `getActiveShopForWeek(weekOf?)` | Find the active shop for a given week (defaults to current week); returns `ShopSummary` or `null` |
 | `getShopWithRecipes(id)` | Fetch a shop by ID with full nested Recipe[] data; returns `ShopWithRecipes` or `null` |
-| `createShop(recipeIds, weekOf?)` | Create a new shop with `week_of` and `active=true`, link recipe IDs; returns `{ id }` |
+| `createShop(recipeIds, weekOf?)` | Create a new shop with `week_of` and `active=true`, link recipe IDs, and populate `shop_ingredients` snapshot; returns `{ id }` |
 | `deactivateShopsForWeek(weekOf)` | Set `active = false` on all active shops for the given week |
 | `recommendRecipeIds(count?, excludeDays?)` | Pick random recipe IDs excluding recently cooked ones; falls back to all if too few |
 | `getRecipeSteps(recipeId)` | Fetch all steps for a recipe ordered by step_number, with ingredient_ids populated |
 | `setRecipeSteps(recipeId, steps)` | Replace all steps for a recipe atomically (delete + insert); each step has step_number, instruction, ingredient_ids (recipe_ingredient.id values) |
+| `populateShopIngredients(shopId, recipes)` | Aggregate ingredients across recipes and insert snapshot rows into `shop_ingredients` |
+| `getShopIngredients(shopId)` | Fetch all `shop_ingredients` for a shop, ordered by name; returns `ShopIngredient[]` |
+| `toggleShopIngredient(id, checked)` | Set the `checked` boolean on a specific `shop_ingredients` row |
 
 ### `src/actions/` namespaces
 | Namespace | Actions |
 |-----------|---------|
 | `recipes` | `create`, `update`, `delete` |
 | `ingredients` | `update`, `delete` |
-| `shops` | `commit`, `createFromIds`, `startNewWeek`, `getOrCreateWeeklyShop` |
+| `shops` | `commit`, `createFromIds`, `startNewWeek`, `getOrCreateWeeklyShop`, `getIngredients`, `toggleIngredient` |
 
 ## React Architecture Guidelines
 

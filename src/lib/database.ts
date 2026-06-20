@@ -415,6 +415,14 @@ export async function commitShop(recipeIds: string[]): Promise<{ id: string }> {
 
   if (linkError) throw linkError;
 
+  // Populate the shop_ingredients snapshot
+  const recipes: Recipe[] = [];
+  for (const recipeId of recipeIds) {
+    const recipe = await getRecipe(recipeId);
+    if (recipe) recipes.push(recipe);
+  }
+  await populateShopIngredients(shop.id as string, recipes);
+
   return { id: shop.id };
 }
 
@@ -549,6 +557,14 @@ export async function createShop(
 
   if (linkError) throw linkError;
 
+  // Populate the shop_ingredients snapshot
+  const recipes: Recipe[] = [];
+  for (const recipeId of recipeIds) {
+    const recipe = await getRecipe(recipeId);
+    if (recipe) recipes.push(recipe);
+  }
+  await populateShopIngredients(shop.id as string, recipes);
+
   return { id: shop.id as string };
 }
 
@@ -590,4 +606,89 @@ export async function recommendRecipeIds(
   }
 
   return candidates.slice(0, count);
+}
+
+// --- Feature 13: Persisted shopping checks ---
+
+export interface ShopIngredient {
+  id: string;
+  shop_id: string;
+  ingredient_id: string;
+  amount: number;
+  unit: Unit;
+  category: Category;
+  name: string;
+  checked: boolean;
+}
+
+export async function populateShopIngredients(
+  shopId: string,
+  recipes: Recipe[]
+): Promise<void> {
+  const totals = new Map<
+    string,
+    {
+      ingredient_id: string;
+      name: string;
+      unit: Unit;
+      category: Category;
+      amount: number;
+    }
+  >();
+
+  for (const recipe of recipes) {
+    for (const ri of recipe.ingredients) {
+      const existing = totals.get(ri.ingredient_id);
+      if (existing) {
+        existing.amount += ri.amount;
+      } else {
+        totals.set(ri.ingredient_id, {
+          ingredient_id: ri.ingredient_id,
+          name: ri.ingredient.name,
+          unit: ri.ingredient.unit,
+          category: ri.ingredient.category,
+          amount: ri.amount,
+        });
+      }
+    }
+  }
+
+  if (totals.size === 0) return;
+
+  const rows = [...totals.values()].map((t) => ({
+    shop_id: shopId,
+    ingredient_id: t.ingredient_id,
+    amount: t.amount,
+    unit: t.unit,
+    category: t.category,
+    name: t.name,
+    checked: false,
+  }));
+
+  const { error } = await supabase.from("shop_ingredients").insert(rows);
+  if (error) throw error;
+}
+
+export async function getShopIngredients(
+  shopId: string
+): Promise<ShopIngredient[]> {
+  const { data, error } = await supabase
+    .from("shop_ingredients")
+    .select("*")
+    .eq("shop_id", shopId)
+    .order("name");
+
+  if (error) throw error;
+  return (data ?? []) as ShopIngredient[];
+}
+
+export async function toggleShopIngredient(
+  id: string,
+  checked: boolean
+): Promise<void> {
+  const { error } = await supabase
+    .from("shop_ingredients")
+    .update({ checked })
+    .eq("id", id);
+  if (error) throw error;
 }
