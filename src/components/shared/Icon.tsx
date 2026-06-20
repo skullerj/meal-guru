@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  BookOpen,
   Check,
   ChefHat,
   ChevronRight,
@@ -14,6 +15,7 @@ import {
 
 export type IconName =
   | "arrow-left"
+  | "book-open"
   | "check"
   | "chef-hat"
   | "chevron-right"
@@ -36,6 +38,7 @@ interface IconProps {
 
 const iconMap = {
   "arrow-left": ArrowLeft,
+  "book-open": BookOpen,
   check: Check,
   "chef-hat": ChefHat,
   "chevron-right": ChevronRight,

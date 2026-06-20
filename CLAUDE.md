@@ -142,6 +142,8 @@ tests/
 │   │   │   └── utils/
 │   │   │       ├── addRecipeUtils.ts    # Recipe form business logic
 │   │   │       └── addRecipeReducer.ts  # Add recipe state management
+│   │   ├── recipe/
+│   │   │   └── CookingView.tsx          # Mobile-first step-by-step cooking interface
 │   │   ├── shared/
 │   │   │   ├── Button.tsx               # Reusable button component
 │   │   │   ├── Icon.tsx                 # Centralized icon component (Lucide)
@@ -166,7 +168,7 @@ tests/
 │   │   │   ├── index.astro          # Redirect shim: /shop?r=... → /shop/{id}
 │   │   │   └── [id].astro           # Persistent weekly shop detail page
 │   │   └── recipe/
-│   │       └── [id].astro           # Shopping list page
+│   │       └── [id].astro           # Step-by-step cooking view page
 │   └── styles/
 │       └── global.css
 ├── .env (create this file)
@@ -184,7 +186,7 @@ tests/
 - **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
 - **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record, renders aggregated category-grouped shopping list with "Start new week" button
 - **Shop Redirect Shim** (`/shop`): Backward-compatible redirect — creates a shop from `?r=` query params and redirects to `/shop/{id}`
-- **Shopping List Page** (`/recipe/[id]`): Interactive ingredient checklist with shelf item identification
+- **Step-by-Step Cooking View** (`/recipe/[id]`): Mobile-first cooking interface showing one step at a time with per-step ingredient list, overview/intro screen, and Previous/Next/Done navigation
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
 - **Supabase Integration**: Centralized database with ingredient library and standardized units
 - **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages

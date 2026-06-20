@@ -89,6 +89,54 @@ export default async function globalSetup() {
     .insert(links);
   if (riError) throw riError;
 
+  // Fetch recipe_ingredient IDs for the primary recipe to link steps
+  const { data: recipeIngredients, error: riSelectError } = await supabase
+    .from("recipe_ingredients")
+    .select("id, ingredient_id")
+    .eq("recipe_id", recipe.id);
+  if (riSelectError) throw riSelectError;
+
+  const spaghettiRI = recipeIngredients?.find(
+    (ri) => ri.ingredient_id === spaghetti.id
+  );
+  const tomatoSauceRI = recipeIngredients?.find(
+    (ri) => ri.ingredient_id === tomatoSauce.id
+  );
+  if (!spaghettiRI || !tomatoSauceRI)
+    throw new Error("Missing recipe_ingredients after insert");
+
+  // Insert 2 recipe steps for the primary test recipe
+  const { data: stepsData, error: stepsError } = await supabase
+    .from("recipe_steps")
+    .insert([
+      {
+        recipe_id: recipe.id,
+        step_number: 1,
+        instruction: "Boil the spaghetti in salted water for 10 minutes",
+      },
+      {
+        recipe_id: recipe.id,
+        step_number: 2,
+        instruction: "Heat the tomato sauce and mix with the drained pasta",
+      },
+    ])
+    .select();
+  if (stepsError) throw stepsError;
+  if (!stepsData || stepsData.length !== 2)
+    throw new Error("Failed to insert test steps");
+
+  const step1 = stepsData.find((s) => s.step_number === 1);
+  const step2 = stepsData.find((s) => s.step_number === 2);
+  if (!step1 || !step2) throw new Error("Missing steps after insert");
+
+  // Link ingredients to steps
+  const { error: siError } = await supabase.from("step_ingredients").insert([
+    { step_id: step1.id, recipe_ingredient_id: spaghettiRI.id },
+    { step_id: step2.id, recipe_ingredient_id: tomatoSauceRI.id },
+    { step_id: step2.id, recipe_ingredient_id: spaghettiRI.id },
+  ]);
+  if (siError) throw siError;
+
   // Link Tomato sauce (shared) + Chicken breast (unique) to recipe 2
   const recipe2Links = [
     {

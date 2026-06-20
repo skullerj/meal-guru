@@ -1,0 +1,21 @@
+---
+import CookingView from "../../components/recipe/CookingView";
+import Layout from "../../layouts/Layout.astro";
+import { getRecipe } from "../../lib/database";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/recipes");
+}
+
+const recipe = await getRecipe(id);
+
+if (!recipe) {
+  return Astro.redirect("/recipes");
+}
+---
+
+<Layout title={recipe.name}>
+  <CookingView recipe={recipe} client:load />
+</Layout>

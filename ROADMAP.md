@@ -10,7 +10,7 @@ Old code is preserved on the `archive/v1` branch for reference.
 
 ## Completed (v1)
 
-Features 0–11 shipped. Summary:
+Features 0–12 shipped. Summary:
 
 0. Archive old code (`archive/v1` branch)
 1. Design system foundation (shadcn/ui, shared components, typeface)
@@ -24,20 +24,11 @@ Features 0–11 shipped. Summary:
 9. Persistent weekly shop (`/shop/[id]`, recommend API, "Start new week")
 10. Ingredient overlap signal (shared-ingredient badges in manual picker)
 11. Recipe step instructions with ingredient links (ordered steps, per-step ingredient refs, MCP tools)
+12. Recipe cooking view (mobile-first step-by-step `/recipe/[id]`, per-step ingredients, links from shop + recipe list)
 
 ---
 
 ## Backlog
-
-<!-- Template:
-### N. Feature name
-Short description of what and why.
-
-- [ ] Task 1
-- [ ] Task 2
-
-**Verification:** How to confirm it works.
--->
 
 ---
 

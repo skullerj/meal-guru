@@ -15,7 +15,6 @@ const groups = aggregateIngredients(
   shop.recipes,
   shop.recipes.map((r) => r.id)
 );
-const recipeNames = shop.recipes.map((r) => r.name).join(" · ");
 ---
 
 <Layout title="Shopping List">
@@ -36,7 +35,14 @@ const recipeNames = shop.recipes.map((r) => r.name).join(" · ");
           <StartNewWeekButton client:load />
         </div>
         <h1 class="text-3xl font-bold text-foreground">Your shopping list</h1>
-        <p class="text-muted-foreground mt-1">{recipeNames}</p>
+        <div class="mt-1 text-sm">
+          {shop.recipes.map((r, i) => (
+            <>
+              {i > 0 && <span class="text-muted-foreground"> · </span>}
+              <a href={`/recipe/${r.id}`} class="text-muted-foreground hover:text-foreground hover:underline transition-colors">{r.name}</a>
+            </>
+          ))}
+        </div>
       </header>
 
       <div class="rounded-lg border border-border bg-card p-6">
