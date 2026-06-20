@@ -86,7 +86,7 @@ test.describe
       await firstItem.click();
 
       // Verify it's checked (green circle appears)
-      await expect(firstItem.locator(".bg-green-600")).toBeVisible();
+      await expect(firstItem.locator(".bg-success")).toBeVisible();
 
       // Wait a moment for the toggle to persist
       await page.waitForTimeout(500);
@@ -99,7 +99,7 @@ test.describe
       const reloadedItem = page.locator(".rounded-lg li", {
         hasText: itemText?.trim(),
       });
-      await expect(reloadedItem.locator(".bg-green-600")).toBeVisible();
+      await expect(reloadedItem.locator(".bg-success")).toBeVisible();
     });
 
     test("unchecking an ingredient persists after reload", async ({ page }) => {
@@ -110,14 +110,14 @@ test.describe
       // Find the checked item (has green circle) and click to uncheck
       const checkedItem = page
         .locator(".rounded-lg li")
-        .filter({ has: page.locator(".bg-green-600") })
+        .filter({ has: page.locator(".bg-success") })
         .first();
       await expect(checkedItem).toBeVisible();
       const itemText = await checkedItem.locator("span.flex-1").textContent();
       await checkedItem.click();
 
       // Verify it's unchecked (no green circle)
-      await expect(checkedItem.locator(".bg-green-600")).not.toBeVisible();
+      await expect(checkedItem.locator(".bg-success")).not.toBeVisible();
 
       // Wait for persist
       await page.waitForTimeout(500);
@@ -130,6 +130,6 @@ test.describe
       const reloadedItem = page.locator(".rounded-lg li", {
         hasText: itemText?.trim(),
       });
-      await expect(reloadedItem.locator(".bg-green-600")).not.toBeVisible();
+      await expect(reloadedItem.locator(".bg-success")).not.toBeVisible();
     });
   });

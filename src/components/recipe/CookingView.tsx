@@ -8,7 +8,8 @@ interface Props {
 }
 
 function formatIngredient(ri: RecipeIngredient): string {
-  const amount = ri.amount % 1 === 0 ? ri.amount.toString() : ri.amount.toFixed(1);
+  const amount =
+    ri.amount % 1 === 0 ? ri.amount.toString() : ri.amount.toFixed(1);
   return `${amount}${ri.ingredient.unit === "unit" ? "" : ri.ingredient.unit} ${ri.ingredient.name}`;
 }
 
@@ -23,7 +24,9 @@ export default function CookingView({ recipe }: Props) {
   const isLastStep = stepIndex === steps.length;
 
   const stepIngredients: RecipeIngredient[] = currentStep
-    ? recipe.ingredients.filter((ri) => currentStep.ingredient_ids.includes(ri.id))
+    ? recipe.ingredients.filter((ri) =>
+        currentStep.ingredient_ids.includes(ri.id)
+      )
     : [];
 
   function handleBack() {
@@ -40,7 +43,9 @@ export default function CookingView({ recipe }: Props) {
           <Icon name="arrow-left" size="sm" />
           Back
         </a>
-        <h1 className="text-2xl font-bold text-foreground mb-4">{recipe.name}</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-4 font-heading">
+          {recipe.name}
+        </h1>
         <p className="text-muted-foreground">No cooking instructions yet.</p>
         <a
           href="/recipes"
@@ -64,13 +69,19 @@ export default function CookingView({ recipe }: Props) {
 
       {isOverview ? (
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">{recipe.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {recipe.name}
+          </h1>
           <p className="text-sm text-muted-foreground mb-6">
-            {recipe.ingredients.length} ingredient{recipe.ingredients.length !== 1 ? "s" : ""} &middot; {steps.length} step{steps.length !== 1 ? "s" : ""}
+            {recipe.ingredients.length} ingredient
+            {recipe.ingredients.length !== 1 ? "s" : ""} &middot; {steps.length}{" "}
+            step{steps.length !== 1 ? "s" : ""}
           </p>
 
           <div className="rounded-lg border border-border bg-card p-4 mb-8">
-            <h2 className="text-sm font-semibold text-foreground mb-3">All ingredients</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">
+              All ingredients
+            </h2>
             <ul className="space-y-1.5">
               {recipe.ingredients.map((ri) => (
                 <li key={ri.id} className="text-sm text-muted-foreground">

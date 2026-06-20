@@ -37,9 +37,7 @@ export default function ShoppingList({
   );
 
   const shopIngredientMap = new Map<string, string>(
-    isPersisted
-      ? shopIngredients.map((si) => [si.ingredient_id, si.id])
-      : []
+    isPersisted ? shopIngredients.map((si) => [si.ingredient_id, si.id]) : []
   );
 
   function toggleChecked(ingredientId: string) {
@@ -115,9 +113,7 @@ export default function ShoppingList({
                     <div
                       className={cn(
                         "flex-shrink-0 flex items-center justify-center size-6 rounded-full",
-                        isChecked
-                          ? "bg-green-600"
-                          : "border-2 border-border"
+                        isChecked ? "bg-success" : "border-2 border-border"
                       )}
                     >
                       {isChecked && (
