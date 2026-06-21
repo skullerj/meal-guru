@@ -1,14 +1,6 @@
 import { useState } from "react";
-import { UNITS, CATEGORIES } from "@/data/types";
-import type { Ingredient, Unit, Category } from "@/data/types";
-import type { IngredientInput } from "@/lib/database";
-import IconButton from "@/components/shared/IconButton";
 import Icon from "@/components/shared/Icon";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import IconButton from "@/components/shared/IconButton";
 import {
   Command,
   CommandEmpty,
@@ -17,6 +9,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import type { Category, Ingredient, Unit } from "@/data/types";
+import { CATEGORIES, UNITS } from "@/data/types";
+import type { IngredientInput } from "@/lib/database";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -54,12 +54,12 @@ export default function IngredientRow({
 
   const filtered = search.trim()
     ? allIngredients.filter((ing) =>
-        ing.name.toLowerCase().includes(search.toLowerCase()),
+        ing.name.toLowerCase().includes(search.toLowerCase())
       )
     : allIngredients;
 
   const exactMatch = allIngredients.some(
-    (ing) => ing.name.toLowerCase() === search.trim().toLowerCase(),
+    (ing) => ing.name.toLowerCase() === search.trim().toLowerCase()
   );
 
   function selectExisting(ing: Ingredient) {
@@ -91,7 +91,7 @@ export default function IngredientRow({
             type="button"
             className={cn(
               "flex-1 flex items-center justify-between border border-border rounded px-2 py-1 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring h-[30px]",
-              value.name ? "text-foreground" : "text-muted-foreground",
+              value.name ? "text-foreground" : "text-muted-foreground"
             )}
           >
             <span className="truncate">{value.name || "Ingredient name"}</span>
@@ -166,7 +166,7 @@ export default function IngredientRow({
         }
         className={cn(
           "border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
-          isExisting && "opacity-50 cursor-not-allowed",
+          isExisting && "opacity-50 cursor-not-allowed"
         )}
       >
         {UNITS.map((u) => (
@@ -187,7 +187,7 @@ export default function IngredientRow({
         }
         className={cn(
           "border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
-          isExisting && "opacity-50 cursor-not-allowed",
+          isExisting && "opacity-50 cursor-not-allowed"
         )}
       >
         <option value="">Category</option>

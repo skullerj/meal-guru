@@ -1,18 +1,18 @@
-import { useReducer } from "react";
 import { actions } from "astro:actions";
-import type { Ingredient, Recipe } from "@/data/types";
+import { useReducer } from "react";
 import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
-import RecipeCard from "./RecipeCard";
-import RecipeFormDialog, { type SaveData } from "./RecipeFormDialog";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import type { Ingredient, Recipe } from "@/data/types";
+import RecipeCard from "./RecipeCard";
+import RecipeFormDialog, { type SaveData } from "./RecipeFormDialog";
 
 interface Props {
   recipes: Recipe[];
@@ -64,9 +64,7 @@ function reducer(state: State, action: Action): State {
 
     case "SAVE_SUCCESS": {
       const updatedList = state.editingRecipe
-        ? state.list.map((r) =>
-            r.id === action.recipe.id ? action.recipe : r
-          )
+        ? state.list.map((r) => (r.id === action.recipe.id ? action.recipe : r))
         : [action.recipe, ...state.list];
       return {
         ...state,
@@ -216,7 +214,8 @@ export default function RecipeList({ recipes, ingredients }: Props) {
           <DialogHeader>
             <DialogTitle>Delete recipe</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &ldquo;{state.deletingRecipe?.name}&rdquo;? This action cannot be undone.
+              Are you sure you want to delete &ldquo;
+              {state.deletingRecipe?.name}&rdquo;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import Icon, { type IconName } from "./Icon";
 
@@ -20,12 +20,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+  primary: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
   secondary:
     "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
-  ghost:
-    "text-foreground hover:bg-accent hover:text-accent-foreground",
+  ghost: "text-foreground hover:bg-accent hover:text-accent-foreground",
   success:
     "bg-[var(--success)] text-[var(--success-foreground)] hover:bg-[var(--success)]/90 shadow-sm",
   danger:

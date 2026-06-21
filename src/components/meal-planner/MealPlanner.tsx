@@ -13,8 +13,10 @@ interface MealPlannerProps {
 
 export default function MealPlanner({ recipes }: MealPlannerProps) {
   const [state, dispatch] = useReducer(
-    (state: ReturnType<typeof createInitialState>, action: { type: "TOGGLE_RECIPE"; id: string }) =>
-      mealPlannerReducer(state, action, recipes),
+    (
+      state: ReturnType<typeof createInitialState>,
+      action: { type: "TOGGLE_RECIPE"; id: string }
+    ) => mealPlannerReducer(state, action, recipes),
     undefined,
     createInitialState
   );
@@ -30,7 +32,10 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
         {recipes.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No recipes yet.{" "}
-            <a href="/add-recipe" className="text-primary underline underline-offset-4">
+            <a
+              href="/add-recipe"
+              className="text-primary underline underline-offset-4"
+            >
               Add your first recipe
             </a>
             .

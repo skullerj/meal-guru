@@ -64,8 +64,8 @@ npm run test:e2e:ui
 Create a `.env` file in the project root with:
 ```bash
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_PUB_KEY=your_supabase_publishable_key_here
+PUBLIC_SUPABASE_URL=your_supabase_url_here
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key_here
 ```
 
 To get an Anthropic API key:
@@ -146,6 +146,8 @@ tests/
 │   │   │   └── ShopPage.tsx             # Shop page: shopping mode (checklist) ↔ cooking mode (recipe cards)
 │   │   ├── recipe/
 │   │   │   └── CookingView.tsx          # Mobile-first step-by-step cooking interface
+│   │   ├── auth/
+│   │   │   └── LoginForm.tsx            # Email/password login/signup form (React island)
 │   │   ├── shared/
 │   │   │   ├── Button.tsx               # Reusable button component
 │   │   │   ├── Icon.tsx                 # Centralized icon component (Lucide)
@@ -156,16 +158,20 @@ tests/
 │   ├── data/
 │   │   └── recipes.ts               # TypeScript interfaces only
 │   ├── lib/
-│   │   ├── supabase.ts              # Supabase client configuration
+│   │   ├── supabase.ts              # Supabase clients: plain (database.ts), browser (React), server (middleware/API)
 │   │   ├── database.ts              # Database access functions
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
+│   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, sets Astro.locals.user
 │   ├── layouts/
 │   │   └── Layout.astro
 │   ├── pages/
 │   │   ├── api/
+│   │   │   ├── auth/
+│   │   │   │   └── signout.ts       # POST endpoint: signs out user and redirects to /login
 │   │   │   └── parse-recipe.ts
 │   │   ├── add-recipe.astro
 │   │   ├── index.astro              # Hero home page: "Shop Now" CTA + link to /pick
+│   │   ├── login.astro              # Standalone login/signup page (no Layout wrapper)
 │   │   ├── pick.astro               # Manual recipe picker (MealPlanner)
 │   │   ├── shop/
 │   │   │   ├── index.astro          # Redirect shim: /shop?r=... → /shop/{id}
@@ -195,6 +201,7 @@ tests/
 - **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
 - **Ingredient Management Actions**: `ingredients.update` (edit name/unit/category) and `ingredients.delete` (with referential integrity guard) in `src/actions/ingredients.ts`
+- **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
@@ -441,6 +448,7 @@ The `cn()` function combines `clsx` and `tailwind-merge` for conditional classNa
 
 **Dependencies**:
 - `@radix-ui/react-dialog`: Dialog primitives
+- `@supabase/ssr`: Server-side auth (browser client, server client, cookie handling)
 - `class-variance-authority`: Component variant styling
 - `clsx`: Conditional className construction
 - `tailwind-merge`: Smart Tailwind class merging
@@ -463,6 +471,7 @@ Centralized reusable components in `src/components/shared/`:
 - This is a meal planning and batch cooking application
 - Uses Astro framework with React integration for interactive components
 - **Database**: Supabase (PostgreSQL) with full schema for recipes, ingredients, and relationships
+- **Auth**: `@supabase/ssr` with three client exports in `src/lib/supabase.ts` — `supabase` (plain, for `database.ts`), `createSupabaseBrowserClient()` (React), `createSupabaseServerClient()` (middleware/API). Middleware at `src/middleware.ts` protects all routes except `/login` and `/api/*`
 - **Data Management**: Recipe data fetched from Supabase, TypeScript interfaces in `/src/data/recipes.ts`
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling

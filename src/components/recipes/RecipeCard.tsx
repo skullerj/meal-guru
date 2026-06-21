@@ -1,6 +1,6 @@
-import type { Recipe } from "@/data/types";
 import Icon from "@/components/shared/Icon";
 import IconButton from "@/components/shared/IconButton";
+import type { Recipe } from "@/data/types";
 
 interface Props {
   recipe: Recipe;
@@ -13,7 +13,10 @@ export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
   const stepCount = recipe.steps?.length ?? 0;
 
   return (
-    <div data-testid="recipe-card" className="flex items-center justify-between border border-border rounded-lg px-4 py-3 hover:shadow-sm transition-shadow bg-card">
+    <div
+      data-testid="recipe-card"
+      className="flex items-center justify-between border border-border rounded-lg px-4 py-3 hover:shadow-sm transition-shadow bg-card"
+    >
       <div className="flex flex-col gap-0.5">
         <h3 className="font-semibold text-foreground">{recipe.name}</h3>
         <div className="flex items-center gap-1.5">

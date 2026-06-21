@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import Icon from "@/components/shared/Icon";
 import type { ShopIngredient } from "@/lib/database";
+import { cn } from "@/lib/utils";
 import type { IngredientGroup } from "./utils/mealPlannerUtils";
 
 interface ShoppingListProps {

@@ -76,6 +76,67 @@ Null categories continue to display as "Other" in the shopping list (no explicit
 
 ---
 
+## Direct Supabase + Auth Initiative
+
+Goal: Replace server-side Astro actions with direct Supabase calls from the frontend, enabled by proper authentication and Row-Level Security. Reduces unnecessary server resource usage and adds multi-user support.
+
+---
+
+### ✅ 16. Supabase Auth setup
+Add email/password authentication using `@supabase/ssr`. No OAuth redirects — email/password only for PWA compatibility (works natively in installed web apps without leaving the app shell).
+
+- [x] Install `@supabase/ssr` and configure browser + server Supabase clients
+- [x] Create login/signup page with email/password form
+- [x] Add auth session handling (cookie-based via `@supabase/ssr`)
+- [x] Protect routes: redirect unauthenticated users to login
+- [x] Add logout functionality
+- [x] E2E tests
+
+**Verification:** Open the app logged out — confirm redirect to login. Sign up with email/password, confirm redirect to home. Reload and confirm session persists. Log out and confirm redirect back to login.
+
+---
+
+### 🔲 17. Add user_id and Row-Level Security
+Add `user_id` columns to all data tables and enable RLS so each user can only access their own data. Supabase RLS policies automatically filter rows based on `auth.uid()`, so no application-level filtering code is needed.
+
+- [ ] DB migration: add `user_id` (UUID, FK to `auth.users`) column to `recipes`, `ingredients`, `shops` tables (cascade to junction tables via existing FKs)
+- [ ] Create RLS policies for SELECT, INSERT, UPDATE, DELETE on all tables (recipes, ingredients, shops, recipe_ingredients, recipe_steps, step_ingredients, shop_recipes, shop_ingredients)
+- [ ] Enable RLS on all tables
+- [ ] Update MCP server (`src/pages/api/mcp.ts`) to use service role key (bypasses RLS)
+- [ ] Backfill migration script: set `user_id` on all existing rows to a provided UUID (run manually after user account creation)
+- [ ] E2E tests
+
+**Verification:** Log in as user A, create a recipe. Log in as user B, confirm user A's recipe is not visible. Confirm MCP tools still work (service role key bypasses RLS).
+
+---
+
+### 🔲 18. Move mutations to frontend
+Replace Astro actions with direct Supabase calls from React components. The browser Supabase client (with auth session) + RLS policies make this safe — mutations go directly to Supabase without a server round-trip.
+
+- [ ] Create `useSupabase` hook (or context) for React components to access the browser client
+- [ ] Move recipe CRUD operations to direct Supabase calls from React
+- [ ] Move ingredient CRUD operations to direct Supabase calls from React
+- [ ] Move shop operations (toggleIngredient, finishShopping, getOrCreateWeeklyShop, startNewWeek) to direct Supabase calls
+- [ ] Keep `parse-recipe` API route server-side (needs Anthropic API key)
+- [ ] Remove redundant Astro actions and `src/actions/` files
+- [ ] E2E tests
+
+**Verification:** Create, edit, and delete a recipe — confirm operations work without server round-trips (check Network tab: calls go directly to Supabase, not to Astro action endpoints). Toggle shopping list checks and confirm they persist.
+
+---
+
+### 🔲 19. Switch to hybrid rendering
+Change Astro output from `server` to `hybrid` so pages are static by default and only opt into SSR where needed. Reduces server resource usage since most pages can be prerendered.
+
+- [ ] Change `output: 'server'` to `output: 'hybrid'` in `astro.config.mjs`
+- [ ] Add `export const prerender = false` to pages that need SSR (parse-recipe API, MCP server, auth callback if any)
+- [ ] Verify all static pages build correctly
+- [ ] E2E tests
+
+**Verification:** Run `npm run build` — confirm most pages are prerendered (shown in build output). Run `npm run preview` and confirm all flows still work.
+
+---
+
 ## Supabase Data Model
 
 **Active tables:**

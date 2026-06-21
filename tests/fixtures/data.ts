@@ -1,3 +1,6 @@
+export const TEST_USER_EMAIL = "test@mealguru.local";
+export const TEST_USER_PASSWORD = "testpassword123";
+
 export const TEST_RECIPE_NAME = "Test Pasta";
 export const TEST_RECIPE_NAME_2 = "Test Chicken Soup";
 export const TEST_RECIPE_NAME_3 = "Test Rice Bowl";

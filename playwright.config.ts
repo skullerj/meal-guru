@@ -15,8 +15,24 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "setup",
+      testDir: "./tests/setup",
+      testMatch: "auth.setup.ts",
+    },
+    {
       name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "tests/.auth/user.json",
+      },
+      dependencies: ["setup"],
+      testIgnore: "**/auth.spec.ts",
+    },
+    {
+      name: "chromium-auth",
       use: { ...devices["Desktop Chrome"] },
+      testMatch: "**/auth.spec.ts",
+      dependencies: ["chromium"],
     },
   ],
   webServer: {

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import type { Ingredient, Recipe, RecipeStep } from "@/data/types";
+import Button from "@/components/shared/Button";
+import IconButton from "@/components/shared/IconButton";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import Button from "@/components/shared/Button";
-import IconButton from "@/components/shared/IconButton";
+import type { Ingredient, Recipe, RecipeStep } from "@/data/types";
 import type { IngredientInput } from "@/lib/database";
 import IngredientRow from "./IngredientRow";
 
@@ -43,7 +43,7 @@ interface KeyedRow {
 
 function buildInitialRows(
   counter: { current: number },
-  recipe?: Recipe,
+  recipe?: Recipe
 ): KeyedRow[] {
   const inputs: IngredientInput[] =
     recipe && recipe.ingredients.length > 0
@@ -60,7 +60,7 @@ function buildInitialRows(
 
 function buildInitialSteps(
   recipe: Recipe | undefined,
-  rows: KeyedRow[],
+  rows: KeyedRow[]
 ): StepDraft[] {
   if (!recipe?.steps || recipe.steps.length === 0) return [];
   // Map recipe_ingredient.id → KeyedRow.id using the order of recipe.ingredients
@@ -88,7 +88,7 @@ export default function RecipeFormDialog({
   const counter = useRef(0);
   const [recipeName, setRecipeName] = useState(recipe?.name ?? "");
   const [rows, setRows] = useState<KeyedRow[]>(() =>
-    buildInitialRows(counter, recipe),
+    buildInitialRows(counter, recipe)
   );
   const [steps, setSteps] = useState<StepDraft[]>(() => {
     // rows state is not yet available here — we need to build rows first
@@ -98,7 +98,7 @@ export default function RecipeFormDialog({
 
   function handleRowChange(index: number, value: IngredientInput) {
     setRows((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, data: value } : r)),
+      prev.map((r, i) => (i === index ? { ...r, data: value } : r))
     );
   }
 
@@ -111,7 +111,7 @@ export default function RecipeFormDialog({
         prev.map((s) => ({
           ...s,
           rowKeys: s.rowKeys.filter((k) => k !== removedKey),
-        })),
+        }))
       );
     }
   }
@@ -135,7 +135,7 @@ export default function RecipeFormDialog({
 
   function handleStepInstructionChange(index: number, instruction: string) {
     setSteps((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, instruction } : s)),
+      prev.map((s, i) => (i === index ? { ...s, instruction } : s))
     );
   }
 
@@ -150,7 +150,7 @@ export default function RecipeFormDialog({
             ? s.rowKeys.filter((k) => k !== rowKey)
             : [...s.rowKeys, rowKey],
         };
-      }),
+      })
     );
   }
 

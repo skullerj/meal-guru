@@ -22,6 +22,7 @@ pnpm-debug.log*
 # playwright
 test-results/
 playwright-report/
+tests/.auth/
 
 # macOS-specific files
 .DS_Store

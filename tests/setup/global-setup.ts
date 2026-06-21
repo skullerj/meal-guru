@@ -8,6 +8,8 @@ import {
   TEST_RECIPE_NAME,
   TEST_RECIPE_NAME_2,
   TEST_RECIPE_NAME_3,
+  TEST_USER_EMAIL,
+  TEST_USER_PASSWORD,
 } from "../fixtures/data";
 
 loadEnv({ path: resolve(process.cwd(), ".env.test") });
@@ -161,4 +163,24 @@ export default async function globalSetup() {
   process.env.TEST_RECIPE_ID = recipe.id;
   process.env.TEST_RECIPE_ID_2 = recipe2.id;
   process.env.TEST_RECIPE_ID_3 = recipe3.id;
+
+  // Create or fetch the test user for auth E2E tests
+  const { data: existingUsers } = await supabase.auth.admin.listUsers();
+  const existingTestUser = existingUsers?.users?.find(
+    (u) => u.email === TEST_USER_EMAIL
+  );
+
+  if (existingTestUser) {
+    // Update password in case it was changed
+    await supabase.auth.admin.updateUserById(existingTestUser.id, {
+      password: TEST_USER_PASSWORD,
+    });
+  } else {
+    const { error: createUserError } = await supabase.auth.admin.createUser({
+      email: TEST_USER_EMAIL,
+      password: TEST_USER_PASSWORD,
+      email_confirm: true,
+    });
+    if (createUserError) throw createUserError;
+  }
 }

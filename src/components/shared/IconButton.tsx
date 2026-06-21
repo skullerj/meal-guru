@@ -1,12 +1,8 @@
-import { forwardRef, type ButtonHTMLAttributes } from "react";
+import { type ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import Icon, { type IconName } from "./Icon";
 
-export type IconButtonVariant =
-  | "primary"
-  | "secondary"
-  | "ghost"
-  | "danger";
+export type IconButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type IconButtonSize = "sm" | "md" | "lg";
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -18,14 +14,11 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<IconButtonVariant, string> = {
-  primary:
-    "bg-primary text-primary-foreground hover:bg-primary/90",
+  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
   secondary:
     "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
-  ghost:
-    "text-muted-foreground hover:text-foreground hover:bg-accent",
-  danger:
-    "text-destructive hover:bg-destructive/10",
+  ghost: "text-muted-foreground hover:text-foreground hover:bg-accent",
+  danger: "text-destructive hover:bg-destructive/10",
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {

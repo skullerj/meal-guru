@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import IconButton from "@/components/shared/IconButton";
-import { CATEGORIES, UNITS } from "@/data/types";
 import type { Category, Ingredient, Unit } from "@/data/types";
+import { CATEGORIES, UNITS } from "@/data/types";
+import { cn } from "@/lib/utils";
 
 interface IngredientListProps {
   ingredients: Ingredient[];
@@ -82,7 +82,7 @@ export default function IngredientList({
         return;
       }
       setIngredients((prev) =>
-        prev.map((i) => (i.id === editing.id ? (data as Ingredient) : i)),
+        prev.map((i) => (i.id === editing.id ? (data as Ingredient) : i))
       );
       setEditing(null);
     } finally {
@@ -137,7 +137,7 @@ export default function IngredientList({
                 key={ingredient.id}
                 className={cn(
                   "border-b border-border/60 last:border-0 transition-colors",
-                  isEditing ? "bg-accent/30" : "hover:bg-muted/30",
+                  isEditing ? "bg-accent/30" : "hover:bg-muted/30"
                 )}
               >
                 {/* Name */}
@@ -149,7 +149,7 @@ export default function IngredientList({
                       value={editing.name}
                       onChange={(e) =>
                         setEditing(
-                          (prev) => prev && { ...prev, name: e.target.value },
+                          (prev) => prev && { ...prev, name: e.target.value }
                         )
                       }
                     />
@@ -172,7 +172,7 @@ export default function IngredientList({
                             prev && {
                               ...prev,
                               category: (e.target.value as Category) || null,
-                            },
+                            }
                         )
                       }
                     >
@@ -188,7 +188,7 @@ export default function IngredientList({
                       className={cn(
                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
                         CATEGORY_BADGE[ingredient.category] ??
-                          "bg-muted text-muted-foreground",
+                          "bg-muted text-muted-foreground"
                       )}
                     >
                       {CATEGORY_LABELS[ingredient.category] ??
@@ -208,7 +208,7 @@ export default function IngredientList({
                       onChange={(e) =>
                         setEditing(
                           (prev) =>
-                            prev && { ...prev, unit: e.target.value as Unit },
+                            prev && { ...prev, unit: e.target.value as Unit }
                         )
                       }
                     >

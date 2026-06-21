@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import type { Recipe } from "@/data/types";
+import { cn } from "@/lib/utils";
 
 interface RecipeGridProps {
   recipes: Recipe[];

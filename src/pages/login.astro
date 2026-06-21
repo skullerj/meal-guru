@@ -1,0 +1,27 @@
+---
+import LoginForm from "../components/auth/LoginForm";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#CF6A43" />
+    <title>Login — Meal Guru</title>
+  </head>
+  <body>
+    <main class="min-h-screen bg-background flex items-center justify-center">
+      <LoginForm client:load />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  @import "@fontsource-variable/geist";
+</style>
+<style is:global>
+  @import "../styles/global.css";
+</style>
