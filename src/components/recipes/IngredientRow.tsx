@@ -19,6 +19,19 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
+const CATEGORY_LABELS: Record<string, string> = {
+  produce: "Produce",
+  bakery: "Bakery",
+  dairy: "Dairy",
+  meat: "Meat",
+  canned: "Canned Goods",
+  condiments: "Condiments",
+  oils: "Oils",
+  spices: "Spices",
+  grains: "Grains & Pasta",
+  frozen: "Frozen",
+};
+
 interface IngredientRowProps {
   index: number;
   value: IngredientInput;
@@ -180,7 +193,7 @@ export default function IngredientRow({
         <option value="">Category</option>
         {CATEGORIES.map((c) => (
           <option key={c} value={c}>
-            {c}
+            {CATEGORY_LABELS[c] ?? c}
           </option>
         ))}
       </select>

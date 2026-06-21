@@ -59,7 +59,7 @@ test.describe
         .first();
       const selects = ingredientRow.getByRole("combobox");
       // unit select is first, category select is second
-      await selects.nth(1).selectOption("pantry");
+      await selects.nth(1).selectOption("grains");
 
       await page.getByRole("button", { name: "Save" }).click();
 

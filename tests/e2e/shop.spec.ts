@@ -78,15 +78,19 @@ test.describe
       await page.goto(new URL(newShopUrl).pathname);
       await page.waitForLoadState("networkidle");
 
-      // Scope to the shopping list container to avoid matching nav <li> elements
-      const list = page.locator(".rounded-lg ul").first();
-      await expect(list.locator("li").first()).toBeVisible();
-      const firstItem = list.locator("li").first();
-      const itemText = await firstItem.locator("span.flex-1").textContent();
-      await firstItem.click();
+      // Get the first checkbox and remember its text so we can relocate it after click
+      const firstCheckbox = page.getByRole("checkbox").first();
+      await expect(firstCheckbox).toBeVisible();
+      const itemText = (
+        await firstCheckbox.locator("span.flex-1").textContent()
+      )?.trim();
+      await firstCheckbox.click();
 
-      // Verify it's checked (green circle appears)
-      await expect(firstItem.locator(".bg-success")).toBeVisible();
+      // Re-locate by text and verify it's checked via aria-checked
+      const clickedItem = page.getByRole("checkbox", {
+        name: new RegExp(itemText ?? ""),
+      });
+      await expect(clickedItem).toBeChecked();
 
       // Wait a moment for the toggle to persist
       await page.waitForTimeout(500);
@@ -96,10 +100,10 @@ test.describe
       await page.waitForLoadState("networkidle");
 
       // Find the item with the same text — it should still be checked
-      const reloadedItem = page.locator(".rounded-lg li", {
-        hasText: itemText?.trim(),
+      const reloadedItem = page.getByRole("checkbox", {
+        name: new RegExp(itemText ?? ""),
       });
-      await expect(reloadedItem.locator(".bg-success")).toBeVisible();
+      await expect(reloadedItem).toBeChecked();
     });
 
     test("unchecking an ingredient persists after reload", async ({ page }) => {
@@ -107,17 +111,19 @@ test.describe
       await page.goto(new URL(newShopUrl).pathname);
       await page.waitForLoadState("networkidle");
 
-      // Find the checked item (has green circle) and click to uncheck
-      const checkedItem = page
-        .locator(".rounded-lg li")
-        .filter({ has: page.locator(".bg-success") })
-        .first();
+      // Find the checked item and remember its text
+      const checkedItem = page.getByRole("checkbox", { checked: true }).first();
       await expect(checkedItem).toBeVisible();
-      const itemText = await checkedItem.locator("span.flex-1").textContent();
+      const itemText = (
+        await checkedItem.locator("span.flex-1").textContent()
+      )?.trim();
       await checkedItem.click();
 
-      // Verify it's unchecked (no green circle)
-      await expect(checkedItem.locator(".bg-success")).not.toBeVisible();
+      // Re-locate by text and verify it's unchecked
+      const clickedItem = page.getByRole("checkbox", {
+        name: new RegExp(itemText ?? ""),
+      });
+      await expect(clickedItem).not.toBeChecked();
 
       // Wait for persist
       await page.waitForTimeout(500);
@@ -127,10 +133,10 @@ test.describe
       await page.waitForLoadState("networkidle");
 
       // Item should still be unchecked
-      const reloadedItem = page.locator(".rounded-lg li", {
-        hasText: itemText?.trim(),
+      const reloadedItem = page.getByRole("checkbox", {
+        name: new RegExp(itemText ?? ""),
       });
-      await expect(reloadedItem.locator(".bg-success")).not.toBeVisible();
+      await expect(reloadedItem).not.toBeChecked();
     });
 
     test("Done shopping transitions to cooking mode", async ({ page }) => {

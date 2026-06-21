@@ -14,10 +14,15 @@ export type Unit = (typeof UNITS)[number];
 
 export const CATEGORIES = [
   "produce",
-  "tins",
+  "bakery",
   "dairy",
   "meat",
-  "pantry",
+  "canned",
+  "condiments",
+  "oils",
+  "spices",
+  "grains",
+  "frozen",
 ] as const;
 export type Category = (typeof CATEGORIES)[number] | null;
 

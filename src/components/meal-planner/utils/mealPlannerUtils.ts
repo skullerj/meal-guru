@@ -14,7 +14,19 @@ export interface IngredientGroup {
   ingredients: AggregatedIngredient[];
 }
 
-const CATEGORY_ORDER = ["produce", "tins", "dairy", "meat", "pantry", "other"];
+const CATEGORY_ORDER = [
+  "produce",
+  "bakery",
+  "dairy",
+  "meat",
+  "canned",
+  "condiments",
+  "oils",
+  "spices",
+  "grains",
+  "frozen",
+  "other",
+];
 
 export function aggregateIngredients(
   recipes: Recipe[],

@@ -3,8 +3,8 @@ export const TEST_RECIPE_NAME_2 = "Test Chicken Soup";
 export const TEST_RECIPE_NAME_3 = "Test Rice Bowl";
 
 export const TEST_INGREDIENTS = [
-  { name: "Spaghetti", unit: "g" as const, category: "pantry" as const },
-  { name: "Tomato sauce", unit: "ml" as const, category: "tins" as const },
+  { name: "Spaghetti", unit: "g" as const, category: "grains" as const },
+  { name: "Tomato sauce", unit: "ml" as const, category: "canned" as const },
   { name: "Chicken breast", unit: "g" as const, category: "meat" as const },
 ];
 

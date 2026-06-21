@@ -17,18 +17,28 @@ interface EditState {
 
 const CATEGORY_BADGE: Record<NonNullable<Category>, string> = {
   produce: "bg-green-100 text-green-800",
-  tins: "bg-orange-100 text-orange-800",
+  bakery: "bg-amber-100 text-amber-800",
   dairy: "bg-blue-100 text-blue-800",
   meat: "bg-red-100 text-red-800",
-  pantry: "bg-yellow-100 text-yellow-800",
+  canned: "bg-orange-100 text-orange-800",
+  condiments: "bg-purple-100 text-purple-800",
+  oils: "bg-lime-100 text-lime-800",
+  spices: "bg-yellow-100 text-yellow-800",
+  grains: "bg-stone-100 text-stone-800",
+  frozen: "bg-cyan-100 text-cyan-800",
 };
 
 const CATEGORY_LABELS: Record<NonNullable<Category>, string> = {
   produce: "Produce",
-  tins: "Tins",
+  bakery: "Bakery",
   dairy: "Dairy",
   meat: "Meat",
-  pantry: "Pantry",
+  canned: "Canned Goods",
+  condiments: "Condiments",
+  oils: "Oils",
+  spices: "Spices",
+  grains: "Grains & Pasta",
+  frozen: "Frozen",
 };
 
 export default function IngredientList({

@@ -51,10 +51,10 @@ test.describe
         .getByRole("button", { name: new RegExp(TEST_RECIPE_NAME) })
         .click();
 
-      // Tomato sauce is always in "tins"; Spaghetti may be in "pantry" or
+      // Tomato sauce is always in "canned"; Spaghetti may be in "grains" or
       // "produce" depending on whether the ingredients edit test ran first
       await expect(
-        shoppingList.getByText("Tins", { exact: true })
+        shoppingList.getByText("Canned Goods", { exact: true })
       ).toBeVisible();
       // Should have at least 2 distinct category headings (one per ingredient category)
       const headings = shoppingList.locator("h3");

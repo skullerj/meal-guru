@@ -467,6 +467,7 @@ Centralized reusable components in `src/components/shared/`:
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling
 - **Standardized Units**: Ingredient units restricted to: 'g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit'
+- **Ingredient Categories**: 'produce', 'meat', 'dairy', 'bakery', 'canned', 'condiments', 'spices', 'grains', 'oils', 'frozen' (the old values 'tins' and 'pantry' are deprecated in the DB enum but no longer used)
 - Tailwind CSS is configured via Vite plugin with global CSS import in Layout.astro
 - **UI Components**: Use shadcn/ui components from `@/components/ui/` and shared components from `@/components/shared/`
 - **Class Merging**: Use the `cn()` utility function for conditional className merging

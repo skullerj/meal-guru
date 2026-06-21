@@ -11,10 +11,15 @@ interface ShoppingListProps {
 
 const CATEGORY_LABELS: Record<string, string> = {
   produce: "Produce",
-  tins: "Tins",
+  bakery: "Bakery",
   dairy: "Dairy",
   meat: "Meat",
-  pantry: "Pantry",
+  canned: "Canned Goods",
+  condiments: "Condiments",
+  oils: "Oils",
+  spices: "Spices",
+  grains: "Grains & Pasta",
+  frozen: "Frozen",
   other: "Other",
 };
 
@@ -97,6 +102,9 @@ export default function ShoppingList({
                 return (
                   <li
                     key={ingredient.ingredient_id}
+                    role="checkbox"
+                    aria-checked={isChecked}
+                    tabIndex={0}
                     className={cn(
                       "flex items-center gap-3 py-3 border-b border-border/50 last:border-0",
                       "cursor-pointer select-none active:bg-accent/50 transition-colors"
@@ -112,11 +120,17 @@ export default function ShoppingList({
                     <div
                       className={cn(
                         "flex-shrink-0 flex items-center justify-center size-6 rounded-full",
-                        isChecked ? "bg-success" : "border-2 border-border"
+                        isChecked
+                          ? "bg-[var(--success)]"
+                          : "border-2 border-border"
                       )}
                     >
                       {isChecked && (
-                        <Icon name="check" size="xs" className="text-white" />
+                        <Icon
+                          name="check"
+                          size="xs"
+                          className="text-[var(--success-foreground)]"
+                        />
                       )}
                     </div>
                     <span
