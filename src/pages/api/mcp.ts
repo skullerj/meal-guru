@@ -16,6 +16,7 @@ import {
   setRecipeSteps,
   updateIngredient,
   updateRecipeWithIngredients,
+  updateShopStatus,
   upsertIngredient,
 } from "@/lib/database";
 
@@ -379,6 +380,34 @@ function createMcpServer() {
       const result = await setRecipeSteps(recipe_id, steps);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "update_shop_status",
+    {
+      title: "Update Shop Status",
+      description:
+        'Transitions a shop between lifecycle phases. A shop starts in "shopping" status (the user is buying groceries) and moves to "cooking" status when all items have been purchased and the user is ready to cook. This is a one-way progression in normal usage: shopping → cooking. Accepts the shop UUID and the target status.',
+      inputSchema: {
+        id: z.string().uuid().describe("The shop UUID to update"),
+        status: z
+          .enum(["shopping", "cooking"])
+          .describe(
+            'The new status for the shop. "shopping" means the user is still buying groceries; "cooking" means shopping is complete and the user is ready to cook the recipes.'
+          ),
+      },
+    },
+    async ({ id, status }) => {
+      await updateShopStatus(id, status);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Shop ${id} status updated to "${status}".`,
+          },
+        ],
       };
     }
   );

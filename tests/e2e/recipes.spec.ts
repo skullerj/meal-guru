@@ -23,7 +23,10 @@ test.describe
       await page.getByText('Create "Eggs"').click();
 
       // Select a category for the new ingredient (unit is first combobox, category is second)
-      const ingredientRow = page.locator(".flex.items-center.gap-2").first();
+      const ingredientRow = page
+        .getByRole("dialog")
+        .locator(".flex.items-center.gap-2")
+        .first();
       await ingredientRow.getByRole("combobox").nth(1).selectOption("dairy");
 
       await page.getByRole("button", { name: "Save" }).click();

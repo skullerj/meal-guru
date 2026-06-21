@@ -10,7 +10,7 @@ Old code is preserved on the `archive/v1` branch for reference.
 
 ## Completed (v1)
 
-Features 0–13 shipped. Summary:
+Features 0–14 shipped. Summary:
 
 0. Archive old code (`archive/v1` branch)
 1. Design system foundation (shadcn/ui, shared components, typeface)
@@ -26,18 +26,19 @@ Features 0–13 shipped. Summary:
 11. Recipe step instructions with ingredient links (ordered steps, per-step ingredient refs, MCP tools)
 12. Recipe cooking view (mobile-first step-by-step `/recipe/[id]`, per-step ingredients, links from shop + recipe list)
 13. Persisted shopping checks (`shop_ingredients` table, snapshot on shop creation, optimistic toggle)
+14. Shop cooking mode ("Done shopping" → recipe cards with cooking view links, persisted status)
 
 ---
 
 ## Backlog
 
-### 14. Shop cooking mode
+### ✅ 14. Shop cooking mode
 After finishing shopping, switch the shop page to show recipes to cook instead of the ingredient list.
 
-- [ ] Add `status` column to `shops` table (default `'shopping'`, transitions to `'cooking'`)
-- [ ] "Done shopping" button on shop page that sets status to `'cooking'`
-- [ ] When status is `'cooking'`, render recipe cards with links to `/recipe/[id]` instead of the ingredient checklist
-- [ ] E2E tests
+- [x] Add `status` column to `shops` table (default `'shopping'`, transitions to `'cooking'`)
+- [x] "Done shopping" button on shop page that sets status to `'cooking'`
+- [x] When status is `'cooking'`, render recipe cards with links to `/recipe/[id]` instead of the ingredient checklist
+- [x] E2E tests
 
 **Verification:** Open a shop, click "Done shopping", confirm the page now shows recipe cards linking to cooking views. Reload and confirm the cooking mode persists.
 

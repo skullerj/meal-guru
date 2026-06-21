@@ -9,6 +9,7 @@ import {
   getWeekMonday,
   recommendRecipeIds,
   toggleShopIngredient,
+  updateShopStatus,
 } from "@/lib/database";
 
 export const shops = {
@@ -117,6 +118,24 @@ export const shops = {
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to toggle shop ingredient",
+        });
+      }
+    },
+  }),
+
+  finishShopping: defineAction({
+    input: z.object({
+      shopId: z.string().uuid(),
+    }),
+    handler: async ({ shopId }) => {
+      try {
+        await updateShopStatus(shopId, "cooking");
+        return { success: true };
+      } catch (e) {
+        console.error("[shops.finishShopping]", { shopId }, e);
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to finish shopping",
         });
       }
     },

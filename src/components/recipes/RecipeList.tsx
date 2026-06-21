@@ -2,6 +2,7 @@ import { useReducer } from "react";
 import { actions } from "astro:actions";
 import type { Ingredient, Recipe } from "@/data/types";
 import Button from "@/components/shared/Button";
+import PageLayout from "@/components/shared/PageLayout";
 import RecipeCard from "./RecipeCard";
 import RecipeFormDialog, { type SaveData } from "./RecipeFormDialog";
 import {
@@ -163,89 +164,81 @@ export default function RecipeList({ recipes, ingredients }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <header className="mb-8 flex items-center justify-between">
-          <div>
-            <a
-              href="/"
-              className="text-sm text-muted-foreground hover:text-foreground mb-2 inline-flex items-center gap-1"
-            >
-              ← Home
-            </a>
-            <h1 className="text-2xl font-bold text-foreground">Recipes</h1>
-          </div>
-          <Button
-            variant="primary"
-            leftIcon="plus"
-            onClick={() => dispatch({ type: "OPEN_ADD" })}
-          >
-            Add Recipe
-          </Button>
-        </header>
-
-        {state.list.length === 0 ? (
-          <p className="text-muted-foreground">
-            No recipes yet. Add your first recipe to get started.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {state.list.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                onEdit={() => dispatch({ type: "OPEN_EDIT", recipe })}
-                onDelete={() => dispatch({ type: "CONFIRM_DELETE", recipe })}
-              />
-            ))}
-          </div>
-        )}
-
-        {state.dialogMode !== null && (
-          <RecipeFormDialog
-            mode={state.dialogMode}
-            recipe={state.editingRecipe ?? undefined}
-            allIngredients={ingredients}
-            isSubmitting={state.isSubmitting}
-            onSave={handleSave}
-            onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
-          />
-        )}
-
-        <Dialog
-          open={state.deletingRecipe !== null}
-          onOpenChange={(open) => {
-            if (!open) dispatch({ type: "CANCEL_DELETE" });
-          }}
+    <PageLayout
+      title="Recipes"
+      backUrl="/"
+      backLabel="Home"
+      actions={
+        <Button
+          variant="primary"
+          leftIcon="plus"
+          onClick={() => dispatch({ type: "OPEN_ADD" })}
         >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete recipe</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete &ldquo;{state.deletingRecipe?.name}&rdquo;? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="secondary"
-                onClick={() => dispatch({ type: "CANCEL_DELETE" })}
-                disabled={state.isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                loading={state.isSubmitting}
-                onClick={() =>
-                  state.deletingRecipe && handleDelete(state.deletingRecipe.id)
-                }
-              >
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
+          Add Recipe
+        </Button>
+      }
+    >
+      {state.list.length === 0 ? (
+        <p className="text-muted-foreground">
+          No recipes yet. Add your first recipe to get started.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {state.list.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              onEdit={() => dispatch({ type: "OPEN_EDIT", recipe })}
+              onDelete={() => dispatch({ type: "CONFIRM_DELETE", recipe })}
+            />
+          ))}
+        </div>
+      )}
+
+      {state.dialogMode !== null && (
+        <RecipeFormDialog
+          mode={state.dialogMode}
+          recipe={state.editingRecipe ?? undefined}
+          allIngredients={ingredients}
+          isSubmitting={state.isSubmitting}
+          onSave={handleSave}
+          onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
+        />
+      )}
+
+      <Dialog
+        open={state.deletingRecipe !== null}
+        onOpenChange={(open) => {
+          if (!open) dispatch({ type: "CANCEL_DELETE" });
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete recipe</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &ldquo;{state.deletingRecipe?.name}&rdquo;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => dispatch({ type: "CANCEL_DELETE" })}
+              disabled={state.isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              loading={state.isSubmitting}
+              onClick={() =>
+                state.deletingRecipe && handleDelete(state.deletingRecipe.id)
+              }
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PageLayout>
   );
 }

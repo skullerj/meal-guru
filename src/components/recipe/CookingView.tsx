@@ -1,10 +1,11 @@
 import { useState } from "react";
 import type { Recipe, RecipeIngredient } from "../../data/types";
 import Button from "../shared/Button";
-import Icon from "../shared/Icon";
+import PageLayout from "../shared/PageLayout";
 
 interface Props {
   recipe: Recipe;
+  backUrl: string;
 }
 
 function formatIngredient(ri: RecipeIngredient): string {
@@ -13,7 +14,7 @@ function formatIngredient(ri: RecipeIngredient): string {
   return `${amount}${ri.ingredient.unit === "unit" ? "" : ri.ingredient.unit} ${ri.ingredient.name}`;
 }
 
-export default function CookingView({ recipe }: Props) {
+export default function CookingView({ recipe, backUrl }: Props) {
   const [stepIndex, setStepIndex] = useState(0);
   const steps = recipe.steps ?? [];
   const hasSteps = steps.length > 0;
@@ -35,49 +36,34 @@ export default function CookingView({ recipe }: Props) {
 
   if (!hasSteps) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <a
-          href="/recipes"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <Icon name="arrow-left" size="sm" />
-          Back
-        </a>
-        <h1 className="text-2xl font-bold text-foreground mb-4 font-heading">
-          {recipe.name}
-        </h1>
+      <PageLayout title={recipe.name} backUrl={backUrl}>
         <p className="text-muted-foreground">No cooking instructions yet.</p>
         <a
-          href="/recipes"
+          href={backUrl}
           className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors mt-4"
         >
-          Back to recipes
+          Back to list
         </a>
-      </div>
+      </PageLayout>
     );
   }
 
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <a
-        href="/recipes"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-      >
-        <Icon name="arrow-left" size="sm" />
-        Back
-      </a>
+  const overviewSubtitle = (
+    <p className="text-sm text-muted-foreground">
+      {recipe.ingredients.length} ingredient
+      {recipe.ingredients.length !== 1 ? "s" : ""} &middot; {steps.length} step
+      {steps.length !== 1 ? "s" : ""}
+    </p>
+  );
 
+  return (
+    <PageLayout
+      title={recipe.name}
+      backUrl={backUrl}
+      subtitle={isOverview ? overviewSubtitle : undefined}
+    >
       {isOverview ? (
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            {recipe.name}
-          </h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            {recipe.ingredients.length} ingredient
-            {recipe.ingredients.length !== 1 ? "s" : ""} &middot; {steps.length}{" "}
-            step{steps.length !== 1 ? "s" : ""}
-          </p>
-
           <div className="rounded-lg border border-border bg-card p-4 mb-8">
             <h2 className="text-sm font-semibold text-foreground mb-3">
               All ingredients
@@ -156,6 +142,6 @@ export default function CookingView({ recipe }: Props) {
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }

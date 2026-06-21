@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import Button from "@/components/shared/Button";
 import Icon from "@/components/shared/Icon";
 import type { ShopIngredient } from "@/lib/database";
 import type { IngredientGroup } from "./utils/mealPlannerUtils";
@@ -152,19 +151,6 @@ export default function ShoppingList({
           </div>
         );
       })}
-
-      <div className="pt-4">
-        <Button
-          variant="primary"
-          size="lg"
-          className="w-full"
-          onClick={() => {
-            window.location.href = "/";
-          }}
-        >
-          Done shopping
-        </Button>
-      </div>
     </div>
   );
 }

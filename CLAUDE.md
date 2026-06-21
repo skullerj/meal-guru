@@ -142,12 +142,15 @@ tests/
 │   │   │   └── utils/
 │   │   │       ├── addRecipeUtils.ts    # Recipe form business logic
 │   │   │       └── addRecipeReducer.ts  # Add recipe state management
+│   │   ├── shop/
+│   │   │   └── ShopPage.tsx             # Shop page: shopping mode (checklist) ↔ cooking mode (recipe cards)
 │   │   ├── recipe/
 │   │   │   └── CookingView.tsx          # Mobile-first step-by-step cooking interface
 │   │   ├── shared/
 │   │   │   ├── Button.tsx               # Reusable button component
 │   │   │   ├── Icon.tsx                 # Centralized icon component (Lucide)
-│   │   │   └── IconButton.tsx           # Interactive icon button component
+│   │   │   ├── IconButton.tsx           # Interactive icon button component
+│   │   │   └── PageLayout.tsx           # Standardized page layout (max-w-lg, header, back link, actions)
 │   │   └── ui/
 │   │       └── dialog.tsx               # shadcn Dialog component (Radix UI)
 │   ├── data/
@@ -184,7 +187,7 @@ tests/
 - **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
 - **Hero Home Page** (`/`): "Shop Now" CTA calls `shops.getOrCreateWeeklyShop` action and navigates to `/shop/{id}`; secondary link to `/pick` for manual selection
 - **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
-- **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record, renders aggregated category-grouped shopping list with "Start new week" button
+- **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record with two modes — "shopping" (ingredient checklist) and "cooking" (recipe cards linking to `/recipe/[id]`). "Done shopping" transitions to cooking mode via `shops.finishShopping` action
 - **Shop Redirect Shim** (`/shop`): Backward-compatible redirect — creates a shop from `?r=` query params and redirects to `/shop/{id}`
 - **Step-by-Step Cooking View** (`/recipe/[id]`): Mobile-first cooking interface showing one step at a time with per-step ingredient list, overview/intro screen, and Previous/Next/Done navigation
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
@@ -228,13 +231,14 @@ tests/
 | `populateShopIngredients(shopId, recipes)` | Aggregate ingredients across recipes and insert snapshot rows into `shop_ingredients` |
 | `getShopIngredients(shopId)` | Fetch all `shop_ingredients` for a shop, ordered by name; returns `ShopIngredient[]` |
 | `toggleShopIngredient(id, checked)` | Set the `checked` boolean on a specific `shop_ingredients` row |
+| `updateShopStatus(id, status)` | Update the `status` column on a shop row (`"shopping"` or `"cooking"`) |
 
 ### `src/actions/` namespaces
 | Namespace | Actions |
 |-----------|---------|
 | `recipes` | `create`, `update`, `delete` |
 | `ingredients` | `update`, `delete` |
-| `shops` | `commit`, `createFromIds`, `startNewWeek`, `getOrCreateWeeklyShop`, `getIngredients`, `toggleIngredient` |
+| `shops` | `commit`, `createFromIds`, `startNewWeek`, `getOrCreateWeeklyShop`, `getIngredients`, `toggleIngredient`, `finishShopping` |
 
 ## React Architecture Guidelines
 
@@ -453,6 +457,7 @@ Centralized reusable components in `src/components/shared/`:
 - **Button.tsx**: Styled button with variants (primary, secondary, success, danger, card) and sizes
 - **Icon.tsx**: Centralized icon component using Lucide React
 - **IconButton.tsx**: Interactive icon-only button with variants
+- **PageLayout.tsx**: Standardized page wrapper with `max-w-lg` container, consistent padding (`px-6 py-8`), optional back link, h1 title, optional subtitle, optional action buttons, and children slot. Used by RecipeList, CookingView, and ShopPage. Astro pages (pick, ingredients) use the same width/padding classes directly in their markup.
 
 ## Notes for Claude
 - This is a meal planning and batch cooking application

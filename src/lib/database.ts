@@ -4,6 +4,7 @@ import type {
   Recipe,
   RecipeIngredient,
   RecipeStep,
+  ShopStatus,
   Unit,
 } from "../data/types";
 import { supabase } from "./supabase";
@@ -433,6 +434,7 @@ export interface ShopSummary {
   week_of: string;
   active: boolean;
   created_at: string;
+  status: ShopStatus;
   recipe_ids: string[];
 }
 
@@ -441,6 +443,7 @@ export interface ShopWithRecipes {
   week_of: string;
   active: boolean;
   created_at: string;
+  status: ShopStatus;
   recipes: Recipe[];
 }
 
@@ -470,6 +473,7 @@ export async function getActiveShopForWeek(
       week_of,
       active,
       created_at,
+      status,
       shop_recipes(recipe_id)
     `
     )
@@ -491,6 +495,7 @@ export async function getActiveShopForWeek(
     week_of: data.week_of as string,
     active: data.active as boolean,
     created_at: data.created_at as string,
+    status: (data.status as ShopStatus) ?? "shopping",
     recipe_ids: recipeIds,
   };
 }
@@ -500,7 +505,7 @@ export async function getShopWithRecipes(
 ): Promise<ShopWithRecipes | null> {
   const { data: shop, error: shopError } = await supabase
     .from("shops")
-    .select("id, week_of, active, created_at")
+    .select("id, week_of, active, created_at, status")
     .eq("id", id)
     .single();
 
@@ -531,6 +536,7 @@ export async function getShopWithRecipes(
     week_of: shop.week_of as string,
     active: shop.active as boolean,
     created_at: shop.created_at as string,
+    status: (shop.status as ShopStatus) ?? "shopping",
     recipes,
   };
 }
@@ -689,6 +695,19 @@ export async function toggleShopIngredient(
   const { error } = await supabase
     .from("shop_ingredients")
     .update({ checked })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+// --- Feature 14: Shop cooking mode ---
+
+export async function updateShopStatus(
+  id: string,
+  status: ShopStatus
+): Promise<void> {
+  const { error } = await supabase
+    .from("shops")
+    .update({ status })
     .eq("id", id);
   if (error) throw error;
 }

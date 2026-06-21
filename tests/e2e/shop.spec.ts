@@ -132,4 +132,51 @@ test.describe
       });
       await expect(reloadedItem.locator(".bg-success")).not.toBeVisible();
     });
+
+    test("Done shopping transitions to cooking mode", async ({ page }) => {
+      await page.goto(new URL(newShopUrl).pathname);
+      await page.waitForLoadState("networkidle");
+
+      // Should be in shopping mode
+      await expect(
+        page.getByRole("heading", { name: "Your shopping list" })
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Done shopping" })
+      ).toBeVisible();
+
+      // Transition to cooking mode
+      await page.getByRole("button", { name: "Done shopping" }).click();
+
+      // Verify cooking mode
+      await expect(
+        page.getByRole("heading", { name: "Time to cook!" })
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Done shopping" })
+      ).not.toBeVisible();
+
+      // Verify recipe cards are shown
+      const recipeLinks = page.locator('a[href^="/recipe/"]');
+      await expect(recipeLinks.first()).toBeVisible();
+    });
+
+    test("cooking mode persists after reload", async ({ page }) => {
+      await page.goto(new URL(newShopUrl).pathname);
+      await page.waitForLoadState("networkidle");
+
+      // Should still be in cooking mode
+      await expect(
+        page.getByRole("heading", { name: "Time to cook!" })
+      ).toBeVisible();
+
+      // Recipe cards should be visible
+      const recipeLinks = page.locator('a[href^="/recipe/"]');
+      await expect(recipeLinks.first()).toBeVisible();
+
+      // Done shopping button should not be present
+      await expect(
+        page.getByRole("button", { name: "Done shopping" })
+      ).not.toBeVisible();
+    });
   });

@@ -48,6 +48,8 @@ export interface RecipeStep {
   ingredient_ids: string[];
 }
 
+export type ShopStatus = "shopping" | "cooking";
+
 export interface Recipe {
   id: string;
   name: string;

@@ -17,11 +17,9 @@ test.describe
       await page.waitForLoadState("networkidle");
 
       // Find the Spaghetti row's Edit button via its cell text
-      const row = page
-        .getByRole("row")
-        .filter({
-          has: page.getByRole("cell", { name: TEST_INGREDIENTS[0].name }),
-        });
+      const row = page.getByRole("row").filter({
+        has: page.getByRole("cell", { name: TEST_INGREDIENTS[0].name }),
+      });
       await row.getByRole("button", { name: "Edit" }).click();
 
       // Wait for edit mode — combobox appears
@@ -55,7 +53,10 @@ test.describe
 
       // Select category for the new (non-existing) ingredient row
       // The category select is the second combobox in the row (after unit select)
-      const ingredientRow = page.locator(".flex.items-center.gap-2").first();
+      const ingredientRow = page
+        .getByRole("dialog")
+        .locator(".flex.items-center.gap-2")
+        .first();
       const selects = ingredientRow.getByRole("combobox");
       // unit select is first, category select is second
       await selects.nth(1).selectOption("pantry");
