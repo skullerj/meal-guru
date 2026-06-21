@@ -19,6 +19,7 @@ import {
   updateShopStatus,
   upsertIngredient,
 } from "@/lib/database";
+import { createServiceRoleClient } from "@/lib/supabase";
 
 const stepDraftInputShape = {
   step_number: z
@@ -66,6 +67,7 @@ const ingredientInputShape = {
 
 function createMcpServer() {
   const server = new McpServer({ name: "meal-guru", version: "1.0.0" });
+  const supabase = createServiceRoleClient();
 
   server.registerTool(
     "list_recipes",
@@ -75,7 +77,7 @@ function createMcpServer() {
         "Returns all recipes ordered by name, each with their full ingredient list (amounts, units, and master ingredient details). Use this to discover recipe IDs or browse what exists. For a single recipe's details, prefer get_recipe with a known ID.",
     },
     async () => {
-      const recipes = await getRecipes();
+      const recipes = await getRecipes(supabase);
       return {
         content: [{ type: "text", text: JSON.stringify(recipes, null, 2) }],
       };
@@ -91,7 +93,7 @@ function createMcpServer() {
       inputSchema: { id: z.string().uuid().describe("The recipe UUID") },
     },
     async ({ id }) => {
-      const recipe = await getRecipe(id);
+      const recipe = await getRecipe(supabase, id);
       if (!recipe) {
         return {
           content: [{ type: "text", text: `Recipe ${id} not found.` }],
@@ -125,6 +127,7 @@ function createMcpServer() {
     },
     async ({ name, ingredients, steps }) => {
       const recipe = await createRecipeWithIngredients(
+        supabase,
         name,
         ingredients,
         steps
@@ -157,6 +160,7 @@ function createMcpServer() {
     },
     async ({ id, name, ingredients, steps }) => {
       const recipe = await updateRecipeWithIngredients(
+        supabase,
         id,
         name,
         ingredients,
@@ -180,7 +184,7 @@ function createMcpServer() {
       annotations: { destructiveHint: true },
     },
     async ({ id }) => {
-      await deleteRecipe(id);
+      await deleteRecipe(supabase, id);
       return { content: [{ type: "text", text: `Recipe ${id} deleted.` }] };
     }
   );
@@ -193,7 +197,7 @@ function createMcpServer() {
         "Returns the master ingredient catalogue — all ingredients that exist across any recipe, ordered by name. Each entry includes id, name, unit, and category. Call this before create_recipe or update_recipe when you want to pass ingredient_id for exact matching rather than relying on name-based upsert. Ingredients are shared across recipes — the same ingredient record is reused every time it appears.",
     },
     async () => {
-      const ingredients = await getIngredients();
+      const ingredients = await getIngredients(supabase);
       return {
         content: [{ type: "text", text: JSON.stringify(ingredients, null, 2) }],
       };
@@ -222,7 +226,7 @@ function createMcpServer() {
       },
     },
     async ({ name, unit, category }) => {
-      const ingredient = await upsertIngredient({
+      const ingredient = await upsertIngredient(supabase, {
         name,
         unit,
         category: (category ?? null) as Category,
@@ -257,7 +261,7 @@ function createMcpServer() {
       },
     },
     async ({ id, name, unit, category }) => {
-      const ingredient = await updateIngredient(id, {
+      const ingredient = await updateIngredient(supabase, id, {
         name,
         unit,
         category: (category ?? null) as Category,
@@ -280,7 +284,7 @@ function createMcpServer() {
       annotations: { destructiveHint: true },
     },
     async ({ id }) => {
-      await deleteIngredient(id);
+      await deleteIngredient(supabase, id);
       return { content: [{ type: "text", text: `Ingredient ${id} deleted.` }] };
     }
   );
@@ -309,7 +313,7 @@ function createMcpServer() {
       },
     },
     async ({ count, exclude_days }) => {
-      const recipeIds = await recommendRecipeIds(count, exclude_days);
+      const recipeIds = await recommendRecipeIds(supabase, count, exclude_days);
       return {
         content: [
           { type: "text", text: JSON.stringify({ recipeIds }, null, 2) },
@@ -332,7 +336,7 @@ function createMcpServer() {
       },
     },
     async ({ recipe_id }) => {
-      const steps = await getRecipeSteps(recipe_id);
+      const steps = await getRecipeSteps(supabase, recipe_id);
       return {
         content: [{ type: "text", text: JSON.stringify(steps, null, 2) }],
       };
@@ -377,7 +381,7 @@ function createMcpServer() {
       },
     },
     async ({ recipe_id, steps }) => {
-      const result = await setRecipeSteps(recipe_id, steps);
+      const result = await setRecipeSteps(supabase, recipe_id, steps);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
       };
@@ -400,7 +404,7 @@ function createMcpServer() {
       },
     },
     async ({ id, status }) => {
-      await updateShopStatus(id, status);
+      await updateShopStatus(supabase, id, status);
       return {
         content: [
           {

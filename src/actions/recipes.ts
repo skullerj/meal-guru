@@ -7,6 +7,7 @@ import {
   getRecipe,
   updateRecipeWithIngredients,
 } from "@/lib/database";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
 const ingredientInputSchema = z.object({
   name: z.string().min(1),
@@ -29,9 +30,18 @@ export const recipes = {
       ingredients: z.array(ingredientInputSchema),
       steps: z.array(stepDraftSchema).optional(),
     }),
-    handler: async ({ name, ingredients, steps }) => {
+    handler: async ({ name, ingredients, steps }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        return await createRecipeWithIngredients(name, ingredients, steps);
+        return await createRecipeWithIngredients(
+          supabase,
+          name,
+          ingredients,
+          steps
+        );
       } catch (e) {
         console.error("[recipes.create]", { name }, e);
         throw e;
@@ -46,15 +56,25 @@ export const recipes = {
       ingredients: z.array(ingredientInputSchema),
       steps: z.array(stepDraftSchema).optional(),
     }),
-    handler: async ({ id, name, ingredients, steps }) => {
-      const existing = await getRecipe(id);
+    handler: async ({ id, name, ingredients, steps }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
+      const existing = await getRecipe(supabase, id);
       if (!existing)
         throw new ActionError({
           code: "NOT_FOUND",
           message: "Recipe not found",
         });
       try {
-        return await updateRecipeWithIngredients(id, name, ingredients, steps);
+        return await updateRecipeWithIngredients(
+          supabase,
+          id,
+          name,
+          ingredients,
+          steps
+        );
       } catch (e) {
         console.error("[recipes.update]", { id, name }, e);
         throw e;
@@ -66,9 +86,13 @@ export const recipes = {
     input: z.object({
       id: z.string().uuid(),
     }),
-    handler: async ({ id }) => {
+    handler: async ({ id }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        await deleteRecipe(id);
+        await deleteRecipe(supabase, id);
       } catch (e) {
         console.error("[recipes.delete]", { id }, e);
         throw e;

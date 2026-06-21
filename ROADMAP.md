@@ -96,15 +96,15 @@ Add email/password authentication using `@supabase/ssr`. No OAuth redirects — 
 
 ---
 
-### 🔲 17. Add user_id and Row-Level Security
+### ✅ 17. Add user_id and Row-Level Security
 Add `user_id` columns to all data tables and enable RLS so each user can only access their own data. Supabase RLS policies automatically filter rows based on `auth.uid()`, so no application-level filtering code is needed.
 
-- [ ] DB migration: add `user_id` (UUID, FK to `auth.users`) column to `recipes`, `ingredients`, `shops` tables (cascade to junction tables via existing FKs)
-- [ ] Create RLS policies for SELECT, INSERT, UPDATE, DELETE on all tables (recipes, ingredients, shops, recipe_ingredients, recipe_steps, step_ingredients, shop_recipes, shop_ingredients)
-- [ ] Enable RLS on all tables
-- [ ] Update MCP server (`src/pages/api/mcp.ts`) to use service role key (bypasses RLS)
-- [ ] Backfill migration script: set `user_id` on all existing rows to a provided UUID (run manually after user account creation)
-- [ ] E2E tests
+- [x] DB migration: add `user_id` (UUID, FK to `auth.users`) column to `recipes`, `ingredients`, `shops` tables (cascade to junction tables via existing FKs)
+- [x] Create RLS policies for SELECT, INSERT, UPDATE, DELETE on all tables (recipes, ingredients, shops, recipe_ingredients, recipe_steps, step_ingredients, shop_recipes, shop_ingredients)
+- [x] Enable RLS on all tables
+- [x] Update MCP server (`src/pages/api/mcp.ts`) to use service role key (bypasses RLS)
+- [x] Backfill migration script: set `user_id` on all existing rows to a provided UUID (run manually after user account creation)
+- [x] E2E tests
 
 **Verification:** Log in as user A, create a recipe. Log in as user B, confirm user A's recipe is not visible. Confirm MCP tools still work (service role key bypasses RLS).
 

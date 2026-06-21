@@ -11,15 +11,20 @@ import {
   toggleShopIngredient,
   updateShopStatus,
 } from "@/lib/database";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
 export const shops = {
   commit: defineAction({
     input: z.object({
       recipeIds: z.array(z.string().uuid()).min(1).max(20),
     }),
-    handler: async ({ recipeIds }) => {
+    handler: async ({ recipeIds }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        return await commitShop(recipeIds);
+        return await commitShop(supabase, recipeIds);
       } catch (e) {
         console.error("[shops.commit]", { recipeIds }, e);
         throw new ActionError({
@@ -34,9 +39,13 @@ export const shops = {
     input: z.object({
       recipeIds: z.array(z.string().uuid()).min(1),
     }),
-    handler: async ({ recipeIds }) => {
+    handler: async ({ recipeIds }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        return await createShop(recipeIds);
+        return await createShop(supabase, recipeIds);
       } catch (e) {
         console.error("[shops.createFromIds]", { count: recipeIds.length }, e);
         throw new ActionError({
@@ -49,12 +58,16 @@ export const shops = {
 
   startNewWeek: defineAction({
     input: z.object({}),
-    handler: async () => {
+    handler: async (_input, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
         const weekMonday = getWeekMonday();
-        await deactivateShopsForWeek(weekMonday);
-        const recommendedIds = await recommendRecipeIds();
-        const shop = await createShop(recommendedIds);
+        await deactivateShopsForWeek(supabase, weekMonday);
+        const recommendedIds = await recommendRecipeIds(supabase);
+        const shop = await createShop(supabase, recommendedIds);
         return { id: shop.id };
       } catch (e) {
         console.error("[shops.startNewWeek]", e);
@@ -68,14 +81,18 @@ export const shops = {
 
   getOrCreateWeeklyShop: defineAction({
     input: z.object({}),
-    handler: async () => {
+    handler: async (_input, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        const existing = await getActiveShopForWeek();
+        const existing = await getActiveShopForWeek(supabase);
         if (existing) {
           return { id: existing.id, created: false };
         }
-        const ids = await recommendRecipeIds();
-        const shop = await createShop(ids);
+        const ids = await recommendRecipeIds(supabase);
+        const shop = await createShop(supabase, ids);
         return { id: shop.id, created: true };
       } catch (e) {
         console.error("[shops.getOrCreateWeeklyShop]", e);
@@ -91,9 +108,13 @@ export const shops = {
     input: z.object({
       shopId: z.string().uuid(),
     }),
-    handler: async ({ shopId }) => {
+    handler: async ({ shopId }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        return await getShopIngredients(shopId);
+        return await getShopIngredients(supabase, shopId);
       } catch (e) {
         console.error("[shops.getIngredients]", { shopId }, e);
         throw new ActionError({
@@ -109,9 +130,13 @@ export const shops = {
       id: z.string().uuid(),
       checked: z.boolean(),
     }),
-    handler: async ({ id, checked }) => {
+    handler: async ({ id, checked }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        await toggleShopIngredient(id, checked);
+        await toggleShopIngredient(supabase, id, checked);
         return { success: true };
       } catch (e) {
         console.error("[shops.toggleIngredient]", { id, checked }, e);
@@ -127,9 +152,13 @@ export const shops = {
     input: z.object({
       shopId: z.string().uuid(),
     }),
-    handler: async ({ shopId }) => {
+    handler: async ({ shopId }, context) => {
+      const supabase = createSupabaseServerClient({
+        headers: context.request.headers,
+        cookies: context.cookies,
+      });
       try {
-        await updateShopStatus(shopId, "cooking");
+        await updateShopStatus(supabase, shopId, "cooking");
         return { success: true };
       } catch (e) {
         console.error("[shops.finishShopping]", { shopId }, e);

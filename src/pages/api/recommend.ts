@@ -1,7 +1,13 @@
 import type { APIRoute } from "astro";
 import { recommendRecipeIds } from "@/lib/database";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const supabase = createSupabaseServerClient({
+    headers: request.headers,
+    cookies,
+  });
+
   let count: number | undefined;
   let excludeDays: number | undefined;
 
@@ -20,7 +26,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const recipeIds = await recommendRecipeIds(count, excludeDays);
+    const recipeIds = await recommendRecipeIds(supabase, count, excludeDays);
     return new Response(JSON.stringify({ recipeIds }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

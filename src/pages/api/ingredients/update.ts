@@ -1,8 +1,14 @@
 import type { APIRoute } from "astro";
 import type { Category, Unit } from "@/data/types";
 import { updateIngredient } from "@/lib/database";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const supabase = createSupabaseServerClient({
+    headers: request.headers,
+    cookies,
+  });
+
   let body: { id: string; name: string; unit: Unit; category: Category | null };
   try {
     body = await request.json();
@@ -22,7 +28,11 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const ingredient = await updateIngredient(id, { name, unit, category });
+    const ingredient = await updateIngredient(supabase, id, {
+      name,
+      unit,
+      category,
+    });
     return new Response(JSON.stringify(ingredient), {
       status: 200,
       headers: { "Content-Type": "application/json" },

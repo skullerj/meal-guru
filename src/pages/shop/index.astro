@@ -1,5 +1,11 @@
 ---
 import { createShop } from "../../lib/database";
+import { createSupabaseServerClient } from "../../lib/supabase";
+
+const supabase = createSupabaseServerClient({
+  headers: Astro.request.headers,
+  cookies: Astro.cookies,
+});
 
 const rawR = Astro.url.searchParams.getAll("r");
 const ids = rawR.flatMap((v) => v.split(",")).filter(Boolean);
@@ -8,6 +14,6 @@ if (ids.length === 0) {
   return Astro.redirect("/");
 }
 
-const { id } = await createShop(ids);
+const { id } = await createShop(supabase, ids);
 return Astro.redirect(`/shop/${id}`);
 ---

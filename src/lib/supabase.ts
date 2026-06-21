@@ -5,12 +5,6 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import type { AstroCookies } from "astro";
 
-// Plain client for database.ts (backward compat — no auth awareness)
-export const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY
-);
-
 // Server client for Astro middleware/pages/API routes (auth-aware, uses request cookies)
 export function createSupabaseServerClient(context: {
   headers: Headers;
@@ -33,5 +27,13 @@ export function createSupabaseServerClient(context: {
         },
       },
     }
+  );
+}
+
+// Service role client for admin operations (bypasses RLS)
+export function createServiceRoleClient() {
+  return createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY
   );
 }

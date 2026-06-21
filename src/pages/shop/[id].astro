@@ -3,14 +3,20 @@ import { aggregateIngredients } from "../../components/meal-planner/utils/mealPl
 import ShopPage from "../../components/shop/ShopPage";
 import Layout from "../../layouts/Layout.astro";
 import { getShopIngredients, getShopWithRecipes } from "../../lib/database";
+import { createSupabaseServerClient } from "../../lib/supabase";
+
+const supabase = createSupabaseServerClient({
+  headers: Astro.request.headers,
+  cookies: Astro.cookies,
+});
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/");
 
-const shop = await getShopWithRecipes(id);
+const shop = await getShopWithRecipes(supabase, id);
 if (!shop) return Astro.redirect("/");
 
-const shopIngredients = await getShopIngredients(id);
+const shopIngredients = await getShopIngredients(supabase, id);
 
 const groups = aggregateIngredients(
   shop.recipes,

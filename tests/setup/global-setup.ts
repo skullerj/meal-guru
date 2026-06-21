@@ -26,6 +26,29 @@ export default async function globalSetup() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
+  // Create or fetch the test user FIRST — we need the user_id for all data
+  const { data: existingUsers } = await supabase.auth.admin.listUsers();
+  const existingTestUser = existingUsers?.users?.find(
+    (u) => u.email === TEST_USER_EMAIL
+  );
+
+  let testUserId: string;
+  if (existingTestUser) {
+    testUserId = existingTestUser.id;
+    await supabase.auth.admin.updateUserById(existingTestUser.id, {
+      password: TEST_USER_PASSWORD,
+    });
+  } else {
+    const { data: newUser, error: createUserError } =
+      await supabase.auth.admin.createUser({
+        email: TEST_USER_EMAIL,
+        password: TEST_USER_PASSWORD,
+        email_confirm: true,
+      });
+    if (createUserError) throw createUserError;
+    testUserId = newUser.user.id;
+  }
+
   // Wipe all shops from previous runs (shop_recipes cascades from shops)
   await supabase
     .from("shops")
@@ -39,21 +62,27 @@ export default async function globalSetup() {
     .delete()
     .in("name", TEST_CREATED_INGREDIENTS);
 
-  // Upsert test ingredients (safe to run repeatedly)
+  // Insert test ingredients with user_id
+  const ingredientsWithUser = TEST_INGREDIENTS.map((i) => ({
+    ...i,
+    user_id: testUserId,
+  }));
+
+  // Delete then insert (upsert onConflict changed to composite key)
   const { data: ingredients, error: ingError } = await supabase
     .from("ingredients")
-    .upsert(TEST_INGREDIENTS, { onConflict: "name" })
+    .upsert(ingredientsWithUser, { onConflict: "user_id,name" })
     .select();
   if (ingError) throw ingError;
   if (!ingredients) throw new Error("Failed to upsert test ingredients");
 
-  // Create the three seeded test recipes
+  // Create the three seeded test recipes with user_id
   const { data: recipesInserted, error: recipesError } = await supabase
     .from("recipes")
     .insert([
-      { name: TEST_RECIPE_NAME },
-      { name: TEST_RECIPE_NAME_2 },
-      { name: TEST_RECIPE_NAME_3 },
+      { name: TEST_RECIPE_NAME, user_id: testUserId },
+      { name: TEST_RECIPE_NAME_2, user_id: testUserId },
+      { name: TEST_RECIPE_NAME_3, user_id: testUserId },
     ])
     .select();
   if (recipesError) throw recipesError;
@@ -163,24 +192,4 @@ export default async function globalSetup() {
   process.env.TEST_RECIPE_ID = recipe.id;
   process.env.TEST_RECIPE_ID_2 = recipe2.id;
   process.env.TEST_RECIPE_ID_3 = recipe3.id;
-
-  // Create or fetch the test user for auth E2E tests
-  const { data: existingUsers } = await supabase.auth.admin.listUsers();
-  const existingTestUser = existingUsers?.users?.find(
-    (u) => u.email === TEST_USER_EMAIL
-  );
-
-  if (existingTestUser) {
-    // Update password in case it was changed
-    await supabase.auth.admin.updateUserById(existingTestUser.id, {
-      password: TEST_USER_PASSWORD,
-    });
-  } else {
-    const { error: createUserError } = await supabase.auth.admin.createUser({
-      email: TEST_USER_EMAIL,
-      password: TEST_USER_PASSWORD,
-      email_confirm: true,
-    });
-    if (createUserError) throw createUserError;
-  }
 }

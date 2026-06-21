@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   Category,
   Ingredient,
@@ -7,7 +8,6 @@ import type {
   ShopStatus,
   Unit,
 } from "../data/types";
-import { supabase } from "./supabase";
 
 export interface IngredientInput {
   name: string;
@@ -17,7 +17,7 @@ export interface IngredientInput {
   ingredient_id?: string;
 }
 
-export async function getRecipes(): Promise<Recipe[]> {
+export async function getRecipes(supabase: SupabaseClient): Promise<Recipe[]> {
   const { data, error } = await supabase
     .from("recipes")
     .select(
@@ -42,13 +42,16 @@ export async function getRecipes(): Promise<Recipe[]> {
 
   // Fetch steps for all recipes in parallel
   const stepsPerRecipe = await Promise.all(
-    recipes.map((r) => getRecipeSteps(r.id))
+    recipes.map((r) => getRecipeSteps(supabase, r.id))
   );
 
   return recipes.map((r, i) => ({ ...r, steps: stepsPerRecipe[i] }));
 }
 
-export async function getRecipe(id: string): Promise<Recipe | null> {
+export async function getRecipe(
+  supabase: SupabaseClient,
+  id: string
+): Promise<Recipe | null> {
   const { data, error } = await supabase
     .from("recipes")
     .select(
@@ -72,11 +75,14 @@ export async function getRecipe(id: string): Promise<Recipe | null> {
   if (error) throw error;
 
   const recipe = data as unknown as Recipe;
-  const steps = await getRecipeSteps(id);
+  const steps = await getRecipeSteps(supabase, id);
   return { ...recipe, steps };
 }
 
-export async function createRecipe(name: string): Promise<Recipe> {
+export async function createRecipe(
+  supabase: SupabaseClient,
+  name: string
+): Promise<Recipe> {
   const { data, error } = await supabase
     .from("recipes")
     .insert({ name })
@@ -87,7 +93,11 @@ export async function createRecipe(name: string): Promise<Recipe> {
   return { ...(data as Recipe), ingredients: [] };
 }
 
-export async function updateRecipe(id: string, name: string): Promise<void> {
+export async function updateRecipe(
+  supabase: SupabaseClient,
+  id: string,
+  name: string
+): Promise<void> {
   const { error } = await supabase
     .from("recipes")
     .update({ name })
@@ -95,12 +105,17 @@ export async function updateRecipe(id: string, name: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function deleteRecipe(id: string): Promise<void> {
+export async function deleteRecipe(
+  supabase: SupabaseClient,
+  id: string
+): Promise<void> {
   const { error } = await supabase.from("recipes").delete().eq("id", id);
   if (error) throw error;
 }
 
-export async function getIngredients(): Promise<Ingredient[]> {
+export async function getIngredients(
+  supabase: SupabaseClient
+): Promise<Ingredient[]> {
   const { data, error } = await supabase
     .from("ingredients")
     .select("*")
@@ -110,18 +125,45 @@ export async function getIngredients(): Promise<Ingredient[]> {
 }
 
 export async function upsertIngredient(
+  supabase: SupabaseClient,
   ingredient: Omit<Ingredient, "id" | "created_at">
 ): Promise<Ingredient> {
-  const { data, error } = await supabase
+  // Use select + insert/update instead of upsert to handle composite
+  // unique constraint (user_id, name). RLS scopes the SELECT to the
+  // current user; for service-role clients there is no RLS filter so
+  // name alone is sufficient.
+  const { data: existing } = await supabase
     .from("ingredients")
-    .upsert(ingredient, { onConflict: "name" })
+    .select("id")
+    .eq("name", ingredient.name.trim())
+    .maybeSingle();
+
+  if (existing) {
+    const { data: updated, error } = await supabase
+      .from("ingredients")
+      .update({ unit: ingredient.unit, category: ingredient.category ?? null })
+      .eq("id", existing.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return updated as Ingredient;
+  }
+
+  const { data: inserted, error } = await supabase
+    .from("ingredients")
+    .insert({
+      name: ingredient.name.trim(),
+      unit: ingredient.unit,
+      category: ingredient.category ?? null,
+    })
     .select()
     .single();
   if (error) throw error;
-  return data as Ingredient;
+  return inserted as Ingredient;
 }
 
 export async function updateIngredient(
+  supabase: SupabaseClient,
   id: string,
   data: { name: string; unit: Unit; category: Category | null }
 ): Promise<Ingredient> {
@@ -135,7 +177,10 @@ export async function updateIngredient(
   return updated as Ingredient;
 }
 
-export async function deleteIngredient(id: string): Promise<void> {
+export async function deleteIngredient(
+  supabase: SupabaseClient,
+  id: string
+): Promise<void> {
   const { count, error: countError } = await supabase
     .from("recipe_ingredients")
     .select("id", { count: "exact", head: true })
@@ -148,7 +193,35 @@ export async function deleteIngredient(id: string): Promise<void> {
   if (error) throw error;
 }
 
+/**
+ * Resolve an ingredient by name: find existing or insert new.
+ * Replaces inline upsert calls to handle composite (user_id, name) constraint.
+ */
+async function resolveIngredientByName(
+  supabase: SupabaseClient,
+  name: string,
+  unit: Unit,
+  category: Category | null
+): Promise<string> {
+  const { data: existing } = await supabase
+    .from("ingredients")
+    .select("id")
+    .eq("name", name.trim())
+    .maybeSingle();
+
+  if (existing) return existing.id;
+
+  const { data: inserted, error } = await supabase
+    .from("ingredients")
+    .insert({ name: name.trim(), unit, category })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return inserted.id;
+}
+
 export async function setRecipeIngredients(
+  supabase: SupabaseClient,
   recipeId: string,
   ingredients: IngredientInput[]
 ): Promise<RecipeIngredient[]> {
@@ -168,16 +241,12 @@ export async function setRecipeIngredients(
     if (ingredient_id) {
       resolvedId = ingredient_id;
     } else {
-      const { data: ingredient, error: ingError } = await supabase
-        .from("ingredients")
-        .upsert(
-          { name: name.trim(), unit, category: category ?? null },
-          { onConflict: "name" }
-        )
-        .select()
-        .single();
-      if (ingError) throw ingError;
-      resolvedId = ingredient.id;
+      resolvedId = await resolveIngredientByName(
+        supabase,
+        name,
+        unit,
+        category ?? null
+      );
     }
 
     const { data: ri, error: riError } = await supabase
@@ -202,12 +271,17 @@ export async function setRecipeIngredients(
 }
 
 export async function createRecipeWithIngredients(
+  supabase: SupabaseClient,
   name: string,
   ingredients: IngredientInput[],
   steps?: StepDraftInput[]
 ): Promise<Recipe> {
-  const recipe = await createRecipe(name);
-  const recipeIngredients = await setRecipeIngredients(recipe.id, ingredients);
+  const recipe = await createRecipe(supabase, name);
+  const recipeIngredients = await setRecipeIngredients(
+    supabase,
+    recipe.id,
+    ingredients
+  );
 
   let savedSteps: RecipeStep[] = [];
   if (steps && steps.length > 0) {
@@ -218,20 +292,25 @@ export async function createRecipeWithIngredients(
         .map((idx) => recipeIngredients[idx]?.id)
         .filter((id): id is string => id !== undefined),
     }));
-    savedSteps = await setRecipeSteps(recipe.id, stepInputs);
+    savedSteps = await setRecipeSteps(supabase, recipe.id, stepInputs);
   }
 
   return { ...recipe, ingredients: recipeIngredients, steps: savedSteps };
 }
 
 export async function updateRecipeWithIngredients(
+  supabase: SupabaseClient,
   id: string,
   name: string,
   ingredients: IngredientInput[],
   steps?: StepDraftInput[]
 ): Promise<Recipe> {
-  await updateRecipe(id, name);
-  const recipeIngredients = await setRecipeIngredients(id, ingredients);
+  await updateRecipe(supabase, id, name);
+  const recipeIngredients = await setRecipeIngredients(
+    supabase,
+    id,
+    ingredients
+  );
 
   let savedSteps: RecipeStep[] = [];
   if (steps && steps.length > 0) {
@@ -242,17 +321,20 @@ export async function updateRecipeWithIngredients(
         .map((idx) => recipeIngredients[idx]?.id)
         .filter((id): id is string => id !== undefined),
     }));
-    savedSteps = await setRecipeSteps(id, stepInputs);
+    savedSteps = await setRecipeSteps(supabase, id, stepInputs);
   }
 
-  const recipe = await getRecipe(id);
+  const recipe = await getRecipe(supabase, id);
   if (!recipe) throw new Error(`Recipe ${id} not found after update`);
   return { ...recipe, ingredients: recipeIngredients, steps: savedSteps };
 }
 
 // --- Feature 11: Recipe step instructions ---
 
-export async function getRecipeSteps(recipeId: string): Promise<RecipeStep[]> {
+export async function getRecipeSteps(
+  supabase: SupabaseClient,
+  recipeId: string
+): Promise<RecipeStep[]> {
   const { data: steps, error: stepsError } = await supabase
     .from("recipe_steps")
     .select("id, recipe_id, step_number, instruction, created_at")
@@ -311,6 +393,7 @@ export interface StepDraftInput {
 }
 
 export async function setRecipeSteps(
+  supabase: SupabaseClient,
   recipeId: string,
   steps: StepInput[]
 ): Promise<RecipeStep[]> {
@@ -344,7 +427,7 @@ export async function setRecipeSteps(
     created_at: string;
   }>;
 
-  // Map step_number → inserted row id so we can match ingredient_ids
+  // Map step_number -> inserted row id so we can match ingredient_ids
   const byStepNumber = new Map<number, string>();
   for (const row of insertedRows) {
     byStepNumber.set(row.step_number, row.id);
@@ -385,7 +468,10 @@ export async function setRecipeSteps(
   }));
 }
 
-export async function getRecentRecipeIds(withinDays = 14): Promise<string[]> {
+export async function getRecentRecipeIds(
+  supabase: SupabaseClient,
+  withinDays = 14
+): Promise<string[]> {
   const cutoff = new Date(
     Date.now() - withinDays * 24 * 60 * 60 * 1000
   ).toISOString();
@@ -399,7 +485,10 @@ export async function getRecentRecipeIds(withinDays = 14): Promise<string[]> {
   return [...new Set((data ?? []).map((row) => row.recipe_id))];
 }
 
-export async function commitShop(recipeIds: string[]): Promise<{ id: string }> {
+export async function commitShop(
+  supabase: SupabaseClient,
+  recipeIds: string[]
+): Promise<{ id: string }> {
   const { data: shop, error: shopError } = await supabase
     .from("shops")
     .insert({})
@@ -419,10 +508,10 @@ export async function commitShop(recipeIds: string[]): Promise<{ id: string }> {
   // Populate the shop_ingredients snapshot
   const recipes: Recipe[] = [];
   for (const recipeId of recipeIds) {
-    const recipe = await getRecipe(recipeId);
+    const recipe = await getRecipe(supabase, recipeId);
     if (recipe) recipes.push(recipe);
   }
-  await populateShopIngredients(shop.id as string, recipes);
+  await populateShopIngredients(supabase, shop.id as string, recipes);
 
   return { id: shop.id };
 }
@@ -461,6 +550,7 @@ export function getWeekMonday(date?: Date): string {
 }
 
 export async function getActiveShopForWeek(
+  supabase: SupabaseClient,
   weekOf?: string
 ): Promise<ShopSummary | null> {
   const targetWeek = weekOf ?? getWeekMonday();
@@ -501,6 +591,7 @@ export async function getActiveShopForWeek(
 }
 
 export async function getShopWithRecipes(
+  supabase: SupabaseClient,
   id: string
 ): Promise<ShopWithRecipes | null> {
   const { data: shop, error: shopError } = await supabase
@@ -527,7 +618,7 @@ export async function getShopWithRecipes(
 
   const recipes: Recipe[] = [];
   for (const recipeId of recipeIds) {
-    const recipe = await getRecipe(recipeId);
+    const recipe = await getRecipe(supabase, recipeId);
     if (recipe) recipes.push(recipe);
   }
 
@@ -542,6 +633,7 @@ export async function getShopWithRecipes(
 }
 
 export async function createShop(
+  supabase: SupabaseClient,
   recipeIds: string[],
   weekOf?: string
 ): Promise<{ id: string }> {
@@ -566,15 +658,18 @@ export async function createShop(
   // Populate the shop_ingredients snapshot
   const recipes: Recipe[] = [];
   for (const recipeId of recipeIds) {
-    const recipe = await getRecipe(recipeId);
+    const recipe = await getRecipe(supabase, recipeId);
     if (recipe) recipes.push(recipe);
   }
-  await populateShopIngredients(shop.id as string, recipes);
+  await populateShopIngredients(supabase, shop.id as string, recipes);
 
   return { id: shop.id as string };
 }
 
-export async function deactivateShopsForWeek(weekOf: string): Promise<void> {
+export async function deactivateShopsForWeek(
+  supabase: SupabaseClient,
+  weekOf: string
+): Promise<void> {
   const { error } = await supabase
     .from("shops")
     .update({ active: false })
@@ -585,10 +680,11 @@ export async function deactivateShopsForWeek(weekOf: string): Promise<void> {
 }
 
 export async function recommendRecipeIds(
+  supabase: SupabaseClient,
   count = 2,
   excludeDays = 14
 ): Promise<string[]> {
-  const recentIds = await getRecentRecipeIds(excludeDays);
+  const recentIds = await getRecentRecipeIds(supabase, excludeDays);
 
   const { data: allRecipes, error } = await supabase
     .from("recipes")
@@ -628,6 +724,7 @@ export interface ShopIngredient {
 }
 
 export async function populateShopIngredients(
+  supabase: SupabaseClient,
   shopId: string,
   recipes: Recipe[]
 ): Promise<void> {
@@ -676,6 +773,7 @@ export async function populateShopIngredients(
 }
 
 export async function getShopIngredients(
+  supabase: SupabaseClient,
   shopId: string
 ): Promise<ShopIngredient[]> {
   const { data, error } = await supabase
@@ -689,6 +787,7 @@ export async function getShopIngredients(
 }
 
 export async function toggleShopIngredient(
+  supabase: SupabaseClient,
   id: string,
   checked: boolean
 ): Promise<void> {
@@ -702,6 +801,7 @@ export async function toggleShopIngredient(
 // --- Feature 14: Shop cooking mode ---
 
 export async function updateShopStatus(
+  supabase: SupabaseClient,
   id: string,
   status: ShopStatus
 ): Promise<void> {

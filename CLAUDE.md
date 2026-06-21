@@ -66,6 +66,7 @@ Create a `.env` file in the project root with:
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 PUBLIC_SUPABASE_URL=your_supabase_url_here
 PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 ```
 
 To get an Anthropic API key:
@@ -158,8 +159,8 @@ tests/
 │   ├── data/
 │   │   └── recipes.ts               # TypeScript interfaces only
 │   ├── lib/
-│   │   ├── supabase.ts              # Supabase clients: plain (database.ts), browser (React), server (middleware/API)
-│   │   ├── database.ts              # Database access functions
+│   │   ├── supabase.ts              # Supabase clients: createSupabaseServerClient (auth-aware), createServiceRoleClient (MCP/admin)
+│   │   ├── database.ts              # Database access functions (all accept SupabaseClient as first param)
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
 │   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, sets Astro.locals.user
 │   ├── layouts/
@@ -211,34 +212,37 @@ tests/
 ## Backend API Reference
 
 ### `src/lib/database.ts` functions
+
+All functions accept `supabase: SupabaseClient` as their first parameter. Callers create a server client via `createSupabaseServerClient()` (for Astro pages/actions/API routes) or `createServiceRoleClient()` (for admin/MCP operations) from `@/lib/supabase`.
+
 | Function | Description |
 |----------|-------------|
-| `getRecipes()` | Fetch all recipes with nested ingredients |
-| `getRecipe(id)` | Fetch a single recipe by UUID |
-| `createRecipe(name)` | Insert a new recipe row |
-| `updateRecipe(id, name)` | Update recipe name |
-| `deleteRecipe(id)` | Delete a recipe (cascades to recipe_ingredients) |
-| `getIngredients()` | Fetch all ingredients ordered by name |
-| `upsertIngredient(ingredient)` | Insert or update ingredient by name |
-| `updateIngredient(id, data)` | Update an ingredient's name, unit, and category by UUID |
-| `deleteIngredient(id)` | Delete an ingredient; throws if referenced by any recipe |
-| `setRecipeIngredients(recipeId, ingredients)` | Replace all ingredients for a recipe |
-| `createRecipeWithIngredients(name, ingredients, steps?)` | Create recipe + set ingredients + optionally save steps atomically |
-| `updateRecipeWithIngredients(id, name, ingredients, steps?)` | Update recipe + replace ingredients + optionally save steps atomically |
-| `getRecentRecipeIds(withinDays?)` | Return distinct recipe UUIDs from shops created within the last N days (default 14) |
-| `commitShop(recipeIds)` | Insert a new shop row, link recipe UUIDs, and populate `shop_ingredients` snapshot; returns `{ id }` |
-| `getWeekMonday(date?)` | Returns ISO date string (YYYY-MM-DD) of the Monday of the given date's week |
-| `getActiveShopForWeek(weekOf?)` | Find the active shop for a given week (defaults to current week); returns `ShopSummary` or `null` |
-| `getShopWithRecipes(id)` | Fetch a shop by ID with full nested Recipe[] data; returns `ShopWithRecipes` or `null` |
-| `createShop(recipeIds, weekOf?)` | Create a new shop with `week_of` and `active=true`, link recipe IDs, and populate `shop_ingredients` snapshot; returns `{ id }` |
-| `deactivateShopsForWeek(weekOf)` | Set `active = false` on all active shops for the given week |
-| `recommendRecipeIds(count?, excludeDays?)` | Pick random recipe IDs excluding recently cooked ones; falls back to all if too few |
-| `getRecipeSteps(recipeId)` | Fetch all steps for a recipe ordered by step_number, with ingredient_ids populated |
-| `setRecipeSteps(recipeId, steps)` | Replace all steps for a recipe atomically (delete + insert); each step has step_number, instruction, ingredient_ids (recipe_ingredient.id values) |
-| `populateShopIngredients(shopId, recipes)` | Aggregate ingredients across recipes and insert snapshot rows into `shop_ingredients` |
-| `getShopIngredients(shopId)` | Fetch all `shop_ingredients` for a shop, ordered by name; returns `ShopIngredient[]` |
-| `toggleShopIngredient(id, checked)` | Set the `checked` boolean on a specific `shop_ingredients` row |
-| `updateShopStatus(id, status)` | Update the `status` column on a shop row (`"shopping"` or `"cooking"`) |
+| `getRecipes(supabase)` | Fetch all recipes with nested ingredients |
+| `getRecipe(supabase, id)` | Fetch a single recipe by UUID |
+| `createRecipe(supabase, name)` | Insert a new recipe row |
+| `updateRecipe(supabase, id, name)` | Update recipe name |
+| `deleteRecipe(supabase, id)` | Delete a recipe (cascades to recipe_ingredients) |
+| `getIngredients(supabase)` | Fetch all ingredients ordered by name |
+| `upsertIngredient(supabase, ingredient)` | Insert or update ingredient by name (uses select+insert/update for composite unique constraint) |
+| `updateIngredient(supabase, id, data)` | Update an ingredient's name, unit, and category by UUID |
+| `deleteIngredient(supabase, id)` | Delete an ingredient; throws if referenced by any recipe |
+| `setRecipeIngredients(supabase, recipeId, ingredients)` | Replace all ingredients for a recipe |
+| `createRecipeWithIngredients(supabase, name, ingredients, steps?)` | Create recipe + set ingredients + optionally save steps atomically |
+| `updateRecipeWithIngredients(supabase, id, name, ingredients, steps?)` | Update recipe + replace ingredients + optionally save steps atomically |
+| `getRecentRecipeIds(supabase, withinDays?)` | Return distinct recipe UUIDs from shops created within the last N days (default 14) |
+| `commitShop(supabase, recipeIds)` | Insert a new shop row, link recipe UUIDs, and populate `shop_ingredients` snapshot; returns `{ id }` |
+| `getWeekMonday(date?)` | Returns ISO date string (YYYY-MM-DD) of the Monday of the given date's week (no supabase param — pure function) |
+| `getActiveShopForWeek(supabase, weekOf?)` | Find the active shop for a given week (defaults to current week); returns `ShopSummary` or `null` |
+| `getShopWithRecipes(supabase, id)` | Fetch a shop by ID with full nested Recipe[] data; returns `ShopWithRecipes` or `null` |
+| `createShop(supabase, recipeIds, weekOf?)` | Create a new shop with `week_of` and `active=true`, link recipe IDs, and populate `shop_ingredients` snapshot; returns `{ id }` |
+| `deactivateShopsForWeek(supabase, weekOf)` | Set `active = false` on all active shops for the given week |
+| `recommendRecipeIds(supabase, count?, excludeDays?)` | Pick random recipe IDs excluding recently cooked ones; falls back to all if too few |
+| `getRecipeSteps(supabase, recipeId)` | Fetch all steps for a recipe ordered by step_number, with ingredient_ids populated |
+| `setRecipeSteps(supabase, recipeId, steps)` | Replace all steps for a recipe atomically (delete + insert); each step has step_number, instruction, ingredient_ids (recipe_ingredient.id values) |
+| `populateShopIngredients(supabase, shopId, recipes)` | Aggregate ingredients across recipes and insert snapshot rows into `shop_ingredients` |
+| `getShopIngredients(supabase, shopId)` | Fetch all `shop_ingredients` for a shop, ordered by name; returns `ShopIngredient[]` |
+| `toggleShopIngredient(supabase, id, checked)` | Set the `checked` boolean on a specific `shop_ingredients` row |
+| `updateShopStatus(supabase, id, status)` | Update the `status` column on a shop row (`"shopping"` or `"cooking"`) |
 
 ### `src/actions/` namespaces
 | Namespace | Actions |
