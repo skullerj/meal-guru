@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Icon from "@/components/shared/Icon";
 import type { ShopIngredient } from "@/lib/database";
+import { toggleShopIngredient } from "@/lib/database";
+import { supabase } from "@/lib/supabase-browser";
 import { cn } from "@/lib/utils";
 import type { IngredientGroup } from "./utils/mealPlannerUtils";
 
@@ -60,12 +62,7 @@ export default function ShoppingList({
     if (isPersisted) {
       const shopIngredientId = shopIngredientMap.get(ingredientId);
       if (shopIngredientId) {
-        import("astro:actions").then(({ actions }) =>
-          actions.shops.toggleIngredient({
-            id: shopIngredientId,
-            checked: newChecked,
-          })
-        );
+        toggleShopIngredient(supabase, shopIngredientId, newChecked);
       }
     }
   }

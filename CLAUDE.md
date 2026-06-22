@@ -143,6 +143,8 @@ tests/
 │   │   │   └── utils/
 │   │   │       ├── addRecipeUtils.ts    # Recipe form business logic
 │   │   │       └── addRecipeReducer.ts  # Add recipe state management
+│   │   ├── recipes/
+│   │   │   └── RecipeList.tsx           # Recipe CRUD list (uses direct Supabase browser client, not Astro actions)
 │   │   ├── shop/
 │   │   │   └── ShopPage.tsx             # Shop page: shopping mode (checklist) ↔ cooking mode (recipe cards)
 │   │   ├── recipe/
@@ -159,7 +161,8 @@ tests/
 │   ├── data/
 │   │   └── recipes.ts               # TypeScript interfaces only
 │   ├── lib/
-│   │   ├── supabase.ts              # Supabase clients: createSupabaseServerClient (auth-aware), createServiceRoleClient (MCP/admin)
+│   │   ├── supabase.ts              # Server-only Supabase clients: createSupabaseServerClient (auth-aware), createServiceRoleClient (MCP/admin)
+│   │   ├── supabase-browser.ts      # Browser-safe Supabase client for React components (singleton)
 │   │   ├── database.ts              # Database access functions (all accept SupabaseClient as first param)
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
 │   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, sets Astro.locals.user
@@ -192,16 +195,16 @@ tests/
 
 ## Features Implemented
 - **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
-- **Hero Home Page** (`/`): "Shop Now" CTA calls `shops.getOrCreateWeeklyShop` action and navigates to `/shop/{id}`; secondary link to `/pick` for manual selection
+- **Hero Home Page** (`/`): "Shop Now" CTA finds or creates a weekly shop and navigates to `/shop/{id}`; secondary link to `/pick` for manual selection
 - **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
-- **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record with two modes — "shopping" (ingredient checklist) and "cooking" (recipe cards linking to `/recipe/[id]`). "Done shopping" transitions to cooking mode via `shops.finishShopping` action
+- **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record with two modes — "shopping" (ingredient checklist) and "cooking" (recipe cards linking to `/recipe/[id]`). "Done shopping" transitions to cooking mode
 - **Shop Redirect Shim** (`/shop`): Backward-compatible redirect — creates a shop from `?r=` query params and redirects to `/shop/{id}`
 - **Step-by-Step Cooking View** (`/recipe/[id]`): Mobile-first cooking interface showing one step at a time with per-step ingredient list, overview/intro screen, and Previous/Next/Done navigation
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
 - **Supabase Integration**: Centralized database with ingredient library and standardized units
 - **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
-- **Ingredient Management Actions**: `ingredients.update` (edit name/unit/category) and `ingredients.delete` (with referential integrity guard) in `src/actions/ingredients.ts`
+- **Ingredient Management**: edit name/unit/category and delete (with referential integrity guard) via direct Supabase calls from React
 - **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
 
 ## Data Structure
@@ -244,12 +247,7 @@ All functions accept `supabase: SupabaseClient` as their first parameter. Caller
 | `toggleShopIngredient(supabase, id, checked)` | Set the `checked` boolean on a specific `shop_ingredients` row |
 | `updateShopStatus(supabase, id, status)` | Update the `status` column on a shop row (`"shopping"` or `"cooking"`) |
 
-### `src/actions/` namespaces
-| Namespace | Actions |
-|-----------|---------|
-| `recipes` | `create`, `update`, `delete` |
-| `ingredients` | `update`, `delete` |
-| `shops` | `commit`, `createFromIds`, `startNewWeek`, `getOrCreateWeeklyShop`, `getIngredients`, `toggleIngredient`, `finishShopping` |
+**Note:** Astro actions (`src/actions/`) were removed in Feature 18. All mutations now go directly from React components to Supabase via the browser client (`src/lib/supabase-browser.ts`).
 
 ## React Architecture Guidelines
 
@@ -475,7 +473,8 @@ Centralized reusable components in `src/components/shared/`:
 - This is a meal planning and batch cooking application
 - Uses Astro framework with React integration for interactive components
 - **Database**: Supabase (PostgreSQL) with full schema for recipes, ingredients, and relationships
-- **Auth**: `@supabase/ssr` with three client exports in `src/lib/supabase.ts` — `supabase` (plain, for `database.ts`), `createSupabaseBrowserClient()` (React), `createSupabaseServerClient()` (middleware/API). Middleware at `src/middleware.ts` protects all routes except `/login` and `/api/*`
+- **Auth**: `@supabase/ssr` with two client modules — `src/lib/supabase.ts` (server: `createSupabaseServerClient`, `createServiceRoleClient`) and `src/lib/supabase-browser.ts` (browser: singleton `supabase` export). Middleware at `src/middleware.ts` protects all routes except `/login` and `/api/*`
+- **Mutations**: All CRUD operations go directly from React components to Supabase via the browser client — no Astro actions layer. Only `parse-recipe` and MCP stay server-side
 - **Data Management**: Recipe data fetched from Supabase, TypeScript interfaces in `/src/data/recipes.ts`
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling

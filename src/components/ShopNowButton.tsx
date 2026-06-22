@@ -1,6 +1,7 @@
-import { actions } from "astro:actions";
 import { useState } from "react";
 import Button from "@/components/shared/Button";
+import { supabase } from "@/lib/supabase-browser";
+import { getActiveShopForWeek, recommendRecipeIds, createShop } from "@/lib/database";
 
 export default function ShopNowButton() {
   const [loading, setLoading] = useState(false);
@@ -9,13 +10,19 @@ export default function ShopNowButton() {
   async function handleClick() {
     setLoading(true);
     setError(false);
-    const { data, error: err } = await actions.shops.getOrCreateWeeklyShop({});
-    if (err) {
+    try {
+      const existing = await getActiveShopForWeek(supabase);
+      if (existing) {
+        window.location.href = `/shop/${existing.id}`;
+        return;
+      }
+      const ids = await recommendRecipeIds(supabase);
+      const shop = await createShop(supabase, ids);
+      window.location.href = `/shop/${shop.id}`;
+    } catch {
       setError(true);
       setLoading(false);
-      return;
     }
-    window.location.href = `/shop/${data.id}`;
   }
 
   return (

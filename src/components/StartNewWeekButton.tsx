@@ -1,18 +1,22 @@
-import { actions } from "astro:actions";
 import { useState } from "react";
 import Button from "@/components/shared/Button";
+import { supabase } from "@/lib/supabase-browser";
+import { getWeekMonday, deactivateShopsForWeek, recommendRecipeIds, createShop } from "@/lib/database";
 
 export default function StartNewWeekButton() {
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
     setLoading(true);
-    const { data, error } = await actions.shops.startNewWeek({});
-    if (error) {
+    try {
+      const weekMonday = getWeekMonday();
+      await deactivateShopsForWeek(supabase, weekMonday);
+      const ids = await recommendRecipeIds(supabase);
+      const shop = await createShop(supabase, ids);
+      window.location.href = `/shop/${shop.id}`;
+    } catch {
       setLoading(false);
-      return;
     }
-    window.location.href = `/shop/${data.id}`;
   }
 
   return (

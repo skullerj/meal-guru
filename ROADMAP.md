@@ -110,16 +110,16 @@ Add `user_id` columns to all data tables and enable RLS so each user can only ac
 
 ---
 
-### 🔲 18. Move mutations to frontend
+### ✅ 18. Move mutations to frontend
 Replace Astro actions with direct Supabase calls from React components. The browser Supabase client (with auth session) + RLS policies make this safe — mutations go directly to Supabase without a server round-trip.
 
-- [ ] Create `useSupabase` hook (or context) for React components to access the browser client
-- [ ] Move recipe CRUD operations to direct Supabase calls from React
-- [ ] Move ingredient CRUD operations to direct Supabase calls from React
-- [ ] Move shop operations (toggleIngredient, finishShopping, getOrCreateWeeklyShop, startNewWeek) to direct Supabase calls
-- [ ] Keep `parse-recipe` API route server-side (needs Anthropic API key)
-- [ ] Remove redundant Astro actions and `src/actions/` files
-- [ ] E2E tests
+- [x] Create `useSupabase` hook (or context) for React components to access the browser client
+- [x] Move recipe CRUD operations to direct Supabase calls from React
+- [x] Move ingredient CRUD operations to direct Supabase calls from React
+- [x] Move shop operations (toggleIngredient, finishShopping, getOrCreateWeeklyShop, startNewWeek) to direct Supabase calls
+- [x] Keep `parse-recipe` API route server-side (needs Anthropic API key)
+- [x] Remove redundant Astro actions and `src/actions/` files
+- [x] E2E tests
 
 **Verification:** Create, edit, and delete a recipe — confirm operations work without server round-trips (check Network tab: calls go directly to Supabase, not to Astro action endpoints). Toggle shopping list checks and confirm they persist.
 

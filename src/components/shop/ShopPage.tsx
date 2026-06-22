@@ -1,4 +1,3 @@
-import { actions } from "astro:actions";
 import { useState } from "react";
 import ShoppingList from "@/components/meal-planner/ShoppingList";
 import type { IngredientGroup } from "@/components/meal-planner/utils/mealPlannerUtils";
@@ -7,6 +6,8 @@ import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
 import type { Recipe, ShopStatus } from "@/data/types";
 import type { ShopIngredient } from "@/lib/database";
+import { supabase } from "@/lib/supabase-browser";
+import { updateShopStatus } from "@/lib/database";
 
 interface ShopPageProps {
   shopId: string;
@@ -28,13 +29,14 @@ export default function ShopPage({
 
   async function handleFinishShopping() {
     setFinishing(true);
-    const { error } = await actions.shops.finishShopping({ shopId });
-    if (error) {
+    try {
+      await updateShopStatus(supabase, shopId, "cooking");
+      setStatus("cooking");
+    } catch {
+      // silently fail
+    } finally {
       setFinishing(false);
-      return;
     }
-    setStatus("cooking");
-    setFinishing(false);
   }
 
   const recipeLinks = (

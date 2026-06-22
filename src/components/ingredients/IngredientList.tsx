@@ -2,6 +2,8 @@ import { useState } from "react";
 import IconButton from "@/components/shared/IconButton";
 import type { Category, Ingredient, Unit } from "@/data/types";
 import { CATEGORIES, UNITS } from "@/data/types";
+import { updateIngredient, deleteIngredient } from "@/lib/database";
+import { supabase } from "@/lib/supabase-browser";
 import { cn } from "@/lib/utils";
 
 interface IngredientListProps {
@@ -66,25 +68,17 @@ export default function IngredientList({
     if (!editing) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/ingredients/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editing.id,
-          name: editing.name,
-          unit: editing.unit,
-          category: editing.category,
-        }),
+      const updated = await updateIngredient(supabase, editing.id, {
+        name: editing.name,
+        unit: editing.unit,
+        category: editing.category,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error ?? "Failed to save ingredient");
-        return;
-      }
       setIngredients((prev) =>
-        prev.map((i) => (i.id === editing.id ? (data as Ingredient) : i))
+        prev.map((i) => (i.id === editing.id ? updated : i))
       );
       setEditing(null);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Failed to save ingredient");
     } finally {
       setSaving(false);
     }
@@ -94,17 +88,10 @@ export default function IngredientList({
     if (!confirm("Delete this ingredient? This cannot be undone.")) return;
     setDeleting(id);
     try {
-      const res = await fetch("/api/ingredients/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error ?? "Failed to delete ingredient");
-        return;
-      }
+      await deleteIngredient(supabase, id);
       setIngredients((prev) => prev.filter((i) => i.id !== id));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Failed to delete ingredient");
     } finally {
       setDeleting(null);
     }

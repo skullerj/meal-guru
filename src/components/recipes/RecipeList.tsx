@@ -1,5 +1,10 @@
-import { actions } from "astro:actions";
 import { useReducer } from "react";
+import {
+  createRecipeWithIngredients,
+  deleteRecipe,
+  updateRecipeWithIngredients,
+} from "@/lib/database";
+import { supabase } from "@/lib/supabase-browser";
 import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
 import {
@@ -121,44 +126,44 @@ export default function RecipeList({ recipes, ingredients }: Props) {
           .filter((i): i is number => i !== undefined),
       }));
 
-    let savedRecipe: Recipe | undefined;
+    try {
+      let savedRecipe: Recipe;
 
-    if (state.editingRecipe) {
-      const { data, error } = await actions.recipes.update({
-        id: state.editingRecipe.id,
-        name,
-        ingredients: ingredientInputs,
-        steps: stepsToSave,
-      });
-      if (error || !data) {
-        dispatch({ type: "SET_SUBMITTING", value: false });
-        return;
+      if (state.editingRecipe) {
+        savedRecipe = await updateRecipeWithIngredients(
+          supabase,
+          state.editingRecipe.id,
+          name,
+          ingredientInputs,
+          stepsToSave,
+        );
+      } else {
+        savedRecipe = await createRecipeWithIngredients(
+          supabase,
+          name,
+          ingredientInputs,
+          stepsToSave,
+        );
       }
-      savedRecipe = data;
-    } else {
-      const { data, error } = await actions.recipes.create({
-        name,
-        ingredients: ingredientInputs,
-        steps: stepsToSave,
+
+      dispatch({
+        type: "SAVE_SUCCESS",
+        recipe: savedRecipe,
       });
-      if (error || !data) {
-        dispatch({ type: "SET_SUBMITTING", value: false });
-        return;
-      }
-      savedRecipe = data;
+    } catch {
+      dispatch({ type: "SET_SUBMITTING", value: false });
     }
-
-    dispatch({
-      type: "SAVE_SUCCESS",
-      recipe: savedRecipe,
-    });
   }
 
   async function handleDelete(id: string) {
     dispatch({ type: "SET_SUBMITTING", value: true });
-    await actions.recipes.delete({ id });
-    dispatch({ type: "SET_SUBMITTING", value: false });
-    dispatch({ type: "DELETE_SUCCESS", id });
+    try {
+      await deleteRecipe(supabase, id);
+      dispatch({ type: "SET_SUBMITTING", value: false });
+      dispatch({ type: "DELETE_SUCCESS", id });
+    } catch {
+      dispatch({ type: "SET_SUBMITTING", value: false });
+    }
   }
 
   return (
