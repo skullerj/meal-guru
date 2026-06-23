@@ -1,4 +1,7 @@
 ---
+export const prerender = false;
+
+import PageLayout from "@/components/shared/PageLayout";
 import MealPlanner from "../components/meal-planner/MealPlanner";
 import Layout from "../layouts/Layout.astro";
 import { getRecipes } from "../lib/database";
@@ -13,21 +16,7 @@ const recipes = await getRecipes(supabase);
 ---
 
 <Layout title="Pick Recipes">
-  <main class="min-h-screen bg-background">
-    <div class="max-w-5xl w-full mx-auto px-6 py-8">
-      <header class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <a
-            href="/"
-            class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Back
-          </a>
-        </div>
-        <h1 class="text-3xl font-bold text-foreground font-heading">Plan your week</h1>
-      </header>
-
-      <MealPlanner client:load recipes={recipes} />
-    </div>
-  </main>
+    <PageLayout title="Plan your week" backUrl="/" backLabel="Back">
+       <MealPlanner client:load recipes={recipes} />
+    </PageLayout>
 </Layout>

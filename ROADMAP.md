@@ -125,13 +125,13 @@ Replace Astro actions with direct Supabase calls from React components. The brow
 
 ---
 
-### 🔲 19. Switch to hybrid rendering
+### ✅ 19. Switch to hybrid rendering
 Change Astro output from `server` to `hybrid` so pages are static by default and only opt into SSR where needed. Reduces server resource usage since most pages can be prerendered.
 
-- [ ] Change `output: 'server'` to `output: 'hybrid'` in `astro.config.mjs`
-- [ ] Add `export const prerender = false` to pages that need SSR (parse-recipe API, MCP server, auth callback if any)
-- [ ] Verify all static pages build correctly
-- [ ] E2E tests
+- [x] Change `output: 'server'` to `output: 'hybrid'` in `astro.config.mjs`
+- [x] Add `export const prerender = false` to pages that need SSR (parse-recipe API, MCP server, auth callback if any)
+- [x] Verify all static pages build correctly
+- [x] E2E tests
 
 **Verification:** Run `npm run build` — confirm most pages are prerendered (shown in build output). Run `npm run preview` and confirm all flows still work.
 

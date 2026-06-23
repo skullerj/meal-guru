@@ -1,4 +1,7 @@
 ---
+export const prerender = false;
+
+import PageLayout from "@/components/shared/PageLayout";
 import IngredientList from "../components/ingredients/IngredientList";
 import Layout from "../layouts/Layout.astro";
 import { getIngredients } from "../lib/database";
@@ -13,16 +16,7 @@ const ingredients = await getIngredients(supabase);
 ---
 
 <Layout title="Ingredients">
-  <main class="min-h-screen bg-background">
-    <div class="max-w-lg w-full mx-auto px-6 py-8">
-      <header class="mb-8">
-        <h1 class="text-3xl font-bold text-foreground font-heading">Ingredients</h1>
-        <p class="text-muted-foreground mt-1">
-          Master ingredient library — {ingredients.length} ingredient{ingredients.length !== 1 ? "s" : ""}
-        </p>
-      </header>
-
-      <IngredientList client:load ingredients={ingredients} />
-    </div>
-  </main>
+    <PageLayout title="Ingredients" backLabel="Home" backUrl="/">
+        <IngredientList client:load ingredients={ingredients} />
+    </PageLayout>
 </Layout>
