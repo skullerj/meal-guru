@@ -89,7 +89,7 @@ The project uses Playwright for E2E tests against the hosted Supabase instance.
 Create a `.env.test` file in the project root:
 ```bash
 SUPABASE_URL=your_supabase_url_here
-SUPABASE_KEY=your_supabase_service_role_key_here  # Secret key (not the publishable one)
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here  # Secret key (not the publishable one)
 ```
 
 The service role key is needed because `global-setup.ts` seeds and cleans test data with elevated permissions.
