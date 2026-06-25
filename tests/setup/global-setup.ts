@@ -15,12 +15,12 @@ import {
 loadEnv({ path: resolve(process.cwd(), ".env.test") });
 
 export default async function globalSetup() {
-  const url = process.env.SUPABASE_URL;
+  const url = process.env.PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceKey) {
     throw new Error(
-      "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.test"
+      "Missing PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.test"
     );
   }
 

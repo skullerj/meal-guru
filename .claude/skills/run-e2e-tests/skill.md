@@ -6,7 +6,7 @@ Run the Playwright E2E test suite or generate new tests for a recently implement
 
 A `.env.test` file must exist at the project root with:
 ```bash
-SUPABASE_URL=your_supabase_url_here
+PUBLIC_SUPABASE_URL=your_supabase_url_here
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here  # Secret key (not the publishable one)
 ```
 
