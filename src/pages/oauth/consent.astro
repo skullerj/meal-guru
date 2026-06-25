@@ -1,0 +1,65 @@
+---
+export const prerender = false;
+
+import ConsentForm from "@/components/oauth/ConsentForm";
+import { createSupabaseServerClient } from "@/lib/supabase";
+
+const authorizationId = Astro.url.searchParams.get("authorization_id");
+
+if (!authorizationId) {
+  return Astro.redirect("/");
+}
+
+const supabase = createSupabaseServerClient({
+  headers: Astro.request.headers,
+  cookies: Astro.cookies,
+});
+
+const { data, error } =
+  await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
+
+if (data && "redirect_url" in data) {
+  return Astro.redirect(data.redirect_url);
+}
+
+const details = data && "authorization_id" in data ? data : null;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#CF6A43" />
+    <title>Authorize — Meal Guru</title>
+  </head>
+  <body>
+    <main class="min-h-screen bg-background flex items-center justify-center">
+      {error ? (
+        <div class="w-full max-w-sm px-6">
+          <div class="rounded-xl border border-border bg-card p-8 shadow-sm text-center">
+            <h1 class="font-heading text-2xl text-foreground mb-4">Authorization Error</h1>
+            <p class="text-sm text-destructive">{error.message}</p>
+          </div>
+        </div>
+      ) : details ? (
+        <ConsentForm
+          client:load
+          authorizationId={details.authorization_id}
+          clientName={details.client.name}
+          scope={details.scope}
+          redirectUri={details.redirect_uri}
+        />
+      ) : null}
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  @import "@fontsource-variable/geist";
+</style>
+<style is:global>
+  @import "../../styles/global.css";
+</style>

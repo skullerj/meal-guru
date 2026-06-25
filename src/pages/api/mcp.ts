@@ -2,26 +2,34 @@ export const prerender = false;
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import type { Category } from "@/data/types";
 import { CATEGORIES, UNITS } from "@/data/types";
 import {
+  commitShop,
   createRecipeWithIngredients,
+  createShop,
+  deactivateShopsForWeek,
   deleteIngredient,
   deleteRecipe,
+  getActiveShopForWeek,
   getIngredients,
   getRecipe,
   getRecipeSteps,
   getRecipes,
+  getShopIngredients,
+  getShopWithRecipes,
   recommendRecipeIds,
   setRecipeSteps,
+  toggleShopIngredient,
   updateIngredient,
   updateRecipeWithIngredients,
   updateShopStatus,
   upsertIngredient,
 } from "@/lib/database";
-import { createServiceRoleClient } from "@/lib/supabase";
 
 const stepDraftInputShape = {
   step_number: z
@@ -67,9 +75,8 @@ const ingredientInputShape = {
     ),
 };
 
-function createMcpServer() {
+function createMcpServer(supabase: SupabaseClient) {
   const server = new McpServer({ name: "meal-guru", version: "1.0.0" });
-  const supabase = createServiceRoleClient();
 
   server.registerTool(
     "list_recipes",
@@ -418,12 +425,238 @@ function createMcpServer() {
     }
   );
 
+  server.registerTool(
+    "get_active_shop",
+    {
+      title: "Get Active Shop for Week",
+      description:
+        'Finds the active shop for a given week. Weeks are identified by their Monday date (ISO format YYYY-MM-DD). If week_of is omitted, defaults to the current week. Returns a ShopSummary with the shop id, week_of, active flag, created_at, status ("shopping" or "cooking"), and recipe_ids. Returns null (as JSON) if no active shop exists for that week — this is normal and means no shop has been created yet.',
+      inputSchema: {
+        week_of: z
+          .string()
+          .optional()
+          .describe(
+            "ISO date string (YYYY-MM-DD) of the Monday of the target week. Omit to use the current week."
+          ),
+      },
+    },
+    async ({ week_of }) => {
+      const shop = await getActiveShopForWeek(supabase, week_of);
+      return {
+        content: [{ type: "text", text: JSON.stringify(shop, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "get_shop",
+    {
+      title: "Get Shop with Recipes",
+      description:
+        "Fetches a shop by UUID with its full nested recipe data (each recipe includes ingredients and steps). Returns isError: true if the shop is not found. Use get_active_shop first if you need to discover the shop ID for a given week.",
+      inputSchema: {
+        id: z.string().uuid().describe("The shop UUID"),
+      },
+    },
+    async ({ id }) => {
+      const shop = await getShopWithRecipes(supabase, id);
+      if (!shop) {
+        return {
+          content: [{ type: "text", text: `Shop ${id} not found.` }],
+          isError: true,
+        };
+      }
+      return {
+        content: [{ type: "text", text: JSON.stringify(shop, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "create_shop",
+    {
+      title: "Create Shop",
+      description:
+        'Creates a new weekly shop with the given recipe IDs. The shop is marked as active and its status starts as "shopping". A snapshot of all aggregated ingredients across the selected recipes is automatically populated into shop_ingredients (used for the shopping checklist). If week_of is omitted, defaults to the current week\'s Monday. You typically want to call deactivate_shops_for_week before creating a new shop if one already exists for the same week, to avoid having multiple active shops. Returns { id } with the new shop UUID.',
+      inputSchema: {
+        recipe_ids: z
+          .array(z.string().uuid())
+          .min(1)
+          .describe(
+            "UUIDs of the recipes to include in this shop. Get these from list_recipes or recommend_recipes."
+          ),
+        week_of: z
+          .string()
+          .optional()
+          .describe(
+            "ISO date string (YYYY-MM-DD) of the Monday of the target week. Omit to use the current week."
+          ),
+      },
+    },
+    async ({ recipe_ids, week_of }) => {
+      const result = await createShop(supabase, recipe_ids, week_of);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "commit_shop",
+    {
+      title: "Commit Shop",
+      description:
+        "Creates a shop from a list of recipe IDs without specifying a week. This is the legacy shop creation used by the manual recipe picker (/pick page). Unlike create_shop, it does not set week_of or active fields. A snapshot of all aggregated ingredients is automatically populated into shop_ingredients. Returns { id } with the new shop UUID. Prefer create_shop for new weekly shops.",
+      inputSchema: {
+        recipe_ids: z
+          .array(z.string().uuid())
+          .min(1)
+          .describe(
+            "UUIDs of the recipes to include in this shop. Get these from list_recipes or recommend_recipes."
+          ),
+      },
+    },
+    async ({ recipe_ids }) => {
+      const result = await commitShop(supabase, recipe_ids);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "deactivate_shops_for_week",
+    {
+      title: "Deactivate Shops for Week",
+      description:
+        "Sets active = false on all active shops for the given week. Call this before create_shop if you want to replace the current week's shop with a new one. The deactivated shops are not deleted — they remain in the database but will no longer be returned by get_active_shop. The week_of parameter must be an ISO date string (YYYY-MM-DD) representing the Monday of the target week.",
+      inputSchema: {
+        week_of: z
+          .string()
+          .describe(
+            "ISO date string (YYYY-MM-DD) of the Monday of the target week. Must be a Monday."
+          ),
+      },
+    },
+    async ({ week_of }) => {
+      await deactivateShopsForWeek(supabase, week_of);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `All active shops for week ${week_of} have been deactivated.`,
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    "list_shop_ingredients",
+    {
+      title: "List Shop Ingredients",
+      description:
+        "Returns all ingredients for a shop's shopping list, ordered by name. Each item includes id, shop_id, ingredient_id, amount, unit, category, name, and a checked boolean. These are snapshot rows created when the shop was made — they represent the aggregated ingredient totals across all recipes in the shop. Use toggle_shop_ingredient to mark items as bought/unbought.",
+      inputSchema: {
+        shop_id: z
+          .string()
+          .uuid()
+          .describe("The shop UUID whose ingredients to fetch"),
+      },
+    },
+    async ({ shop_id }) => {
+      const ingredients = await getShopIngredients(supabase, shop_id);
+      return {
+        content: [{ type: "text", text: JSON.stringify(ingredients, null, 2) }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "toggle_shop_ingredient",
+    {
+      title: "Toggle Shop Ingredient",
+      description:
+        "Marks a shop ingredient as checked (bought) or unchecked (still needed). Use list_shop_ingredients first to get the ingredient row IDs for the shop. The id here is the shop_ingredients row UUID, NOT the master ingredient UUID from list_ingredients.",
+      inputSchema: {
+        id: z
+          .string()
+          .uuid()
+          .describe(
+            "The shop_ingredients row UUID (from list_shop_ingredients), not the master ingredient ID"
+          ),
+        checked: z
+          .boolean()
+          .describe("true to mark as bought, false to mark as still needed"),
+      },
+    },
+    async ({ id, checked }) => {
+      await toggleShopIngredient(supabase, id, checked);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Shop ingredient ${id} ${checked ? "checked" : "unchecked"}.`,
+          },
+        ],
+      };
+    }
+  );
+
   return server;
 }
 
 export const ALL: APIRoute = async ({ request }) => {
-  const server = createMcpServer();
+  const origin = new URL(request.url).origin;
+
+  // Extract Bearer token
+  const authHeader = request.headers.get("Authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "WWW-Authenticate": `Bearer resource_metadata="${origin}/.well-known/oauth-protected-resource"`,
+      },
+    });
+  }
+
+  // Validate token against Supabase Auth
+  const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    }
+  );
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "WWW-Authenticate": `Bearer error="invalid_token", resource_metadata="${origin}/.well-known/oauth-protected-resource"`,
+      },
+    });
+  }
+
+  // Create MCP server with user-scoped client (RLS works automatically)
+  const server = createMcpServer(supabase);
   const transport = new WebStandardStreamableHTTPServerTransport({});
   await server.connect(transport);
-  return transport.handleRequest(request);
+
+  return transport.handleRequest(request, {
+    authInfo: {
+      token,
+      clientId: user.id,
+      scopes: [],
+    },
+  });
 };

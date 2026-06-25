@@ -33,7 +33,9 @@ function LoginForm() {
       if (error) {
         setError(error.message);
       } else {
-        window.location.href = "/";
+        const params = new URLSearchParams(window.location.search);
+        const returnTo = params.get("returnTo") || "/";
+        window.location.href = returnTo;
       }
     }
     setLoading(false);

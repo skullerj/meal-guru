@@ -110,11 +110,21 @@ tests/
     └── global-setup.ts  # Runs before every test run: wipes then re-seeds test data
 ```
 
+### Playwright projects
+
+The Playwright config defines three projects:
+- **`setup`**: Authenticates the test user and saves session to `tests/.auth/user.json`
+- **`chromium`**: Runs most tests with stored auth state (logged in). Ignores `auth.spec.ts` and `mcp-auth.spec.ts`
+- **`chromium-auth`**: Runs `auth.spec.ts` and `mcp-auth.spec.ts` without stored auth state (logged out). Tests that need auth must log in manually within the test
+
+When adding a new test file that needs logged-out browser state, add it to both the `testIgnore` array of `chromium` and the `testMatch` array of `chromium-auth` in `playwright.config.ts`.
+
 ### Conventions
 
 - **Cleanup in global-setup**: Any recipe or ingredient name created by a test must be listed in `TEST_CREATED_RECIPES` / `TEST_CREATED_INGREDIENTS` in `tests/fixtures/data.ts` so `global-setup.ts` can wipe it before the next run.
 - **Wait for React hydration**: Astro uses `client:load` for React islands — always call `await page.waitForLoadState('networkidle')` after `page.goto()` before interacting with React-managed buttons.
 - **Prefer `getByRole` over `getByLabel`/`getByText`**: Lucide icons render `aria-label` on the SVG itself, so `getByLabel` matches both the button and the icon. Use `getByRole('button', { name: '...' })` instead. Similarly, use `getByRole('heading', { name: '...' })` instead of `getByText` to avoid matching the same text in hidden JSON/debug output.
+- **API-only tests**: Use Playwright's `request` fixture for direct HTTP requests (e.g., testing API auth). These don't depend on browser auth state.
 
 ## Project Structure
 ```
@@ -150,7 +160,9 @@ tests/
 │   │   ├── recipe/
 │   │   │   └── CookingView.tsx          # Mobile-first step-by-step cooking interface
 │   │   ├── auth/
-│   │   │   └── LoginForm.tsx            # Email/password login/signup form (React island)
+│   │   │   └── LoginForm.tsx            # Email/password login/signup form (React island); supports returnTo query param redirect
+│   │   ├── oauth/
+│   │   │   └── ConsentForm.tsx          # OAuth consent screen (approve/deny authorization)
 │   │   ├── shared/
 │   │   │   ├── Button.tsx               # Reusable button component
 │   │   │   ├── Icon.tsx                 # Centralized icon component (Lucide)
@@ -165,7 +177,7 @@ tests/
 │   │   ├── supabase-browser.ts      # Browser-safe Supabase client for React components (singleton)
 │   │   ├── database.ts              # Database access functions (all accept SupabaseClient as first param)
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
-│   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, sets Astro.locals.user
+│   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, serves /.well-known/oauth-protected-resource PRM, sets Astro.locals.user
 │   ├── layouts/
 │   │   └── Layout.astro
 │   ├── pages/
@@ -176,6 +188,8 @@ tests/
 │   │   ├── add-recipe.astro
 │   │   ├── index.astro              # Hero home page: "Shop Now" CTA + link to /pick
 │   │   ├── login.astro              # Standalone login/signup page (no Layout wrapper)
+│   │   ├── oauth/
+│   │   │   └── consent.astro        # OAuth consent page (SSR, standalone layout)
 │   │   ├── pick.astro               # Manual recipe picker (MealPlanner)
 │   │   ├── shop/
 │   │   │   ├── index.astro          # Redirect shim: /shop?r=... → /shop/{id}
@@ -205,7 +219,9 @@ tests/
 - **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
 - **Ingredient Management**: edit name/unit/category and delete (with referential integrity guard) via direct Supabase calls from React
-- **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
+- **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Unauthenticated requests redirect to `/login?returnTo=<path>` to preserve the original URL. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
+- **MCP OAuth**: The `/api/mcp` endpoint requires a `Bearer` token (Supabase access token) in the `Authorization` header. Invalid/missing tokens return 401 with `WWW-Authenticate` header pointing to the PRM endpoint. The middleware serves `/.well-known/oauth-protected-resource` with Protected Resource Metadata JSON (resource URL, Supabase auth server, supported scopes)
+- **OAuth Consent** (`/oauth/consent`): SSR page for third-party OAuth authorization. Receives `authorization_id` query param, fetches authorization details from Supabase, and renders ConsentForm for user to approve/deny. LoginForm supports `returnTo` query param for post-login redirect back to consent page
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
@@ -473,7 +489,7 @@ Centralized reusable components in `src/components/shared/`:
 - This is a meal planning and batch cooking application
 - Uses Astro framework with React integration for interactive components
 - **Database**: Supabase (PostgreSQL) with full schema for recipes, ingredients, and relationships
-- **Auth**: `@supabase/ssr` with two client modules — `src/lib/supabase.ts` (server: `createSupabaseServerClient`, `createServiceRoleClient`) and `src/lib/supabase-browser.ts` (browser: singleton `supabase` export). Middleware at `src/middleware.ts` protects all routes except `/login` and `/api/*`
+- **Auth**: `@supabase/ssr` with two client modules — `src/lib/supabase.ts` (server: `createSupabaseServerClient`, `createServiceRoleClient`) and `src/lib/supabase-browser.ts` (browser: singleton `supabase` export). Middleware at `src/middleware.ts` protects all routes except `/login` and `/api/*`, redirects unauthenticated users with `returnTo` query param, and serves `/.well-known/oauth-protected-resource` PRM metadata. The MCP endpoint (`/api/mcp`) validates `Bearer` tokens against Supabase Auth and creates a user-scoped client (RLS-aware) instead of using the service role
 - **Mutations**: All CRUD operations go directly from React components to Supabase via the browser client — no Astro actions layer. Only `parse-recipe` and MCP stay server-side
 - **Data Management**: Recipe data fetched from Supabase, TypeScript interfaces in `/src/data/recipes.ts`
 - State management follows useReducer pattern with clean component separation

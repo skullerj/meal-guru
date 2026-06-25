@@ -137,6 +137,26 @@ Change Astro output from `server` to `hybrid` so pages are static by default and
 
 ---
 
+### ✅ 20. MCP OAuth 2.1 authentication
+Protect the MCP endpoint with OAuth 2.1 using Supabase's built-in OAuth authorization server. MCP clients (like Claude Desktop) authenticate via the standard OAuth 2.1 authorization code flow with PKCE.
+
+- [x] Serve Protected Resource Metadata at `/.well-known/oauth-protected-resource` (handled in middleware)
+- [x] Add Bearer token validation to `/api/mcp` — creates user-scoped Supabase client (RLS enforced)
+- [x] Return 401 with `WWW-Authenticate` header for unauthenticated MCP requests
+- [x] Build OAuth consent page at `/oauth/consent` using `supabase.auth.oauth.*` methods
+- [x] Add `returnTo` query param support in login redirect flow
+- [x] E2E tests
+
+**Supabase dashboard setup (manual):**
+1. Authentication → OAuth Server → Enable
+2. Set Authorization URL Path to `/oauth/consent`
+3. Enable Dynamic Client Registration
+4. Verify asymmetric signing (RS256) is configured
+
+**Verification:** Send an unauthenticated request to `/api/mcp` — confirm 401 with `WWW-Authenticate` header. Fetch `/.well-known/oauth-protected-resource` — confirm JSON with Supabase auth server URL. Configure Claude Desktop MCP with the server URL — confirm OAuth flow opens browser for consent.
+
+---
+
 ## Supabase Data Model
 
 **Active tables:**
