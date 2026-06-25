@@ -16,7 +16,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   context.locals.user = user;
 
-  const path = new URL(context.request.url).pathname;
+  const rawPath = new URL(context.request.url).pathname;
+  // Normalize trailing slashes so "/login/" matches "/login"
+  const path = rawPath === "/" ? rawPath : rawPath.replace(/\/+$/, "");
   const isPublicPath =
     PUBLIC_PATHS.some((p) => path === p) || path.startsWith("/api/");
 
