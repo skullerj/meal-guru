@@ -22,9 +22,9 @@ const variantStyles: Record<IconButtonVariant, string> = {
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {
-  sm: "size-7",
-  md: "size-8",
-  lg: "size-10",
+  sm: "size-12 sm:size-7",
+  md: "size-12 sm:size-8",
+  lg: "size-12 sm:size-10",
 };
 
 const iconSizes: Record<IconButtonSize, "xs" | "sm" | "md"> = {

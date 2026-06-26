@@ -85,118 +85,124 @@ export default function IngredientRow({
 
   return (
     <div className="flex items-center gap-2">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "min-w-[140px] flex-1 flex items-center justify-between border border-border rounded px-2 py-1 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring h-[30px]",
+                value.name ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
+              <span className="truncate">
+                {value.name || "Ingredient name"}
+              </span>
+              <Icon
+                name="chevron-right"
+                size="xs"
+                className="ml-1 shrink-0 opacity-50 rotate-90"
+              />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-0" align="start">
+            <Command>
+              <CommandInput
+                placeholder="Search ingredients..."
+                value={search}
+                onValueChange={setSearch}
+              />
+              <CommandList>
+                <CommandEmpty>No ingredients found.</CommandEmpty>
+                {filtered.length > 0 && (
+                  <CommandGroup>
+                    {filtered.map((ing) => (
+                      <CommandItem
+                        key={ing.id}
+                        value={ing.name}
+                        onSelect={() => selectExisting(ing)}
+                      >
+                        <span className="flex-1">{ing.name}</span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {ing.unit}
+                        </span>
+                        {value.ingredient_id === ing.id && (
+                          <Icon name="check" size="xs" className="ml-1" />
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+                {search.trim() && !exactMatch && (
+                  <CommandGroup>
+                    <CommandItem
+                      value={`create:${search.trim()}`}
+                      onSelect={() => createNew(search.trim())}
+                    >
+                      <Icon name="plus" size="xs" className="mr-1" />
+                      Create "{search.trim()}"
+                    </CommandItem>
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={value.amount}
+            autoComplete="off"
+            onChange={(e) =>
+              onChange(index, { ...value, amount: Number(e.target.value) })
+            }
+            className="w-20 border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+
+          <select
+            value={value.unit}
+            disabled={isExisting}
+            onChange={(e) =>
+              onChange(index, { ...value, unit: e.target.value as Unit })
+            }
             className={cn(
-              "flex-1 flex items-center justify-between border border-border rounded px-2 py-1 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring h-[30px]",
-              value.name ? "text-foreground" : "text-muted-foreground"
+              "border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+              isExisting && "opacity-50 cursor-not-allowed"
             )}
           >
-            <span className="truncate">{value.name || "Ingredient name"}</span>
-            <Icon
-              name="chevron-right"
-              size="xs"
-              className="ml-1 shrink-0 opacity-50 rotate-90"
-            />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64 p-0" align="start">
-          <Command>
-            <CommandInput
-              placeholder="Search ingredients..."
-              value={search}
-              onValueChange={setSearch}
-            />
-            <CommandList>
-              <CommandEmpty>No ingredients found.</CommandEmpty>
-              {filtered.length > 0 && (
-                <CommandGroup>
-                  {filtered.map((ing) => (
-                    <CommandItem
-                      key={ing.id}
-                      value={ing.name}
-                      onSelect={() => selectExisting(ing)}
-                    >
-                      <span className="flex-1">{ing.name}</span>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        {ing.unit}
-                      </span>
-                      {value.ingredient_id === ing.id && (
-                        <Icon name="check" size="xs" className="ml-1" />
-                      )}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-              {search.trim() && !exactMatch && (
-                <CommandGroup>
-                  <CommandItem
-                    value={`create:${search.trim()}`}
-                    onSelect={() => createNew(search.trim())}
-                  >
-                    <Icon name="plus" size="xs" className="mr-1" />
-                    Create "{search.trim()}"
-                  </CommandItem>
-                </CommandGroup>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
 
-      <input
-        type="number"
-        min="0.01"
-        step="0.01"
-        value={value.amount}
-        autoComplete="off"
-        onChange={(e) =>
-          onChange(index, { ...value, amount: Number(e.target.value) })
-        }
-        className="w-20 border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-      />
-
-      <select
-        value={value.unit}
-        disabled={isExisting}
-        onChange={(e) =>
-          onChange(index, { ...value, unit: e.target.value as Unit })
-        }
-        className={cn(
-          "border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
-          isExisting && "opacity-50 cursor-not-allowed"
-        )}
-      >
-        {UNITS.map((u) => (
-          <option key={u} value={u}>
-            {u}
-          </option>
-        ))}
-      </select>
-
-      <select
-        value={value.category ?? ""}
-        disabled={isExisting}
-        onChange={(e) =>
-          onChange(index, {
-            ...value,
-            category: (e.target.value as Category) || null,
-          })
-        }
-        className={cn(
-          "border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
-          isExisting && "opacity-50 cursor-not-allowed"
-        )}
-      >
-        <option value="">Category</option>
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {CATEGORY_LABELS[c] ?? c}
-          </option>
-        ))}
-      </select>
+          <select
+            value={value.category ?? ""}
+            disabled={isExisting}
+            onChange={(e) =>
+              onChange(index, {
+                ...value,
+                category: (e.target.value as Category) || null,
+              })
+            }
+            className={cn(
+              "border border-border rounded px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+              isExisting && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <option value="">Category</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {CATEGORY_LABELS[c] ?? c}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       <IconButton
         icon="trash"

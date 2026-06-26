@@ -16,23 +16,23 @@ test.describe
       await page.goto("/ingredients");
       await page.waitForLoadState("networkidle");
 
-      // Find the Spaghetti row's Edit button via its cell text
-      const row = page.getByRole("row").filter({
-        has: page.getByRole("cell", { name: TEST_INGREDIENTS[0].name }),
+      // Find the list item containing the ingredient name
+      const item = page.getByRole("listitem").filter({
+        has: page.locator("span", { hasText: TEST_INGREDIENTS[0].name }),
       });
-      await row.getByRole("button", { name: "Edit" }).click();
+      await item.getByRole("button", { name: "Edit" }).click();
 
       // Wait for edit mode — combobox appears
-      const categoryCombobox = row.getByRole("combobox").first();
+      const categoryCombobox = item.getByRole("combobox").first();
       await expect(categoryCombobox).toBeVisible({ timeout: 10000 });
 
       // Change category to produce
       await categoryCombobox.selectOption("produce");
 
-      await row.getByRole("button", { name: "Save" }).click();
+      await item.getByRole("button", { name: "Save" }).click();
 
-      // After save the row exits edit mode and shows the Produce badge
-      await expect(row.getByText("Produce")).toBeVisible();
+      // After save the item exits edit mode and shows the Produce badge
+      await expect(item.getByText("Produce")).toBeVisible();
     });
 
     test("creates an ingredient with category via recipe form", async ({

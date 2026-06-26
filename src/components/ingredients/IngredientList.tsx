@@ -98,38 +98,23 @@ export default function IngredientList({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border bg-muted/50">
-            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-              Name
-            </th>
-            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-              Category
-            </th>
-            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-              Unit
-            </th>
-            <th className="px-4 py-3 w-24" />
-          </tr>
-        </thead>
-        <tbody>
-          {ingredients.map((ingredient) => {
-            const isEditing = editing?.id === ingredient.id;
-            const isDeleting = deleting === ingredient.id;
+    <div className="rounded-lg border border-border">
+      <ul className="divide-y divide-border/60">
+        {ingredients.map((ingredient) => {
+          const isEditing = editing?.id === ingredient.id;
+          const isDeleting = deleting === ingredient.id;
 
-            return (
-              <tr
-                key={ingredient.id}
-                className={cn(
-                  "border-b border-border/60 last:border-0 transition-colors",
-                  isEditing ? "bg-accent/30" : "hover:bg-muted/30"
-                )}
-              >
-                {/* Name */}
-                <td className="px-4 py-3">
-                  {isEditing ? (
+          return (
+            <li
+              key={ingredient.id}
+              className={cn(
+                "px-4 py-3 transition-colors",
+                isEditing ? "bg-accent/30" : "hover:bg-muted/30"
+              )}
+            >
+              {isEditing ? (
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     <input
                       autoComplete="off"
                       className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -140,18 +125,8 @@ export default function IngredientList({
                         )
                       }
                     />
-                  ) : (
-                    <span className="text-foreground font-medium">
-                      {ingredient.name}
-                    </span>
-                  )}
-                </td>
-
-                {/* Category */}
-                <td className="px-4 py-3">
-                  {isEditing ? (
                     <select
-                      className="rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       value={editing.category ?? ""}
                       onChange={(e) =>
                         setEditing(
@@ -170,27 +145,8 @@ export default function IngredientList({
                         </option>
                       ))}
                     </select>
-                  ) : ingredient.category ? (
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        CATEGORY_BADGE[ingredient.category] ??
-                          "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {CATEGORY_LABELS[ingredient.category] ??
-                        ingredient.category}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  )}
-                </td>
-
-                {/* Unit */}
-                <td className="px-4 py-3">
-                  {isEditing ? (
                     <select
-                      className="rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       value={editing.unit}
                       onChange={(e) =>
                         setEditing(
@@ -205,63 +161,77 @@ export default function IngredientList({
                         </option>
                       ))}
                     </select>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      {ingredient.unit}
-                    </span>
-                  )}
-                </td>
-
-                {/* Actions */}
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-1">
-                    {isEditing ? (
-                      <>
-                        <IconButton
-                          icon="check"
-                          aria-label="Save"
-                          variant="primary"
-                          size="sm"
-                          loading={saving}
-                          onClick={saveEdit}
-                        />
-                        <IconButton
-                          icon="x"
-                          aria-label="Cancel"
-                          variant="ghost"
-                          size="sm"
-                          disabled={saving}
-                          onClick={cancelEdit}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <IconButton
-                          icon="edit"
-                          aria-label="Edit"
-                          variant="ghost"
-                          size="sm"
-                          disabled={isDeleting || deleting !== null}
-                          onClick={() => startEdit(ingredient)}
-                        />
-                        <IconButton
-                          icon="trash"
-                          aria-label="Delete"
-                          variant="danger"
-                          size="sm"
-                          loading={isDeleting}
-                          disabled={deleting !== null && !isDeleting}
-                          onClick={() => handleDelete(ingredient.id)}
-                        />
-                      </>
-                    )}
                   </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  <div className="flex items-center justify-end gap-1">
+                    <IconButton
+                      icon="check"
+                      aria-label="Save"
+                      variant="primary"
+                      size="sm"
+                      loading={saving}
+                      onClick={saveEdit}
+                    />
+                    <IconButton
+                      icon="x"
+                      aria-label="Cancel"
+                      variant="ghost"
+                      size="sm"
+                      disabled={saving}
+                      onClick={cancelEdit}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="text-sm text-foreground font-medium">
+                      {ingredient.name}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {ingredient.category ? (
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                            CATEGORY_BADGE[ingredient.category] ??
+                              "bg-muted text-muted-foreground"
+                          )}
+                        >
+                          {CATEGORY_LABELS[ingredient.category] ??
+                            ingredient.category}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        {ingredient.unit}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <IconButton
+                      icon="edit"
+                      aria-label="Edit"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isDeleting || deleting !== null}
+                      onClick={() => startEdit(ingredient)}
+                    />
+                    <IconButton
+                      icon="trash"
+                      aria-label="Delete"
+                      variant="danger"
+                      size="sm"
+                      loading={isDeleting}
+                      disabled={deleting !== null && !isDeleting}
+                      onClick={() => handleDelete(ingredient.id)}
+                    />
+                  </div>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
 
       {ingredients.length === 0 && (
         <p className="text-center text-muted-foreground text-sm py-12">
