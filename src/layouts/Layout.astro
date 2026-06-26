@@ -1,4 +1,6 @@
 ---
+import { ClientRouter } from "astro:transitions";
+
 interface Props {
   title?: string;
 }
@@ -15,6 +17,7 @@ const { title = "Meal Guru" } = Astro.props;
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#CF6A43" />
     <title>{title} — Meal Guru</title>
+    <ClientRouter />
   </head>
   <body>
     <nav class="border-b border-border bg-background">

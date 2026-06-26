@@ -179,7 +179,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
 │   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, serves /.well-known/oauth-protected-resource PRM, sets Astro.locals.user
 │   ├── layouts/
-│   │   └── Layout.astro
+│   │   └── Layout.astro             # Root layout: SEO meta, global CSS, ViewTransitions (client-side routing)
 │   ├── pages/
 │   │   ├── api/
 │   │   │   ├── auth/
@@ -222,6 +222,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 - **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Unauthenticated requests redirect to `/login?returnTo=<path>` to preserve the original URL. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
 - **MCP OAuth**: The `/api/mcp` endpoint requires a `Bearer` token (Supabase access token) in the `Authorization` header. Invalid/missing tokens return 401 with `WWW-Authenticate` header pointing to the PRM endpoint. The middleware serves `/.well-known/oauth-protected-resource` with Protected Resource Metadata JSON (resource URL, Supabase auth server, supported scopes)
 - **OAuth Consent** (`/oauth/consent`): SSR page for third-party OAuth authorization. Receives `authorization_id` query param, fetches authorization details from Supabase, and renders ConsentForm for user to approve/deny. LoginForm supports `returnTo` query param for post-login redirect back to consent page
+- **ViewTransitions**: Astro's `ViewTransitions` component in `Layout.astro` enables client-side routing (SPA-like navigation) for smooth page transitions — important for PWA experience
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
