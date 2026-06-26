@@ -36,3 +36,6 @@ tests/.auth/
 # Supabase
 supabase/.branches
 supabase/.temp
+
+# Claude worktrees
+.claude/worktrees/
