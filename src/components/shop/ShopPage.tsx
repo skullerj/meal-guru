@@ -6,8 +6,10 @@ import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
 import type { Recipe, ShopStatus } from "@/data/types";
 import type { ShopIngredient } from "@/lib/database";
-import { supabase } from "@/lib/supabase-browser";
 import { updateShopStatus } from "@/lib/database";
+import { queryKeys } from "@/lib/queries";
+import { queryClient } from "@/lib/query-client";
+import { supabase } from "@/lib/supabase-browser";
 
 interface ShopPageProps {
   shopId: string;
@@ -32,6 +34,7 @@ export default function ShopPage({
     try {
       await updateShopStatus(supabase, shopId, "cooking");
       setStatus("cooking");
+      queryClient.invalidateQueries({ queryKey: queryKeys.shop(shopId) });
     } catch {
       // silently fail
     } finally {

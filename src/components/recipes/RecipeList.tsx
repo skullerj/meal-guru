@@ -1,10 +1,4 @@
 import { useReducer } from "react";
-import {
-  createRecipeWithIngredients,
-  deleteRecipe,
-  updateRecipeWithIngredients,
-} from "@/lib/database";
-import { supabase } from "@/lib/supabase-browser";
 import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
 import {
@@ -16,6 +10,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Ingredient, Recipe } from "@/data/types";
+import {
+  createRecipeWithIngredients,
+  deleteRecipe,
+  updateRecipeWithIngredients,
+} from "@/lib/database";
+import { queryKeys } from "@/lib/queries";
+import { queryClient } from "@/lib/query-client";
+import { supabase } from "@/lib/supabase-browser";
 import RecipeCard from "./RecipeCard";
 import RecipeFormDialog, { type SaveData } from "./RecipeFormDialog";
 
@@ -135,14 +137,14 @@ export default function RecipeList({ recipes, ingredients }: Props) {
           state.editingRecipe.id,
           name,
           ingredientInputs,
-          stepsToSave,
+          stepsToSave
         );
       } else {
         savedRecipe = await createRecipeWithIngredients(
           supabase,
           name,
           ingredientInputs,
-          stepsToSave,
+          stepsToSave
         );
       }
 
@@ -150,6 +152,7 @@ export default function RecipeList({ recipes, ingredients }: Props) {
         type: "SAVE_SUCCESS",
         recipe: savedRecipe,
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
     } catch {
       dispatch({ type: "SET_SUBMITTING", value: false });
     }
@@ -161,6 +164,7 @@ export default function RecipeList({ recipes, ingredients }: Props) {
       await deleteRecipe(supabase, id);
       dispatch({ type: "SET_SUBMITTING", value: false });
       dispatch({ type: "DELETE_SUCCESS", id });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
     } catch {
       dispatch({ type: "SET_SUBMITTING", value: false });
     }

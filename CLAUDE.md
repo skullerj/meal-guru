@@ -26,6 +26,7 @@ Meal Guru is an Astro-based web application designed to reduce the mental strain
 - **Linter/Formatter**: Biome
 - **Git Hooks**: Lefthook
 - **AI Integration**: Anthropic Claude API for recipe parsing
+- **Data Fetching**: React Query (@tanstack/react-query) for client-side data fetching and caching
 
 ## Development Commands
 ```bash
@@ -134,7 +135,9 @@ When adding a new test file that needs logged-out browser state, add it to both 
 ├── src/
 │   ├── assets/
 │   ├── components/
+│   │   ├── QueryProvider.tsx             # React Query provider wrapper (uses singleton queryClient)
 │   │   ├── meal-planner/
+│   │   │   ├── MealPlannerPage.tsx       # QueryProvider wrapper for MealPlanner (client-side data fetching)
 │   │   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
 │   │   │   ├── ShoppingList.tsx         # Reusable shopping list with checkboxes (supports persisted checks via shopIngredients prop)
 │   │   │   ├── RecipeColumn.tsx         # Recipe selection column
@@ -155,7 +158,11 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   │       └── addRecipeReducer.ts  # Add recipe state management
 │   │   ├── recipes/
 │   │   │   └── RecipeList.tsx           # Recipe CRUD list (uses direct Supabase browser client, not Astro actions)
+│   │   ├── ingredients/
+│   │   │   ├── IngredientListPage.tsx    # QueryProvider wrapper for IngredientList (client-side data fetching)
+│   │   │   └── IngredientList.tsx        # Ingredient CRUD table
 │   │   ├── shop/
+│   │   │   ├── ShopPageWrapper.tsx       # QueryProvider wrapper for ShopPage (client-side data fetching)
 │   │   │   └── ShopPage.tsx             # Shop page: shopping mode (checklist) ↔ cooking mode (recipe cards)
 │   │   ├── recipe/
 │   │   │   └── CookingView.tsx          # Mobile-first step-by-step cooking interface
@@ -176,6 +183,8 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── supabase.ts              # Server-only Supabase clients: createSupabaseServerClient (auth-aware), createServiceRoleClient (MCP/admin)
 │   │   ├── supabase-browser.ts      # Browser-safe Supabase client for React components (singleton)
 │   │   ├── database.ts              # Database access functions (all accept SupabaseClient as first param)
+│   │   ├── query-client.ts          # Singleton React Query QueryClient instance
+│   │   ├── queries.ts               # React Query hooks (useRecipes, useIngredients, useShop, useShopIngredients) and queryKeys factory
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
 │   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, serves /.well-known/oauth-protected-resource PRM, sets Astro.locals.user
 │   ├── layouts/
@@ -222,6 +231,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 - **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Unauthenticated requests redirect to `/login?returnTo=<path>` to preserve the original URL. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
 - **MCP OAuth**: The `/api/mcp` endpoint requires a `Bearer` token (Supabase access token) in the `Authorization` header. Invalid/missing tokens return 401 with `WWW-Authenticate` header pointing to the PRM endpoint. The middleware serves `/.well-known/oauth-protected-resource` with Protected Resource Metadata JSON (resource URL, Supabase auth server, supported scopes)
 - **OAuth Consent** (`/oauth/consent`): SSR page for third-party OAuth authorization. Receives `authorization_id` query param, fetches authorization details from Supabase, and renders ConsentForm for user to approve/deny. LoginForm supports `returnTo` query param for post-login redirect back to consent page
+- **React Query Data Fetching**: Pages (`/ingredients`, `/pick`, `/shop/[id]`) use client-side data fetching via React Query hooks instead of Astro SSR frontmatter. Each page has a wrapper component that wraps in `QueryProvider` and uses hooks from `src/lib/queries.ts`. The singleton `queryClient` enables cross-page cache sharing via ClientRouter. After mutations, call `queryClient.invalidateQueries()` with the relevant `queryKeys` entry to keep caches fresh
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
@@ -467,6 +477,7 @@ The `cn()` function combines `clsx` and `tailwind-merge` for conditional classNa
 **Dependencies**:
 - `@radix-ui/react-dialog`: Dialog primitives
 - `@supabase/ssr`: Server-side auth (browser client, server client, cookie handling)
+- `@tanstack/react-query`: Client-side data fetching, caching, and synchronization
 - `class-variance-authority`: Component variant styling
 - `clsx`: Conditional className construction
 - `tailwind-merge`: Smart Tailwind class merging
@@ -483,7 +494,8 @@ Centralized reusable components in `src/components/shared/`:
 - **Button.tsx**: Styled button with variants (primary, secondary, success, danger, card) and sizes
 - **Icon.tsx**: Centralized icon component using Lucide React
 - **IconButton.tsx**: Interactive icon-only button with variants
-- **PageLayout.tsx**: Standardized page wrapper with `max-w-lg` container, consistent padding (`px-6 py-8`), optional back link, h1 title, optional subtitle, optional action buttons, and children slot. Used by RecipeList, CookingView, and ShopPage. Astro pages (pick, ingredients) use the same width/padding classes directly in their markup.
+- **PageLayout.tsx**: Standardized page wrapper with `max-w-lg` container, consistent padding (`px-6 py-8`), optional back link, h1 title, optional subtitle, optional action buttons, and children slot. Used by RecipeList, CookingView, and ShopPage.
+- **LoadingSkeleton.tsx**: Pulsing placeholder skeleton for loading states in React Query wrapper components.
 
 ## Notes for Claude
 - This is a meal planning and batch cooking application
@@ -491,7 +503,8 @@ Centralized reusable components in `src/components/shared/`:
 - **Database**: Supabase (PostgreSQL) with full schema for recipes, ingredients, and relationships
 - **Auth**: `@supabase/ssr` with two client modules — `src/lib/supabase.ts` (server: `createSupabaseServerClient`, `createServiceRoleClient`) and `src/lib/supabase-browser.ts` (browser: singleton `supabase` export). Middleware at `src/middleware.ts` protects all routes except `/login` and `/api/*`, redirects unauthenticated users with `returnTo` query param, and serves `/.well-known/oauth-protected-resource` PRM metadata. The MCP endpoint (`/api/mcp`) validates `Bearer` tokens against Supabase Auth and creates a user-scoped client (RLS-aware) instead of using the service role
 - **Mutations**: All CRUD operations go directly from React components to Supabase via the browser client — no Astro actions layer. Only `parse-recipe` and MCP stay server-side
-- **Data Management**: Recipe data fetched from Supabase, TypeScript interfaces in `/src/data/recipes.ts`
+- **Data Management**: Recipe data fetched from Supabase via React Query hooks (client-side), TypeScript interfaces in `/src/data/recipes.ts`
+- **React Query**: Singleton `QueryClient` in `src/lib/query-client.ts`, hooks in `src/lib/queries.ts`, `QueryProvider` wrapper in `src/components/QueryProvider.tsx`. Pages use wrapper components (e.g. `MealPlannerPage`, `IngredientListPage`, `ShopPageWrapper`) that provide QueryProvider context and loading states
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling
 - **Standardized Units**: Ingredient units restricted to: 'g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit'

@@ -1,22 +1,10 @@
 ---
 export const prerender = false;
 
-import PageLayout from "@/components/shared/PageLayout";
-import IngredientList from "../components/ingredients/IngredientList";
+import IngredientListPage from "../components/ingredients/IngredientListPage";
 import Layout from "../layouts/Layout.astro";
-import { getIngredients } from "../lib/database";
-import { createSupabaseServerClient } from "../lib/supabase";
-
-const supabase = createSupabaseServerClient({
-  headers: Astro.request.headers,
-  cookies: Astro.cookies,
-});
-
-const ingredients = await getIngredients(supabase);
 ---
 
 <Layout title="Ingredients">
-    <PageLayout title="Ingredients" backLabel="Home" backUrl="/">
-        <IngredientList client:load ingredients={ingredients} />
-    </PageLayout>
+    <IngredientListPage client:load />
 </Layout>

@@ -1,7 +1,11 @@
 import { useState } from "react";
 import Button from "@/components/shared/Button";
+import {
+  createShop,
+  getActiveShopForWeek,
+  recommendRecipeIds,
+} from "@/lib/database";
 import { supabase } from "@/lib/supabase-browser";
-import { getActiveShopForWeek, recommendRecipeIds, createShop } from "@/lib/database";
 
 export default function ShopNowButton() {
   const [loading, setLoading] = useState(false);
