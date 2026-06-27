@@ -15,23 +15,23 @@ export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
   return (
     <div
       data-testid="recipe-card"
-      className="flex items-center justify-between border border-border rounded-lg px-4 py-3 hover:shadow-sm transition-shadow bg-card"
+      className="flex items-center border border-border rounded-lg px-4 py-3 hover:shadow-sm transition-shadow bg-card"
     >
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-0.5 flex-2">
         <h3 className="font-semibold text-foreground">{recipe.name}</h3>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit">
+          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit whitespace-nowrap">
             {count} {count === 1 ? "ingredient" : "ingredients"}
           </span>
           {stepCount > 0 && (
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit">
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit whitespace-nowrap">
               {stepCount} {stepCount === 1 ? "step" : "steps"}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap justify-end min-w-[84px]">
         <IconButton
           icon="edit"
           variant="ghost"
