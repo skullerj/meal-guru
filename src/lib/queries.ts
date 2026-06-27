@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  getActiveShopForWeek,
   getIngredients,
   getRecipes,
   getShopIngredients,
@@ -10,6 +11,7 @@ import { supabase } from "@/lib/supabase-browser";
 export const queryKeys = {
   recipes: ["recipes"] as const,
   ingredients: ["ingredients"] as const,
+  activeShop: ["activeShop"] as const,
   shop: (id: string) => ["shop", id] as const,
   shopIngredients: (shopId: string) => ["shopIngredients", shopId] as const,
 };
@@ -25,6 +27,13 @@ export function useIngredients() {
   return useQuery({
     queryKey: queryKeys.ingredients,
     queryFn: () => getIngredients(supabase),
+  });
+}
+
+export function useActiveShop() {
+  return useQuery({
+    queryKey: queryKeys.activeShop,
+    queryFn: () => getActiveShopForWeek(supabase),
   });
 }
 

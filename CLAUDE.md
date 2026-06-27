@@ -161,6 +161,9 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── ingredients/
 │   │   │   ├── IngredientListPage.tsx    # QueryProvider wrapper for IngredientList (client-side data fetching)
 │   │   │   └── IngredientList.tsx        # Ingredient CRUD table
+│   │   ├── home/
+│   │   │   ├── HomePageWrapper.tsx       # QueryProvider wrapper for HomePage (client-side data fetching)
+│   │   │   └── HomePage.tsx             # Context-aware home page: no recipes, no shop, shopping, or cooking state
 │   │   ├── shop/
 │   │   │   ├── ShopPageWrapper.tsx       # QueryProvider wrapper for ShopPage (client-side data fetching)
 │   │   │   └── ShopPage.tsx             # Shop page: shopping mode (checklist) ↔ cooking mode (recipe cards)
@@ -184,7 +187,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── supabase-browser.ts      # Browser-safe Supabase client for React components (singleton)
 │   │   ├── database.ts              # Database access functions (all accept SupabaseClient as first param)
 │   │   ├── query-client.ts          # Singleton React Query QueryClient instance
-│   │   ├── queries.ts               # React Query hooks (useRecipes, useIngredients, useShop, useShopIngredients) and queryKeys factory
+│   │   ├── queries.ts               # React Query hooks (useRecipes, useIngredients, useActiveShop, useShop, useShopIngredients) and queryKeys factory
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
 │   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, serves /.well-known/oauth-protected-resource PRM, sets Astro.locals.user
 │   ├── layouts/
@@ -195,7 +198,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   │   │   └── signout.ts       # POST endpoint: signs out user and redirects to /login
 │   │   │   └── parse-recipe.ts
 │   │   ├── add-recipe.astro
-│   │   ├── index.astro              # Hero home page: "Shop Now" CTA + link to /pick
+│   │   ├── index.astro              # Context-aware home page: renders HomePageWrapper React island
 │   │   ├── login.astro              # Standalone login/signup page (no Layout wrapper)
 │   │   ├── oauth/
 │   │   │   └── consent.astro        # OAuth consent page (SSR, standalone layout)
@@ -218,7 +221,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 
 ## Features Implemented
 - **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
-- **Hero Home Page** (`/`): "Shop Now" CTA finds or creates a weekly shop and navigates to `/shop/{id}`; secondary link to `/pick` for manual selection
+- **Context-Aware Home Page** (`/`): React island that shows different content based on user state — onboarding (no recipes), start the week (no active shop), shopping list link (active shop in shopping mode), or cooking view link with start-new-week option (active shop in cooking mode). Uses `useRecipes` and `useActiveShop` React Query hooks
 - **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
 - **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record with two modes — "shopping" (ingredient checklist) and "cooking" (recipe cards linking to `/recipe/[id]`). "Done shopping" transitions to cooking mode
 - **Shop Redirect Shim** (`/shop`): Backward-compatible redirect — creates a shop from `?r=` query params and redirects to `/shop/{id}`
@@ -231,7 +234,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 - **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Unauthenticated requests redirect to `/login?returnTo=<path>` to preserve the original URL. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
 - **MCP OAuth**: The `/api/mcp` endpoint requires a `Bearer` token (Supabase access token) in the `Authorization` header. Invalid/missing tokens return 401 with `WWW-Authenticate` header pointing to the PRM endpoint. The middleware serves `/.well-known/oauth-protected-resource` with Protected Resource Metadata JSON (resource URL, Supabase auth server, supported scopes)
 - **OAuth Consent** (`/oauth/consent`): SSR page for third-party OAuth authorization. Receives `authorization_id` query param, fetches authorization details from Supabase, and renders ConsentForm for user to approve/deny. LoginForm supports `returnTo` query param for post-login redirect back to consent page
-- **React Query Data Fetching**: Pages (`/ingredients`, `/pick`, `/shop/[id]`) use client-side data fetching via React Query hooks instead of Astro SSR frontmatter. Each page has a wrapper component that wraps in `QueryProvider` and uses hooks from `src/lib/queries.ts`. The singleton `queryClient` enables cross-page cache sharing via ClientRouter. After mutations, call `queryClient.invalidateQueries()` with the relevant `queryKeys` entry to keep caches fresh
+- **React Query Data Fetching**: Pages (`/`, `/ingredients`, `/pick`, `/shop/[id]`) use client-side data fetching via React Query hooks instead of Astro SSR frontmatter. Each page has a wrapper component that wraps in `QueryProvider` and uses hooks from `src/lib/queries.ts`. The singleton `queryClient` enables cross-page cache sharing via ClientRouter. After mutations, call `queryClient.invalidateQueries()` with the relevant `queryKeys` entry to keep caches fresh
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase

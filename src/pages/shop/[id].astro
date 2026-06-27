@@ -9,7 +9,5 @@ if (!id) return Astro.redirect("/");
 ---
 
 <Layout title="Shopping List">
-  <main class="min-h-screen bg-background">
     <ShopPageWrapper client:load shopId={id} />
-  </main>
 </Layout>

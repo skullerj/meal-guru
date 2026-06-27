@@ -19,7 +19,7 @@ export default function PageLayout({
   children,
 }: PageLayoutProps) {
   return (
-    <div className="max-w-5xl w-full mx-auto px-6 py-8">
+    <main className="max-w-5xl w-full mx-auto px-6 py-8">
       <header className="mb-8">
         {(backUrl || actions) && (
           <div className="flex items-center justify-between mb-4 h-9">
@@ -45,6 +45,6 @@ export default function PageLayout({
         {subtitle && <div className="mt-1">{subtitle}</div>}
       </header>
       {children}
-    </div>
+    </main>
   );
 }
