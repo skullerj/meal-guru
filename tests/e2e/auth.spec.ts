@@ -4,7 +4,7 @@ import { TEST_USER_EMAIL, TEST_USER_PASSWORD } from "../fixtures/data";
 test.describe("Authentication", () => {
   test("redirects unauthenticated user to login", async ({ page }) => {
     await page.goto("/");
-    await page.waitForURL("**/login");
+    await page.waitForURL(/\/login/);
     await expect(page).toHaveURL(/\/login/);
   });
 
@@ -62,7 +62,7 @@ test.describe("Authentication", () => {
     await page.waitForURL("**/", { timeout: 10000 });
 
     await page.getByRole("button", { name: "Log out" }).click();
-    await page.waitForURL("**/login", { timeout: 10000 });
+    await page.waitForURL(/\/login/, { timeout: 10000 });
     await expect(page).toHaveURL(/\/login/);
   });
 
@@ -92,11 +92,10 @@ test.describe("Authentication", () => {
     await page.getByLabel("Email").fill(TEST_USER_EMAIL);
     await page.getByLabel("Password").fill(TEST_USER_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.waitForURL("**/", { timeout: 10000 });
+    await expect(page).toHaveURL("/", { timeout: 10000 });
 
     // Try to navigate to /login — should redirect to /
     await page.goto("/login");
-    await page.waitForURL("**/", { timeout: 10000 });
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/", { timeout: 10000 });
   });
 });

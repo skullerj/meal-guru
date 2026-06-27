@@ -5,13 +5,13 @@ test.describe
     let shopUrl: string;
     let newShopUrl: string;
 
-    test("Shop Now creates a shop and navigates to /shop/[id]", async ({
+    test("Start the week creates a shop and navigates to /shop/[id]", async ({
       page,
     }) => {
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
-      await page.getByRole("button", { name: "Shop Now" }).click();
+      await page.getByRole("button", { name: "Start the week" }).click();
 
       // Should navigate to /shop/<uuid>
       await page.waitForURL(/\/shop\/[0-9a-f-]+/);
@@ -36,13 +36,13 @@ test.describe
       ).toBeVisible();
     });
 
-    test("Shop Now again returns the same shop (idempotent within the week)", async ({
+    test("Start the week again returns the same shop (idempotent within the week)", async ({
       page,
     }) => {
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
-      await page.getByRole("button", { name: "Shop Now" }).click();
+      await page.getByRole("button", { name: "Go to shopping list" }).click();
       await page.waitForURL(/\/shop\/[0-9a-f-]+/);
 
       // Should be the same shop URL as before
