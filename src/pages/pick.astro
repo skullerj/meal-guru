@@ -1,22 +1,10 @@
 ---
 export const prerender = false;
 
-import PageLayout from "@/components/shared/PageLayout";
-import MealPlanner from "../components/meal-planner/MealPlanner";
+import MealPlannerPage from "../components/meal-planner/MealPlannerPage";
 import Layout from "../layouts/Layout.astro";
-import { getRecipes } from "../lib/database";
-import { createSupabaseServerClient } from "../lib/supabase";
-
-const supabase = createSupabaseServerClient({
-  headers: Astro.request.headers,
-  cookies: Astro.cookies,
-});
-
-const recipes = await getRecipes(supabase);
 ---
 
 <Layout title="Pick Recipes">
-    <PageLayout title="Plan your week" backUrl="/" backLabel="Back">
-       <MealPlanner client:load recipes={recipes} />
-    </PageLayout>
+    <MealPlannerPage client:load />
 </Layout>

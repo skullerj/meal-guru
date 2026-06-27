@@ -2,7 +2,9 @@ import { useState } from "react";
 import IconButton from "@/components/shared/IconButton";
 import type { Category, Ingredient, Unit } from "@/data/types";
 import { CATEGORIES, UNITS } from "@/data/types";
-import { updateIngredient, deleteIngredient } from "@/lib/database";
+import { deleteIngredient, updateIngredient } from "@/lib/database";
+import { queryKeys } from "@/lib/queries";
+import { queryClient } from "@/lib/query-client";
 import { supabase } from "@/lib/supabase-browser";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +79,7 @@ export default function IngredientList({
         prev.map((i) => (i.id === editing.id ? updated : i))
       );
       setEditing(null);
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to save ingredient");
     } finally {
@@ -90,6 +93,7 @@ export default function IngredientList({
     try {
       await deleteIngredient(supabase, id);
       setIngredients((prev) => prev.filter((i) => i.id !== id));
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to delete ingredient");
     } finally {

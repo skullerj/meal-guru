@@ -1,7 +1,12 @@
 import { useState } from "react";
 import Button from "@/components/shared/Button";
+import {
+  createShop,
+  deactivateShopsForWeek,
+  getWeekMonday,
+  recommendRecipeIds,
+} from "@/lib/database";
 import { supabase } from "@/lib/supabase-browser";
-import { getWeekMonday, deactivateShopsForWeek, recommendRecipeIds, createShop } from "@/lib/database";
 
 export default function StartNewWeekButton() {
   const [loading, setLoading] = useState(false);

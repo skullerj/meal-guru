@@ -16,20 +16,25 @@ test.describe
       await page.goto("/ingredients");
       await page.waitForLoadState("networkidle");
 
-      // Find the list item containing the ingredient name
+      // Find the list item containing the ingredient name (view mode — span visible)
       const item = page.getByRole("listitem").filter({
         has: page.locator("span", { hasText: TEST_INGREDIENTS[0].name }),
       });
       await item.getByRole("button", { name: "Edit" }).click();
 
+      // After clicking Edit the span becomes an input, so re-locate via the input value
+      const editingItem = page.getByRole("listitem").filter({
+        has: page.locator(`input[value="${TEST_INGREDIENTS[0].name}"]`),
+      });
+
       // Wait for edit mode — combobox appears
-      const categoryCombobox = item.getByRole("combobox").first();
+      const categoryCombobox = editingItem.getByRole("combobox").first();
       await expect(categoryCombobox).toBeVisible({ timeout: 10000 });
 
       // Change category to produce
       await categoryCombobox.selectOption("produce");
 
-      await item.getByRole("button", { name: "Save" }).click();
+      await editingItem.getByRole("button", { name: "Save" }).click();
 
       // After save the item exits edit mode and shows the Produce badge
       await expect(item.getByText("Produce")).toBeVisible();
