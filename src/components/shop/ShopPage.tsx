@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import ShoppingList from "@/components/meal-planner/ShoppingList";
 import type { IngredientGroup } from "@/components/meal-planner/utils/mealPlannerUtils";
 import StartNewWeekButton from "@/components/StartNewWeekButton";
@@ -71,7 +71,11 @@ export default function ShopPage({
       {status === "shopping" ? (
         <div>
           <div className="rounded-lg border border-border bg-card p-6">
-            <ShoppingList groups={groups} shopIngredients={shopIngredients} />
+            <ShoppingList
+              groups={groups}
+              shopIngredients={shopIngredients}
+              shopId={shopId}
+            />
           </div>
           <div className="mt-6">
             <Button

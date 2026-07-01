@@ -3,6 +3,7 @@ import {
   BookOpen,
   Check,
   ChefHat,
+  ChevronDown,
   ChevronRight,
   Edit3,
   Loader2,
@@ -18,6 +19,7 @@ export type IconName =
   | "book-open"
   | "check"
   | "chef-hat"
+  | "chevron-down"
   | "chevron-right"
   | "edit"
   | "loader"
@@ -41,6 +43,7 @@ const iconMap = {
   "book-open": BookOpen,
   check: Check,
   "chef-hat": ChefHat,
+  "chevron-down": ChevronDown,
   "chevron-right": ChevronRight,
   edit: Edit3,
   loader: Loader2,

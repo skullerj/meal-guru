@@ -82,7 +82,7 @@ test.describe
       const firstCheckbox = page.getByRole("checkbox").first();
       await expect(firstCheckbox).toBeVisible();
       const itemText = (
-        await firstCheckbox.locator("span.flex-1").textContent()
+        await firstCheckbox.locator("..").locator("span.flex-1").textContent()
       )?.trim();
       await firstCheckbox.click();
 
@@ -115,7 +115,7 @@ test.describe
       const checkedItem = page.getByRole("checkbox", { checked: true }).first();
       await expect(checkedItem).toBeVisible();
       const itemText = (
-        await checkedItem.locator("span.flex-1").textContent()
+        await checkedItem.locator("..").locator("span.flex-1").textContent()
       )?.trim();
       await checkedItem.click();
 

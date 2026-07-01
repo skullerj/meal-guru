@@ -141,7 +141,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   │   └── router.tsx               # TanStack Router route tree with auth guard, inline route components
 │   │   ├── meal-planner/
 │   │   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
-│   │   │   ├── ShoppingList.tsx         # Reusable shopping list with checkboxes (supports persisted checks via shopIngredients prop)
+│   │   │   ├── ShoppingList.tsx         # Reusable shopping list with checkboxes, collapsible "Completed" section with entrance animations, and optional React Query cache invalidation (supports persisted checks via shopIngredients/shopId props)
 │   │   │   ├── RecipeColumn.tsx         # Recipe selection column
 │   │   │   ├── ShoppingColumn.tsx       # Aggregated ingredients column
 │   │   │   ├── LeftToBuyColumn.tsx      # Items to buy column
