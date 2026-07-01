@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import Icon from "./Icon";
 
 interface PageLayoutProps {
@@ -24,13 +25,13 @@ export default function PageLayout({
         {(backUrl || actions) && (
           <div className="flex items-center justify-between mb-4 h-9">
             {backUrl ? (
-              <a
-                href={backUrl}
+              <Link
+                to={backUrl}
                 className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Icon name="arrow-left" size="sm" />
                 {backLabel}
-              </a>
+              </Link>
             ) : (
               <div />
             )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import Button from "@/components/shared/Button";
 import {
   createShop,
@@ -9,6 +10,7 @@ import {
 import { supabase } from "@/lib/supabase-browser";
 
 export default function StartNewWeekButton() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -18,7 +20,7 @@ export default function StartNewWeekButton() {
       await deactivateShopsForWeek(supabase, weekMonday);
       const ids = await recommendRecipeIds(supabase);
       const shop = await createShop(supabase, ids);
-      window.location.href = `/shop/${shop.id}`;
+      navigate({ to: "/shop/$id", params: { id: shop.id } });
     } catch {
       setLoading(false);
     }

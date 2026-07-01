@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getActiveShopForWeek,
   getIngredients,
+  getRecipe,
   getRecipes,
   getShopIngredients,
   getShopWithRecipes,
@@ -14,6 +15,7 @@ export const queryKeys = {
   activeShop: ["activeShop"] as const,
   shop: (id: string) => ["shop", id] as const,
   shopIngredients: (shopId: string) => ["shopIngredients", shopId] as const,
+  recipe: (id: string) => ["recipe", id] as const,
 };
 
 export function useRecipes() {
@@ -48,5 +50,12 @@ export function useShopIngredients(shopId: string) {
   return useQuery({
     queryKey: queryKeys.shopIngredients(shopId),
     queryFn: () => getShopIngredients(supabase, shopId),
+  });
+}
+
+export function useRecipe(id: string) {
+  return useQuery({
+    queryKey: queryKeys.recipe(id),
+    queryFn: () => getRecipe(supabase, id),
   });
 }

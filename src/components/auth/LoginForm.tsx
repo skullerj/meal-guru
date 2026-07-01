@@ -1,10 +1,12 @@
 import { type FormEvent, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import Button from "@/components/shared/Button";
 import { createSupabaseBrowserClient } from "../../lib/supabase-browser";
 
 const supabase = createSupabaseBrowserClient();
 
 function LoginForm() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +37,11 @@ function LoginForm() {
       } else {
         const params = new URLSearchParams(window.location.search);
         const returnTo = params.get("returnTo") || "/";
-        window.location.href = returnTo;
+        if (returnTo.startsWith("/oauth/") || returnTo.startsWith("/api/")) {
+          window.location.href = returnTo;
+        } else {
+          navigate({ to: returnTo });
+        }
       }
     }
     setLoading(false);

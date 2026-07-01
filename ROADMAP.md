@@ -163,7 +163,7 @@ Goal: Make the app work fully offline when installed as a PWA. Requires client-s
 
 ---
 
-### 🔲 21. SPA migration — client-side routing
+### ✅ 21. SPA migration — client-side routing
 Convert from Astro file-based routing to TanStack Router. A single Astro catch-all page serves the React app shell; all navigation happens client-side with no server round-trips.
 
 **Architecture after migration:**
@@ -176,29 +176,28 @@ Server routes (Astro pages):
 
 SPA routes (catch-all Astro page → React app with TanStack Router):
 - `/` — home (context-aware)
-- `/login` — login/signup form (no auth guard)
+- `/login` — login/signup form (redirects to `/` if already authenticated)
 - `/pick` — manual recipe picker
 - `/recipes` — recipe CRUD list
 - `/ingredients` — ingredient management
 - `/shop/:id` — persistent weekly shop
 - `/recipe/:id` — step-by-step cooking view
-- `/add-recipe` — recipe import tool
 
 **OAuth + SPA login interaction:** When an unauthenticated user hits `/oauth/consent`, the server middleware redirects to `/login?returnTo=/oauth/consent?...`. The SPA loads, shows the login form. After login, `returnTo` navigation uses `window.location.href` (full page nav), landing on the server-rendered consent page with a valid session.
 
-- [ ] Install TanStack Router and configure with code-based routing
-- [ ] Create `App.tsx` root component with TanStack Router, single QueryProvider, and route tree
-- [ ] Create React `AppLayout` component (nav bar, sign-out via `supabase.auth.signOut()`) replacing `Layout.astro`
-- [ ] Create `AuthGuard` component — checks Supabase browser session, redirects to `/login` route if unauthenticated
-- [ ] Migrate `CookingView` to client-side data fetching (currently server-fetched via `getRecipe` in frontmatter)
-- [ ] Migrate `RecipeList` to use React Query hooks (currently receives server-fetched props)
-- [ ] Convert shop redirect shim (`/shop` → `/shop/:id`) to client-side route handler
-- [ ] Move `LoginForm` into SPA as an unprotected route with `returnTo` query param support
-- [ ] Create catch-all Astro page (`[...path].astro`) as the single SPA entry point
-- [ ] Simplify middleware: only protect `/oauth/*`, serve PRM metadata, pass through everything else
-- [ ] Replace all `window.location.href` calls with TanStack Router navigation (except `returnTo` redirects to server routes)
-- [ ] Remove old Astro page files (keep `/api/*` and `/oauth/consent`)
-- [ ] E2E tests
+- [x] Install TanStack Router and configure with code-based routing
+- [x] Create `App.tsx` root component with TanStack Router, single QueryProvider, and route tree
+- [x] Create React `AppLayout` component (nav bar, sign-out via `supabase.auth.signOut()`) replacing `Layout.astro`
+- [x] Create `AuthGuard` component — checks Supabase browser session, redirects to `/login` route if unauthenticated
+- [x] Migrate `CookingView` to client-side data fetching (currently server-fetched via `getRecipe` in frontmatter)
+- [x] Migrate `RecipeList` to use React Query hooks (currently receives server-fetched props)
+- [x] Convert shop redirect shim (`/shop` → `/shop/:id`) to client-side route handler
+- [x] Move `LoginForm` into SPA as an unprotected route with `returnTo` query param support
+- [x] Create catch-all Astro page (`[...path].astro`) as the single SPA entry point
+- [x] Simplify middleware: only protect `/oauth/*`, serve PRM metadata, pass through everything else
+- [x] Replace all `window.location.href` calls with TanStack Router navigation (except `returnTo` redirects to server routes)
+- [x] Remove old Astro page files (keep `/api/*` and `/oauth/consent`)
+- [x] E2E tests
 
 **Verification:** Navigate between all pages — confirm no full-page reloads (check Network tab: no document requests after initial load). Log out and log back in — confirm redirect works. Test OAuth flow: hit `/oauth/consent` unauthenticated → login → consent page loads. Run `npx astro check` for type safety.
 
@@ -216,6 +215,22 @@ Add service worker and offline-first data strategy so the installed app works wi
 - [ ] E2E tests for offline scenarios
 
 **Verification:** Install the app (Add to Home Screen / Install). Turn off network (airplane mode). Open the app — confirm it loads and shows cached data. Navigate between pages — confirm client-side routing works. Toggle a shopping list item — confirm it queues. Reconnect — confirm queued mutations sync.
+
+---
+
+### 🔲 23. Cooking step timers
+Show inline timer buttons on cooking steps that mention a duration (e.g., "simmer for 15 minutes", "bake 25 min"). Tapping the button starts a countdown right in the cooking view — no need to leave the app for a separate timer.
+
+Timers persist to `localStorage` so they survive step-to-step navigation and page refreshes. Multiple timers can run simultaneously (e.g., oven timer on step 3 while prepping step 4), with a floating summary of all active timers visible from any step.
+
+- [ ] Parse step instruction text for time mentions (regex for patterns like "X minutes", "X min", "X hours", "X seconds") and extract duration in seconds
+- [ ] Build `Timer` component — countdown display with start/pause/reset controls, visual alert (flashing/color change) and audio alert (Web Audio API beep) when timer reaches zero
+- [ ] Integrate timer button into `CookingView` steps — show a timer button on steps with a detected duration; tapping it creates a timer pre-filled with that duration
+- [ ] Persist active timers to `localStorage` — timers continue running across step navigation and page reloads; clear timers when the user finishes the recipe or navigates away from cooking
+- [ ] Support multiple simultaneous timers — show a floating summary of all running timers (step number + remaining time) visible from any step, with tap-to-dismiss when complete
+- [ ] E2E tests
+
+**Verification:** Open a recipe cooking view with steps that mention times (e.g., "cook for 10 minutes"). Confirm a timer button appears on those steps. Start a timer, navigate to another step — confirm the timer keeps counting down and appears in the floating summary. Refresh the page — confirm the timer persists and continues. Let a timer reach zero — confirm visual and audio alerts fire.
 
 ---
 

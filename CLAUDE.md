@@ -135,13 +135,11 @@ When adding a new test file that needs logged-out browser state, add it to both 
 ├── src/
 │   ├── assets/
 │   ├── components/
-│   │   ├── QueryProvider.tsx             # React Query provider wrapper (uses singleton queryClient)
 │   │   ├── app/
 │   │   │   ├── App.tsx                  # SPA root: QueryClientProvider + RouterProvider
 │   │   │   ├── AppLayout.tsx            # Authenticated layout: nav bar (React <Link>) + <Outlet />
 │   │   │   └── router.tsx               # TanStack Router route tree with auth guard, inline route components
 │   │   ├── meal-planner/
-│   │   │   ├── MealPlannerPage.tsx       # QueryProvider wrapper for MealPlanner (client-side data fetching)
 │   │   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
 │   │   │   ├── ShoppingList.tsx         # Reusable shopping list with checkboxes (supports persisted checks via shopIngredients prop)
 │   │   │   ├── RecipeColumn.tsx         # Recipe selection column
@@ -163,18 +161,15 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── recipes/
 │   │   │   └── RecipeList.tsx           # Recipe CRUD list (uses direct Supabase browser client, not Astro actions)
 │   │   ├── ingredients/
-│   │   │   ├── IngredientListPage.tsx    # QueryProvider wrapper for IngredientList (client-side data fetching)
 │   │   │   └── IngredientList.tsx        # Ingredient CRUD table
 │   │   ├── home/
-│   │   │   ├── HomePageWrapper.tsx       # QueryProvider wrapper for HomePage (client-side data fetching)
 │   │   │   └── HomePage.tsx             # Context-aware home page: no recipes, no shop, shopping, or cooking state
 │   │   ├── shop/
-│   │   │   ├── ShopPageWrapper.tsx       # QueryProvider wrapper for ShopPage (client-side data fetching)
 │   │   │   └── ShopPage.tsx             # Shop page: shopping mode (checklist) ↔ cooking mode (recipe cards)
 │   │   ├── recipe/
 │   │   │   └── CookingView.tsx          # Mobile-first step-by-step cooking interface
 │   │   ├── auth/
-│   │   │   └── LoginForm.tsx            # Email/password login/signup form (React island); supports returnTo query param redirect
+│   │   │   └── LoginForm.tsx            # Email/password login/signup form; supports returnTo query param redirect
 │   │   ├── oauth/
 │   │   │   └── ConsentForm.tsx          # OAuth consent screen (approve/deny authorization)
 │   │   ├── shared/
@@ -193,25 +188,18 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── query-client.ts          # Singleton React Query QueryClient instance
 │   │   ├── queries.ts               # React Query hooks (useRecipes, useRecipe, useIngredients, useActiveShop, useShop, useShopIngredients) and queryKeys factory
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
-│   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, serves /.well-known/oauth-protected-resource PRM, sets Astro.locals.user
+│   ├── middleware.ts                 # Middleware: protects /oauth/* routes, serves /.well-known/oauth-protected-resource PRM
 │   ├── layouts/
-│   │   └── Layout.astro
+│   │   └── Layout.astro             # Used only by oauth/consent.astro
 │   ├── pages/
+│   │   ├── [...path].astro          # SPA catch-all: serves App component with client:only="react"
 │   │   ├── api/
 │   │   │   ├── auth/
-│   │   │   │   └── signout.ts       # POST endpoint: signs out user and redirects to /login
-│   │   │   └── parse-recipe.ts
-│   │   ├── add-recipe.astro
-│   │   ├── index.astro              # Context-aware home page: renders HomePageWrapper React island
-│   │   ├── login.astro              # Standalone login/signup page (no Layout wrapper)
-│   │   ├── oauth/
-│   │   │   └── consent.astro        # OAuth consent page (SSR, standalone layout)
-│   │   ├── pick.astro               # Manual recipe picker (MealPlanner)
-│   │   ├── shop/
-│   │   │   ├── index.astro          # Redirect shim: /shop?r=... → /shop/{id}
-│   │   │   └── [id].astro           # Persistent weekly shop detail page
-│   │   └── recipe/
-│   │       └── [id].astro           # Step-by-step cooking view page
+│   │   │   │   └── signout.ts       # POST endpoint: signs out user (legacy, used by Layout.astro)
+│   │   │   ├── mcp.ts               # MCP endpoint with Bearer token auth
+│   │   │   └── parse-recipe.ts      # AI recipe parsing API
+│   │   └── oauth/
+│   │       └── consent.astro        # OAuth consent page (SSR, middleware-protected)
 │   └── styles/
 │       └── global.css
 ├── .env (create this file)
@@ -228,18 +216,15 @@ When adding a new test file that needs logged-out browser state, add it to both 
 - **Context-Aware Home Page** (`/`): React island that shows different content based on user state — onboarding (no recipes), start the week (no active shop), shopping list link (active shop in shopping mode), or cooking view link with start-new-week option (active shop in cooking mode). Uses `useRecipes` and `useActiveShop` React Query hooks
 - **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
 - **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record with two modes — "shopping" (ingredient checklist) and "cooking" (recipe cards linking to `/recipe/[id]`). "Done shopping" transitions to cooking mode
-- **Shop Redirect Shim** (`/shop`): Backward-compatible redirect — creates a shop from `?r=` query params and redirects to `/shop/{id}`
 - **Step-by-Step Cooking View** (`/recipe/[id]`): Mobile-first cooking interface showing one step at a time with per-step ingredient list, overview/intro screen, and Previous/Next/Done navigation
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
 - **Supabase Integration**: Centralized database with ingredient library and standardized units
-- **Dynamic Routing**: Astro's `getStaticPaths` for recipe-specific pages
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
 - **Ingredient Management**: edit name/unit/category and delete (with referential integrity guard) via direct Supabase calls from React
-- **Authentication**: Supabase Auth via `@supabase/ssr` — middleware refreshes sessions, protects all routes except `/login` and `/api/*`, sets `Astro.locals.user`. Unauthenticated requests redirect to `/login?returnTo=<path>` to preserve the original URL. Login/signup page at `/login` (standalone, no Layout wrapper). Sign-out via `POST /api/auth/signout` with logout button in nav bar
+- **Authentication**: Supabase Auth via `@supabase/ssr`. Auth guard in TanStack Router's `beforeLoad` checks `supabase.auth.getUser()` and redirects unauthenticated users to `/login?returnTo=<path>`. Sign-out via `supabase.auth.signOut()` in the AppLayout nav bar. Server middleware only protects `/oauth/*` routes
 - **MCP OAuth**: The `/api/mcp` endpoint requires a `Bearer` token (Supabase access token) in the `Authorization` header. Invalid/missing tokens return 401 with `WWW-Authenticate` header pointing to the PRM endpoint. The middleware serves `/.well-known/oauth-protected-resource` with Protected Resource Metadata JSON (resource URL, Supabase auth server, supported scopes)
 - **OAuth Consent** (`/oauth/consent`): SSR page for third-party OAuth authorization. Receives `authorization_id` query param, fetches authorization details from Supabase, and renders ConsentForm for user to approve/deny. LoginForm supports `returnTo` query param for post-login redirect back to consent page
-- **React Query Data Fetching**: Pages (`/`, `/ingredients`, `/pick`, `/shop/[id]`) use client-side data fetching via React Query hooks instead of Astro SSR frontmatter. Each page has a wrapper component that wraps in `QueryProvider` and uses hooks from `src/lib/queries.ts`. The singleton `queryClient` enables cross-page cache sharing via ClientRouter. After mutations, call `queryClient.invalidateQueries()` with the relevant `queryKeys` entry to keep caches fresh
-- **SPA Infrastructure** (`src/components/app/`): TanStack Router route tree with code-based routes, auth guard via `beforeLoad`, and `AppLayout` nav bar. `App.tsx` provides `QueryClientProvider` + `RouterProvider`. Route components inline the data-fetching logic from the existing wrapper components. Existing Astro pages remain in place — the SPA entry point is not yet wired up
+- **SPA with Client-Side Routing**: Single-page app using TanStack Router (`src/components/app/`). A single Astro catch-all page (`[...path].astro`) serves the React app with `client:only="react"`. `App.tsx` provides `QueryClientProvider` + `RouterProvider`. Route components inline data-fetching via React Query hooks. Navigation uses TanStack Router `<Link>` and `useNavigate()` — no full-page reloads between SPA routes. Server routes (`/api/*`, `/oauth/*`) are separate Astro pages
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
@@ -510,11 +495,12 @@ Centralized reusable components in `src/components/shared/`:
 - This is a meal planning and batch cooking application
 - Uses Astro framework with React integration for interactive components
 - **Database**: Supabase (PostgreSQL) with full schema for recipes, ingredients, and relationships
-- **Auth**: `@supabase/ssr` with two client modules — `src/lib/supabase.ts` (server: `createSupabaseServerClient`, `createServiceRoleClient`) and `src/lib/supabase-browser.ts` (browser: singleton `supabase` export). Middleware at `src/middleware.ts` protects all routes except `/login` and `/api/*`, redirects unauthenticated users with `returnTo` query param, and serves `/.well-known/oauth-protected-resource` PRM metadata. The MCP endpoint (`/api/mcp`) validates `Bearer` tokens against Supabase Auth and creates a user-scoped client (RLS-aware) instead of using the service role
+- **Auth**: `@supabase/ssr` with two client modules — `src/lib/supabase.ts` (server: `createSupabaseServerClient`, `createServiceRoleClient`) and `src/lib/supabase-browser.ts` (browser: singleton `supabase` export). Auth guard in TanStack Router's `beforeLoad` checks `supabase.auth.getUser()`. Middleware at `src/middleware.ts` only protects `/oauth/*` routes and serves `/.well-known/oauth-protected-resource` PRM metadata. The MCP endpoint (`/api/mcp`) validates `Bearer` tokens against Supabase Auth and creates a user-scoped client (RLS-aware) instead of using the service role
 - **Mutations**: All CRUD operations go directly from React components to Supabase via the browser client — no Astro actions layer. Only `parse-recipe` and MCP stay server-side
 - **Data Management**: Recipe data fetched from Supabase via React Query hooks (client-side), TypeScript interfaces in `/src/data/recipes.ts`
-- **React Query**: Singleton `QueryClient` in `src/lib/query-client.ts`, hooks in `src/lib/queries.ts`, `QueryProvider` wrapper in `src/components/QueryProvider.tsx`. Pages use wrapper components (e.g. `MealPlannerPage`, `IngredientListPage`, `ShopPageWrapper`) that provide QueryProvider context and loading states
-- **SPA Router**: TanStack Router in `src/components/app/router.tsx` defines the full route tree with code-based routes. `App.tsx` is the SPA entry point (QueryClientProvider + RouterProvider). `AppLayout.tsx` provides the nav bar for authenticated routes. Auth guard uses `beforeLoad` to check `supabase.auth.getUser()`. Existing Astro pages remain in parallel during migration
+- **React Query**: Singleton `QueryClient` in `src/lib/query-client.ts`, hooks in `src/lib/queries.ts`. `QueryClientProvider` wraps the entire app at the root (`App.tsx`). After mutations, call `queryClient.invalidateQueries()` with the relevant `queryKeys` entry to keep caches fresh
+- **SPA Router**: TanStack Router in `src/components/app/router.tsx` defines the full route tree with code-based routes. `App.tsx` is the SPA entry point (QueryClientProvider + RouterProvider). `AppLayout.tsx` provides the nav bar for authenticated routes. Auth guard uses `beforeLoad` to check `supabase.auth.getUser()`. A single catch-all Astro page (`[...path].astro`) serves the React app with `client:only="react"`. Route components inline data-fetching via React Query hooks
+- **Navigation**: All internal navigation in React components uses TanStack Router (`Link` from `@tanstack/react-router` for links, `useNavigate` for programmatic navigation). Never use `<a href>` for internal routes or `window.location.href` for in-app navigation. The only exceptions are OAuth/API redirects (e.g. `ConsentForm.tsx`, and the server-route fallback in `LoginForm.tsx`) which require full page loads
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling
 - **Standardized Units**: Ingredient units restricted to: 'g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit'

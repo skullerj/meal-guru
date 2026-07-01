@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { Recipe, RecipeIngredient } from "../../data/types";
 import Button from "../shared/Button";
 import PageLayout from "../shared/PageLayout";
@@ -15,6 +16,7 @@ function formatIngredient(ri: RecipeIngredient): string {
 }
 
 export default function CookingView({ recipe, backUrl }: Props) {
+  const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
   const steps = recipe.steps ?? [];
   const hasSteps = steps.length > 0;
@@ -31,19 +33,19 @@ export default function CookingView({ recipe, backUrl }: Props) {
     : [];
 
   function handleBack() {
-    window.history.back();
+    navigate({ to: backUrl });
   }
 
   if (!hasSteps) {
     return (
       <PageLayout title={recipe.name} backUrl={backUrl}>
         <p className="text-muted-foreground">No cooking instructions yet.</p>
-        <a
-          href={backUrl}
+        <Link
+          to={backUrl}
           className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors mt-4"
         >
           Back to list
-        </a>
+        </Link>
       </PageLayout>
     );
   }

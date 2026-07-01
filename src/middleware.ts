@@ -1,14 +1,11 @@
 import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServerClient } from "./lib/supabase";
 
-const PUBLIC_PATHS = ["/login"];
-
 export const onRequest = defineMiddleware(async (context, next) => {
   const requestUrl = new URL(context.request.url);
   const rawPath = requestUrl.pathname;
 
-  // Handle OAuth Protected Resource Metadata before anything else.
-  // Astro may not route dot-prefixed directories, so we intercept here.
+  // Serve OAuth Protected Resource Metadata
   if (rawPath.startsWith("/.well-known/oauth-protected-resource")) {
     const metadata = {
       resource: `${requestUrl.origin}/api/mcp`,
@@ -24,31 +21,34 @@ export const onRequest = defineMiddleware(async (context, next) => {
     });
   }
 
-  const supabase = createSupabaseServerClient({
-    headers: context.request.headers,
-    cookies: context.cookies,
-  });
-
-  // Refresh session — this is required by @supabase/ssr
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  context.locals.user = user;
-
-  // Normalize trailing slashes so "/login/" matches "/login"
-  const path = rawPath === "/" ? rawPath : rawPath.replace(/\/+$/, "");
-  const isPublicPath =
-    PUBLIC_PATHS.some((p) => path === p) || path.startsWith("/api/");
-
-  if (!user && !isPublicPath) {
-    const returnTo = requestUrl.pathname + requestUrl.search;
-    return context.redirect(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+  // API routes handle their own auth
+  if (rawPath.startsWith("/api/")) {
+    return next();
   }
 
-  if (user && path === "/login") {
-    return context.redirect("/");
+  // OAuth routes need server-side auth protection
+  if (rawPath.startsWith("/oauth/")) {
+    const supabase = createSupabaseServerClient({
+      headers: context.request.headers,
+      cookies: context.cookies,
+    });
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    context.locals.user = user;
+
+    if (!user) {
+      const returnTo = requestUrl.pathname + requestUrl.search;
+      return context.redirect(
+        `/login?returnTo=${encodeURIComponent(returnTo)}`
+      );
+    }
+
+    return next();
   }
 
+  // Everything else: serve the SPA shell (auth handled client-side by TanStack Router)
   return next();
 });

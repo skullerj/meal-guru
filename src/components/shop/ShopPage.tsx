@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import ShoppingList from "@/components/meal-planner/ShoppingList";
 import type { IngredientGroup } from "@/components/meal-planner/utils/mealPlannerUtils";
 import StartNewWeekButton from "@/components/StartNewWeekButton";
@@ -47,12 +48,13 @@ export default function ShopPage({
       {recipes.map((r, i) => (
         <span key={r.id}>
           {i > 0 && <span className="text-muted-foreground"> · </span>}
-          <a
-            href={`/recipe/${r.id}`}
+          <Link
+            to="/recipe/$id"
+            params={{ id: r.id }}
             className="text-muted-foreground hover:text-foreground hover:underline transition-colors"
           >
             {r.name}
-          </a>
+          </Link>
         </span>
       ))}
     </div>
@@ -86,9 +88,10 @@ export default function ShopPage({
       ) : (
         <div className="space-y-4">
           {recipes.map((recipe) => (
-            <a
+            <Link
               key={recipe.id}
-              href={`/recipe/${recipe.id}`}
+              to="/recipe/$id"
+              params={{ id: recipe.id }}
               className="block rounded-lg border border-border bg-card p-5 hover:border-primary transition-colors"
             >
               <h2 className="text-lg font-semibold text-foreground font-heading">
@@ -105,7 +108,7 @@ export default function ShopPage({
                   </>
                 )}
               </p>
-            </a>
+            </Link>
           ))}
         </div>
       )}

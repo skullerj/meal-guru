@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import Button from "@/components/shared/Button";
 import Icon from "@/components/shared/Icon";
 import type { Recipe } from "@/data/types";
@@ -49,16 +50,17 @@ function NoRecipesState() {
         You need to add some recipes before you can plan your week. Head over to
         your recipe book to get started.
       </p>
-      <a href="/recipes">
+      <Link to="/recipes">
         <Button variant="primary" size="lg" leftIcon="book-open">
           Go to recipes
         </Button>
-      </a>
+      </Link>
     </div>
   );
 }
 
 function NoActiveShopState() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -71,7 +73,7 @@ function NoActiveShopState() {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.activeShop,
       });
-      window.location.href = `/shop/${shop.id}`;
+      navigate({ to: "/shop/$id", params: { id: shop.id } });
     } catch {
       setError(true);
       setLoading(false);
@@ -106,13 +108,13 @@ function NoActiveShopState() {
             Something went wrong. Try again.
           </p>
         )}
-        <a
-          href="/pick"
+        <Link
+          to="/pick"
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Pick recipes manually
           <Icon name="chevron-right" size="xs" className="inline ml-0.5" />
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -141,11 +143,11 @@ function ShoppingState({
       </h1>
       <p className="text-lg text-muted-foreground mb-6">Shopping time!</p>
       <RecipeNameList recipeNames={recipeNames} />
-      <a href={`/shop/${activeShop.id}`}>
+      <Link to="/shop/$id" params={{ id: activeShop.id }}>
         <Button variant="primary" size="lg" leftIcon="shopping-cart">
           Go to shopping list
         </Button>
-      </a>
+      </Link>
     </div>
   );
 }
@@ -154,6 +156,7 @@ function CookingState({
   activeShop,
   recipeNames,
 }: { activeShop: ShopSummary; recipeNames: Recipe[] }) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -168,7 +171,7 @@ function CookingState({
       await queryClient.invalidateQueries({
         queryKey: queryKeys.activeShop,
       });
-      window.location.href = `/shop/${shop.id}`;
+      navigate({ to: "/shop/$id", params: { id: shop.id } });
     } catch {
       setError(true);
       setLoading(false);
@@ -183,11 +186,11 @@ function CookingState({
       <p className="text-lg text-muted-foreground mb-6">Time to cook!</p>
       <RecipeNameList recipeNames={recipeNames} />
       <div className="flex flex-col items-center gap-4">
-        <a href={`/shop/${activeShop.id}`}>
+        <Link to="/shop/$id" params={{ id: activeShop.id }}>
           <Button variant="primary" size="lg" leftIcon="chef-hat">
             View your recipes
           </Button>
-        </a>
+        </Link>
         <Button
           variant="secondary"
           size="sm"
