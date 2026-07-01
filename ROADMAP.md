@@ -157,6 +157,68 @@ Protect the MCP endpoint with OAuth 2.1 using Supabase's built-in OAuth authoriz
 
 ---
 
+## PWA / Offline Initiative
+
+Goal: Make the app work fully offline when installed as a PWA. Requires client-side routing (no server round-trips for page navigation) and a service worker for caching and offline data persistence.
+
+---
+
+### 🔲 21. SPA migration — client-side routing
+Convert from Astro file-based routing to TanStack Router. A single Astro catch-all page serves the React app shell; all navigation happens client-side with no server round-trips.
+
+**Architecture after migration:**
+
+Server routes (Astro pages):
+- `/api/parse-recipe` — API (needs Anthropic key)
+- `/api/mcp` — MCP endpoint (Bearer token auth)
+- `/oauth/consent` — server-rendered, middleware-protected
+- `/.well-known/oauth-protected-resource` — served by middleware
+
+SPA routes (catch-all Astro page → React app with TanStack Router):
+- `/` — home (context-aware)
+- `/login` — login/signup form (no auth guard)
+- `/pick` — manual recipe picker
+- `/recipes` — recipe CRUD list
+- `/ingredients` — ingredient management
+- `/shop/:id` — persistent weekly shop
+- `/recipe/:id` — step-by-step cooking view
+- `/add-recipe` — recipe import tool
+
+**OAuth + SPA login interaction:** When an unauthenticated user hits `/oauth/consent`, the server middleware redirects to `/login?returnTo=/oauth/consent?...`. The SPA loads, shows the login form. After login, `returnTo` navigation uses `window.location.href` (full page nav), landing on the server-rendered consent page with a valid session.
+
+- [ ] Install TanStack Router and configure with code-based routing
+- [ ] Create `App.tsx` root component with TanStack Router, single QueryProvider, and route tree
+- [ ] Create React `AppLayout` component (nav bar, sign-out via `supabase.auth.signOut()`) replacing `Layout.astro`
+- [ ] Create `AuthGuard` component — checks Supabase browser session, redirects to `/login` route if unauthenticated
+- [ ] Migrate `CookingView` to client-side data fetching (currently server-fetched via `getRecipe` in frontmatter)
+- [ ] Migrate `RecipeList` to use React Query hooks (currently receives server-fetched props)
+- [ ] Convert shop redirect shim (`/shop` → `/shop/:id`) to client-side route handler
+- [ ] Move `LoginForm` into SPA as an unprotected route with `returnTo` query param support
+- [ ] Create catch-all Astro page (`[...path].astro`) as the single SPA entry point
+- [ ] Simplify middleware: only protect `/oauth/*`, serve PRM metadata, pass through everything else
+- [ ] Replace all `window.location.href` calls with TanStack Router navigation (except `returnTo` redirects to server routes)
+- [ ] Remove old Astro page files (keep `/api/*` and `/oauth/consent`)
+- [ ] E2E tests
+
+**Verification:** Navigate between all pages — confirm no full-page reloads (check Network tab: no document requests after initial load). Log out and log back in — confirm redirect works. Test OAuth flow: hit `/oauth/consent` unauthenticated → login → consent page loads. Run `npx astro check` for type safety.
+
+---
+
+### 🔲 22. PWA offline support
+Add service worker and offline-first data strategy so the installed app works without an internet connection.
+
+- [ ] Add `vite-plugin-pwa` (Workbox) and configure service worker generation
+- [ ] Cache app shell (HTML, JS, CSS, fonts) with precaching for offline access
+- [ ] Persist React Query cache to IndexedDB so previously fetched data is available offline
+- [ ] Add offline mutation queue — queue Supabase writes when offline, sync when back online
+- [ ] Show offline indicator in the UI when the app detects no connectivity
+- [ ] Update `site.webmanifest` for full installability (icons, display: standalone, start_url, etc.)
+- [ ] E2E tests for offline scenarios
+
+**Verification:** Install the app (Add to Home Screen / Install). Turn off network (airplane mode). Open the app — confirm it loads and shows cached data. Navigate between pages — confirm client-side routing works. Toggle a shopping list item — confirm it queues. Reconnect — confirm queued mutations sync.
+
+---
+
 ## Supabase Data Model
 
 **Active tables:**

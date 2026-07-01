@@ -136,6 +136,10 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   ├── assets/
 │   ├── components/
 │   │   ├── QueryProvider.tsx             # React Query provider wrapper (uses singleton queryClient)
+│   │   ├── app/
+│   │   │   ├── App.tsx                  # SPA root: QueryClientProvider + RouterProvider
+│   │   │   ├── AppLayout.tsx            # Authenticated layout: nav bar (React <Link>) + <Outlet />
+│   │   │   └── router.tsx               # TanStack Router route tree with auth guard, inline route components
 │   │   ├── meal-planner/
 │   │   │   ├── MealPlannerPage.tsx       # QueryProvider wrapper for MealPlanner (client-side data fetching)
 │   │   │   ├── MealPlanner.tsx          # Main React component with 3-column layout
@@ -187,7 +191,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── supabase-browser.ts      # Browser-safe Supabase client for React components (singleton)
 │   │   ├── database.ts              # Database access functions (all accept SupabaseClient as first param)
 │   │   ├── query-client.ts          # Singleton React Query QueryClient instance
-│   │   ├── queries.ts               # React Query hooks (useRecipes, useIngredients, useActiveShop, useShop, useShopIngredients) and queryKeys factory
+│   │   ├── queries.ts               # React Query hooks (useRecipes, useRecipe, useIngredients, useActiveShop, useShop, useShopIngredients) and queryKeys factory
 │   │   └── utils.ts                 # Utility functions (cn for className merging)
 │   ├── middleware.ts                 # Auth middleware: refreshes session, protects routes, serves /.well-known/oauth-protected-resource PRM, sets Astro.locals.user
 │   ├── layouts/
@@ -235,6 +239,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 - **MCP OAuth**: The `/api/mcp` endpoint requires a `Bearer` token (Supabase access token) in the `Authorization` header. Invalid/missing tokens return 401 with `WWW-Authenticate` header pointing to the PRM endpoint. The middleware serves `/.well-known/oauth-protected-resource` with Protected Resource Metadata JSON (resource URL, Supabase auth server, supported scopes)
 - **OAuth Consent** (`/oauth/consent`): SSR page for third-party OAuth authorization. Receives `authorization_id` query param, fetches authorization details from Supabase, and renders ConsentForm for user to approve/deny. LoginForm supports `returnTo` query param for post-login redirect back to consent page
 - **React Query Data Fetching**: Pages (`/`, `/ingredients`, `/pick`, `/shop/[id]`) use client-side data fetching via React Query hooks instead of Astro SSR frontmatter. Each page has a wrapper component that wraps in `QueryProvider` and uses hooks from `src/lib/queries.ts`. The singleton `queryClient` enables cross-page cache sharing via ClientRouter. After mutations, call `queryClient.invalidateQueries()` with the relevant `queryKeys` entry to keep caches fresh
+- **SPA Infrastructure** (`src/components/app/`): TanStack Router route tree with code-based routes, auth guard via `beforeLoad`, and `AppLayout` nav bar. `App.tsx` provides `QueryClientProvider` + `RouterProvider`. Route components inline the data-fetching logic from the existing wrapper components. Existing Astro pages remain in place — the SPA entry point is not yet wired up
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
@@ -481,6 +486,7 @@ The `cn()` function combines `clsx` and `tailwind-merge` for conditional classNa
 - `@radix-ui/react-dialog`: Dialog primitives
 - `@supabase/ssr`: Server-side auth (browser client, server client, cookie handling)
 - `@tanstack/react-query`: Client-side data fetching, caching, and synchronization
+- `@tanstack/react-router`: Client-side SPA routing with code-based route tree and auth guards
 - `class-variance-authority`: Component variant styling
 - `clsx`: Conditional className construction
 - `tailwind-merge`: Smart Tailwind class merging
@@ -508,6 +514,7 @@ Centralized reusable components in `src/components/shared/`:
 - **Mutations**: All CRUD operations go directly from React components to Supabase via the browser client — no Astro actions layer. Only `parse-recipe` and MCP stay server-side
 - **Data Management**: Recipe data fetched from Supabase via React Query hooks (client-side), TypeScript interfaces in `/src/data/recipes.ts`
 - **React Query**: Singleton `QueryClient` in `src/lib/query-client.ts`, hooks in `src/lib/queries.ts`, `QueryProvider` wrapper in `src/components/QueryProvider.tsx`. Pages use wrapper components (e.g. `MealPlannerPage`, `IngredientListPage`, `ShopPageWrapper`) that provide QueryProvider context and loading states
+- **SPA Router**: TanStack Router in `src/components/app/router.tsx` defines the full route tree with code-based routes. `App.tsx` is the SPA entry point (QueryClientProvider + RouterProvider). `AppLayout.tsx` provides the nav bar for authenticated routes. Auth guard uses `beforeLoad` to check `supabase.auth.getUser()`. Existing Astro pages remain in parallel during migration
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling
 - **Standardized Units**: Ingredient units restricted to: 'g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'unit'
