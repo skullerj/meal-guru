@@ -120,6 +120,31 @@ interface ChildProps {
 }
 ```
 
+### Data Fetching with React Suspense
+
+Use `useSuspenseQuery` so each component fetches its own data and controls its own loading state. This is the preferred pattern over "Content wrappers" that fetch everything in one place.
+
+**Structure:**
+```
+Route component (router.tsx)
+  └─ ErrorBoundary + Suspense fallback={<PageSkeleton />}
+       └─ PageComponent                    ← useSuspenseQuery, data always defined
+            └─ Suspense fallback={<SectionSkeleton />}
+                 └─ SectionDataWrapper     ← useSuspenseQuery for section data
+                      └─ PresentationComponent
+```
+
+**Rules:**
+1. Components fetch their own data via `use*Suspense` hooks from `src/lib/queries.ts`. No `isLoading` checks — data is guaranteed defined.
+2. Each data boundary gets `<Suspense fallback={<Skeleton />}>` for progressive loading.
+3. Wrap Suspense boundaries with `ErrorBoundary` (`src/components/shared/ErrorBoundary.tsx`). Use `key={routeParam}` so it resets on navigation.
+4. Suspense hooks share cache with `useQuery` hooks via identical `queryKeys`.
+5. Prefetch child data in route component via `queryClient.prefetchQuery()` in `useEffect` to avoid waterfalls.
+6. If a component is reused in Suspense and non-Suspense contexts, create a thin wrapper that calls `useSuspenseQuery` and passes data to the unchanged presentation component.
+7. Each page/section gets its own skeleton component (`animate-pulse`, `bg-muted`, `rounded`).
+
+**Example** (Shop page): `ShopContent` → `ErrorBoundary` + `Suspense` → `ShopPage` (fetches shop via `useShopSuspense`) → inner `Suspense` → `ShopShoppingList` (fetches ingredients via `useShopIngredientsSuspense`) → `ShoppingList` (pure).
+
 ### File Structure for New Features
 ```
 components/

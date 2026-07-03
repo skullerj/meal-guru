@@ -1,25 +1,12 @@
 import {
-	Outlet,
-	createRootRoute,
-	createRoute,
-	createRouter,
-	redirect,
-	useNavigate,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  redirect,
+  useNavigate,
 } from "@tanstack/react-router";
-import { aggregateIngredients } from "@/components/meal-planner/utils/mealPlannerUtils";
-import LoadingSkeleton from "@/components/shared/LoadingSkeleton";
-import PageLayout from "@/components/shared/PageLayout";
-import {
-	useActiveShop,
-	useIngredients,
-	useRecipe,
-	useRecipes,
-	useShop,
-	useShopIngredients,
-} from "@/lib/queries";
-import { supabase } from "@/lib/supabase-browser";
-import AppLayout from "./AppLayout";
-
+import { Suspense, useEffect } from "react";
 // Lazy imports for page components
 import LoginForm from "@/components/auth/LoginForm";
 import HomePage from "@/components/home/HomePage";
@@ -27,239 +14,244 @@ import IngredientList from "@/components/ingredients/IngredientList";
 import MealPlanner from "@/components/meal-planner/MealPlanner";
 import CookingView from "@/components/recipe/CookingView";
 import RecipeList from "@/components/recipes/RecipeList";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
+import LoadingSkeleton from "@/components/shared/LoadingSkeleton";
+import PageLayout from "@/components/shared/PageLayout";
 import ShopPage from "@/components/shop/ShopPage";
+import ShopPageSkeleton from "@/components/shop/ShopPageSkeleton";
+import { getShopIngredients } from "@/lib/database";
+import {
+  queryKeys,
+  useActiveShop,
+  useIngredients,
+  useRecipe,
+  useRecipes,
+} from "@/lib/queries";
+import { queryClient } from "@/lib/query-client";
+import { supabase } from "@/lib/supabase-browser";
+import AppLayout from "./AppLayout";
 
 // --- Home loading skeleton (matches HomePageWrapper) ---
 
 function HomeLoadingSkeleton() {
-	return (
-		<div className="max-w-lg w-full mx-auto px-6 py-16 text-center">
-			<h1 className="text-4xl font-bold text-foreground mb-3 font-heading">
-				Meal Guru
-			</h1>
-			<div className="h-5 w-48 mx-auto rounded bg-muted animate-pulse mb-10" />
-			<div className="h-11 w-40 mx-auto rounded bg-muted animate-pulse" />
-		</div>
-	);
+  return (
+    <div className="max-w-lg w-full mx-auto px-6 py-16 text-center">
+      <h1 className="text-4xl font-bold text-foreground mb-3 font-heading">
+        Meal Guru
+      </h1>
+      <div className="h-5 w-48 mx-auto rounded bg-muted animate-pulse mb-10" />
+      <div className="h-11 w-40 mx-auto rounded bg-muted animate-pulse" />
+    </div>
+  );
 }
 
 // --- Route components ---
 
 function LoginPage() {
-	return (
-		<main className="min-h-screen bg-background flex items-center justify-center">
-			<LoginForm />
-		</main>
-	);
+  return (
+    <main className="min-h-screen bg-background flex items-center justify-center">
+      <LoginForm />
+    </main>
+  );
 }
 
 function IndexContent() {
-	const { data: recipes, isLoading: recipesLoading } = useRecipes();
-	const { data: activeShop, isLoading: shopLoading } = useActiveShop();
+  const { data: recipes, isLoading: recipesLoading } = useRecipes();
+  const { data: activeShop, isLoading: shopLoading } = useActiveShop();
 
-	if (recipesLoading || shopLoading) {
-		return (
-			<main className="min-h-screen bg-background flex items-center justify-center">
-				<HomeLoadingSkeleton />
-			</main>
-		);
-	}
+  if (recipesLoading || shopLoading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <HomeLoadingSkeleton />
+      </main>
+    );
+  }
 
-	return (
-		<main className="min-h-screen bg-background flex items-center justify-center">
-			<HomePage recipes={recipes ?? []} activeShop={activeShop ?? null} />
-		</main>
-	);
+  return (
+    <main className="min-h-screen bg-background flex items-center justify-center">
+      <HomePage recipes={recipes ?? []} activeShop={activeShop ?? null} />
+    </main>
+  );
 }
 
 function PickContent() {
-	const { data: recipes, isLoading } = useRecipes();
+  const { data: recipes, isLoading } = useRecipes();
 
-	if (isLoading) {
-		return <LoadingSkeleton />;
-	}
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
-	return (
-		<PageLayout title="Plan your week" backUrl="/" backLabel="Back">
-			<MealPlanner recipes={recipes ?? []} />
-		</PageLayout>
-	);
+  return (
+    <PageLayout title="Plan your week" backUrl="/" backLabel="Back">
+      <MealPlanner recipes={recipes ?? []} />
+    </PageLayout>
+  );
 }
 
 function RecipesContent() {
-	const { data: recipes, isLoading: recipesLoading } = useRecipes();
-	const { data: ingredients, isLoading: ingredientsLoading } =
-		useIngredients();
+  const { data: recipes, isLoading: recipesLoading } = useRecipes();
+  const { data: ingredients, isLoading: ingredientsLoading } = useIngredients();
 
-	if (recipesLoading || ingredientsLoading) {
-		return <LoadingSkeleton />;
-	}
+  if (recipesLoading || ingredientsLoading) {
+    return <LoadingSkeleton />;
+  }
 
-	return (
-		<RecipeList recipes={recipes ?? []} ingredients={ingredients ?? []} />
-	);
+  return <RecipeList recipes={recipes ?? []} ingredients={ingredients ?? []} />;
 }
 
 function IngredientsContent() {
-	const { data: ingredients, isLoading } = useIngredients();
+  const { data: ingredients, isLoading } = useIngredients();
 
-	if (isLoading) {
-		return <LoadingSkeleton />;
-	}
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
-	return (
-		<PageLayout title="Ingredients" backLabel="Home" backUrl="/">
-			<IngredientList ingredients={ingredients ?? []} />
-		</PageLayout>
-	);
+  return (
+    <PageLayout title="Ingredients" backLabel="Home" backUrl="/">
+      <IngredientList ingredients={ingredients ?? []} />
+    </PageLayout>
+  );
 }
 
 function ShopContent() {
-	const { id } = shopIdRoute.useParams();
-	const navigate = useNavigate();
-	const { data: shop, isLoading: shopLoading } = useShop(id);
-	const { data: shopIngredients, isLoading: ingredientsLoading } =
-		useShopIngredients(id);
+  const { id } = shopIdRoute.useParams();
 
-	if (shopLoading || ingredientsLoading) {
-		return <LoadingSkeleton />;
-	}
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.shopIngredients(id),
+      queryFn: () => getShopIngredients(supabase, id),
+    });
+  }, [id]);
 
-	if (!shop) {
-		navigate({ to: "/" });
-		return null;
-	}
+  return (
+    <ErrorBoundary key={id} fallback={<ShopErrorFallback />}>
+      <Suspense fallback={<ShopPageSkeleton />}>
+        <ShopPage shopId={id} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
 
-	const groups = aggregateIngredients(
-		shop.recipes,
-		shop.recipes.map((r) => r.id),
-	);
-
-	return (
-		<ShopPage
-			shopId={id}
-			recipes={shop.recipes}
-			groups={groups}
-			shopIngredients={shopIngredients ?? []}
-			initialStatus={shop.status ?? "shopping"}
-		/>
-	);
+function ShopErrorFallback() {
+  return (
+    <PageLayout title="Something went wrong" backUrl="/" backLabel="Go home">
+      <p className="text-muted-foreground">This shop could not be loaded.</p>
+    </PageLayout>
+  );
 }
 
 function CookingViewContent() {
-	const { id } = recipeIdRoute.useParams();
-	const navigate = useNavigate();
-	const { data: recipe, isLoading } = useRecipe(id);
+  const { id } = recipeIdRoute.useParams();
+  const navigate = useNavigate();
+  const { data: recipe, isLoading } = useRecipe(id);
 
-	if (isLoading) {
-		return <LoadingSkeleton />;
-	}
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
-	if (!recipe) {
-		navigate({ to: "/recipes" });
-		return null;
-	}
+  if (!recipe) {
+    navigate({ to: "/recipes" });
+    return null;
+  }
 
-	// Determine back URL from history or default to /recipes
-	const backUrl = "/recipes";
+  // Determine back URL from history or default to /recipes
+  const backUrl = "/recipes";
 
-	return <CookingView recipe={recipe} backUrl={backUrl} />;
+  return <CookingView recipe={recipe} backUrl={backUrl} />;
 }
 
 // --- Route tree ---
 
 const rootRoute = createRootRoute({
-	component: () => <Outlet />,
+  component: () => <Outlet />,
 });
 
 const loginRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/login",
-	component: LoginPage,
-	validateSearch: (
-		search: Record<string, unknown>,
-	): { returnTo?: string } => ({
-		returnTo: (search.returnTo as string) || undefined,
-	}),
-	beforeLoad: async () => {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
-		if (user) {
-			throw redirect({ to: "/" });
-		}
-	},
+  getParentRoute: () => rootRoute,
+  path: "/login",
+  component: LoginPage,
+  validateSearch: (search: Record<string, unknown>): { returnTo?: string } => ({
+    returnTo: (search.returnTo as string) || undefined,
+  }),
+  beforeLoad: async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      throw redirect({ to: "/" });
+    }
+  },
 });
 
 const authenticatedLayout = createRoute({
-	getParentRoute: () => rootRoute,
-	id: "_authenticated",
-	beforeLoad: async ({ location }) => {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
-		if (!user) {
-			throw redirect({
-				to: "/login",
-				search: { returnTo: location.pathname },
-			});
-		}
-	},
-	component: AppLayout,
+  getParentRoute: () => rootRoute,
+  id: "_authenticated",
+  beforeLoad: async ({ location }) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      throw redirect({
+        to: "/login",
+        search: { returnTo: location.pathname },
+      });
+    }
+  },
+  component: AppLayout,
 });
 
 const indexRoute = createRoute({
-	getParentRoute: () => authenticatedLayout,
-	path: "/",
-	component: IndexContent,
+  getParentRoute: () => authenticatedLayout,
+  path: "/",
+  component: IndexContent,
 });
 
 const pickRoute = createRoute({
-	getParentRoute: () => authenticatedLayout,
-	path: "/pick",
-	component: PickContent,
+  getParentRoute: () => authenticatedLayout,
+  path: "/pick",
+  component: PickContent,
 });
 
 const recipesRoute = createRoute({
-	getParentRoute: () => authenticatedLayout,
-	path: "/recipes",
-	component: RecipesContent,
+  getParentRoute: () => authenticatedLayout,
+  path: "/recipes",
+  component: RecipesContent,
 });
 
 const ingredientsRoute = createRoute({
-	getParentRoute: () => authenticatedLayout,
-	path: "/ingredients",
-	component: IngredientsContent,
+  getParentRoute: () => authenticatedLayout,
+  path: "/ingredients",
+  component: IngredientsContent,
 });
 
 const shopIdRoute = createRoute({
-	getParentRoute: () => authenticatedLayout,
-	path: "/shop/$id",
-	component: ShopContent,
+  getParentRoute: () => authenticatedLayout,
+  path: "/shop/$id",
+  component: ShopContent,
 });
 
 const recipeIdRoute = createRoute({
-	getParentRoute: () => authenticatedLayout,
-	path: "/recipe/$id",
-	component: CookingViewContent,
+  getParentRoute: () => authenticatedLayout,
+  path: "/recipe/$id",
+  component: CookingViewContent,
 });
 
 const routeTree = rootRoute.addChildren([
-	loginRoute,
-	authenticatedLayout.addChildren([
-		indexRoute,
-		pickRoute,
-		recipesRoute,
-		ingredientsRoute,
-		shopIdRoute,
-		recipeIdRoute,
-	]),
+  loginRoute,
+  authenticatedLayout.addChildren([
+    indexRoute,
+    pickRoute,
+    recipesRoute,
+    ingredientsRoute,
+    shopIdRoute,
+    recipeIdRoute,
+  ]),
 ]);
 
 export const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
-	interface Register {
-		router: typeof router;
-	}
+  interface Register {
+    router: typeof router;
+  }
 }

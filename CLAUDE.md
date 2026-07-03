@@ -165,7 +165,10 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── home/
 │   │   │   └── HomePage.tsx             # Context-aware home page: no recipes, no shop, shopping, or cooking state
 │   │   ├── shop/
-│   │   │   └── ShopPage.tsx             # Shop page: shopping mode (checklist) ↔ cooking mode (recipe cards)
+│   │   │   ├── ShopPage.tsx             # Shop page: fetches own data via useSuspenseQuery, shopping mode ↔ cooking mode
+│   │   │   ├── ShopPageSkeleton.tsx     # Loading skeleton for ShopPage (PageLayout shell + ShoppingListSkeleton)
+│   │   │   ├── ShopShoppingList.tsx     # Suspense data-fetching wrapper: calls useShopIngredientsSuspense, renders ShoppingList
+│   │   │   └── ShoppingListSkeleton.tsx # Loading skeleton for ShoppingList (category groups + ingredient rows)
 │   │   ├── recipe/
 │   │   │   └── CookingView.tsx          # Mobile-first step-by-step cooking interface
 │   │   ├── auth/
@@ -174,6 +177,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   │   └── ConsentForm.tsx          # OAuth consent screen (approve/deny authorization)
 │   │   ├── shared/
 │   │   │   ├── Button.tsx               # Reusable button component
+│   │   │   ├── ErrorBoundary.tsx        # Generic React error boundary (default export)
 │   │   │   ├── Icon.tsx                 # Centralized icon component (Lucide)
 │   │   │   ├── IconButton.tsx           # Interactive icon button component
 │   │   │   └── PageLayout.tsx           # Standardized page layout (max-w-lg, header, back link, actions)
@@ -423,6 +427,45 @@ components/
 - **Component props**: Test component behavior with different prop combinations
 - **State transitions**: Test reducer actions and state changes
 
+### Data Fetching with React Suspense
+
+Pages should use `useSuspenseQuery` (from `@tanstack/react-query`) so each component fetches its own data and controls its own loading state. This replaces the older "Content wrapper" pattern where a single wrapper fetched all data and showed one skeleton.
+
+#### Pattern: Suspense Data Fetching
+
+```
+Route component (router.tsx)
+  └─ ErrorBoundary + Suspense fallback={<PageSkeleton />}
+       └─ PageComponent                    ← calls useSuspenseQuery, data always defined
+            └─ Suspense fallback={<SectionSkeleton />}
+                 └─ SectionDataWrapper     ← calls useSuspenseQuery for section-specific data
+                      └─ PresentationComponent  ← receives data as props
+```
+
+**Key rules:**
+1. **Components fetch their own data** using `useSuspenseQuery` hooks (named `use*Suspense` in `src/lib/queries.ts`). Data is guaranteed defined — no `isLoading` checks needed.
+2. **Each data boundary gets its own `<Suspense>` wrapper** with a skeleton fallback. This enables progressive loading (page shell renders first, sections fill in independently).
+3. **`ErrorBoundary`** (`src/components/shared/ErrorBoundary.tsx`) wraps each Suspense boundary to catch network/server errors. Use `key={id}` on ErrorBoundary so it resets when route params change.
+4. **Suspense hooks share cache** with regular `useQuery` hooks via identical `queryKeys`. Existing `invalidateQueries` calls work for both.
+5. **Prefetch to avoid waterfalls**: When a child component will fetch data after its parent suspends, prefetch the child's data in the route component via `queryClient.prefetchQuery()` in a `useEffect`. This fires both requests in parallel.
+
+#### When a component is reused in both Suspense and non-Suspense contexts
+
+If a presentation component (e.g., `ShoppingList`) is used in multiple places — some with Suspense data fetching and some with prop-based data — create a **thin wrapper** that calls `useSuspenseQuery` and passes data to the presentation component. Never put conditional hooks inside the presentation component.
+
+```
+ShopShoppingList.tsx    ← calls useSuspenseQuery, renders ShoppingList
+ShoppingList.tsx        ← pure component, receives data as props (unchanged)
+```
+
+#### Skeleton Components
+
+Each page/section gets its own skeleton component matching its layout:
+- **Page skeletons** (e.g., `ShopPageSkeleton`): Mimic the PageLayout shell (back link, title, subtitle, content card)
+- **Section skeletons** (e.g., `ShoppingListSkeleton`): Mimic the section content (category headers, ingredient rows)
+
+Use the same Tailwind classes: `animate-pulse`, `bg-muted`, `rounded`.
+
 ### Integration Approach
 
 #### Astro + React Hybrid
@@ -490,6 +533,7 @@ Centralized reusable components in `src/components/shared/`:
 - **IconButton.tsx**: Interactive icon-only button with variants
 - **PageLayout.tsx**: Standardized page wrapper with `max-w-lg` container, consistent padding (`px-6 py-8`), optional back link, h1 title, optional subtitle, optional action buttons, and children slot. Used by RecipeList, CookingView, and ShopPage.
 - **LoadingSkeleton.tsx**: Pulsing placeholder skeleton for loading states in React Query wrapper components.
+- **ErrorBoundary.tsx**: Generic React error boundary class component. Props: `fallback` (ReactNode), `children` (ReactNode). Renders fallback on error, children otherwise. Default export.
 
 ## Notes for Claude
 - This is a meal planning and batch cooking application

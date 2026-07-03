@@ -1,34 +1,42 @@
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
-import ShoppingList from "@/components/meal-planner/ShoppingList";
-import type { IngredientGroup } from "@/components/meal-planner/utils/mealPlannerUtils";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Suspense, useMemo, useState } from "react";
+import { aggregateIngredients } from "@/components/meal-planner/utils/mealPlannerUtils";
 import StartNewWeekButton from "@/components/StartNewWeekButton";
 import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
-import type { Recipe, ShopStatus } from "@/data/types";
-import type { ShopIngredient } from "@/lib/database";
+import ShoppingListSkeleton from "@/components/shop/ShoppingListSkeleton";
+import ShopShoppingList from "@/components/shop/ShopShoppingList";
+import type { ShopStatus } from "@/data/types";
 import { updateShopStatus } from "@/lib/database";
-import { queryKeys } from "@/lib/queries";
+import { queryKeys, useShopSuspense } from "@/lib/queries";
 import { queryClient } from "@/lib/query-client";
 import { supabase } from "@/lib/supabase-browser";
 
 interface ShopPageProps {
   shopId: string;
-  recipes: Recipe[];
-  groups: IngredientGroup[];
-  shopIngredients: ShopIngredient[];
-  initialStatus: ShopStatus;
 }
 
-export default function ShopPage({
-  shopId,
-  recipes,
-  groups,
-  shopIngredients,
-  initialStatus,
-}: ShopPageProps) {
-  const [status, setStatus] = useState<ShopStatus>(initialStatus);
+export default function ShopPage({ shopId }: ShopPageProps) {
+  const { data: shop } = useShopSuspense(shopId);
+  const navigate = useNavigate();
+
+  const recipes = shop?.recipes ?? [];
+  const groups = useMemo(
+    () =>
+      aggregateIngredients(
+        recipes,
+        recipes.map((r) => r.id)
+      ),
+    [recipes]
+  );
+
+  const [status, setStatus] = useState<ShopStatus>(shop?.status ?? "shopping");
   const [finishing, setFinishing] = useState(false);
+
+  if (!shop) {
+    navigate({ to: "/" });
+    return null;
+  }
 
   async function handleFinishShopping() {
     setFinishing(true);
@@ -71,11 +79,9 @@ export default function ShopPage({
       {status === "shopping" ? (
         <div>
           <div className="rounded-lg border border-border bg-card p-6">
-            <ShoppingList
-              groups={groups}
-              shopIngredients={shopIngredients}
-              shopId={shopId}
-            />
+            <Suspense fallback={<ShoppingListSkeleton />}>
+              <ShopShoppingList shopId={shopId} groups={groups} />
+            </Suspense>
           </div>
           <div className="mt-6">
             <Button

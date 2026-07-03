@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
   getActiveShopForWeek,
   getIngredients,
@@ -57,5 +57,19 @@ export function useRecipe(id: string) {
   return useQuery({
     queryKey: queryKeys.recipe(id),
     queryFn: () => getRecipe(supabase, id),
+  });
+}
+
+export function useShopSuspense(id: string) {
+  return useSuspenseQuery({
+    queryKey: queryKeys.shop(id),
+    queryFn: () => getShopWithRecipes(supabase, id),
+  });
+}
+
+export function useShopIngredientsSuspense(shopId: string) {
+  return useSuspenseQuery({
+    queryKey: queryKeys.shopIngredients(shopId),
+    queryFn: () => getShopIngredients(supabase, shopId),
   });
 }
