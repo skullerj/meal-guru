@@ -30,7 +30,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: 'Nunito Sans', system-ui, sans-serif;
+  --font-sans: 'Nunito Sans Variable', system-ui, sans-serif;
   --font-heading: 'Young Serif', Georgia, serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
