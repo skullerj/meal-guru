@@ -1,4 +1,5 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
+import OfflineIndicator from "@/components/shared/OfflineIndicator";
 import { supabase } from "@/lib/supabase-browser";
 
 export default function AppLayout() {
@@ -11,6 +12,7 @@ export default function AppLayout() {
 
 	return (
 		<>
+			<OfflineIndicator />
 			<nav className="border-b border-border bg-background">
 				<div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-6">
 					<Link

@@ -203,16 +203,16 @@ SPA routes (catch-all Astro page → React app with TanStack Router):
 
 ---
 
-### 🔲 22. PWA offline support
+### ✅ 22. PWA offline support
 Add service worker and offline-first data strategy so the installed app works without an internet connection.
 
-- [ ] Add `vite-plugin-pwa` (Workbox) and configure service worker generation
-- [ ] Cache app shell (HTML, JS, CSS, fonts) with precaching for offline access
-- [ ] Persist React Query cache to IndexedDB so previously fetched data is available offline
-- [ ] Add offline mutation queue — queue Supabase writes when offline, sync when back online
-- [ ] Show offline indicator in the UI when the app detects no connectivity
-- [ ] Update `site.webmanifest` for full installability (icons, display: standalone, start_url, etc.)
-- [ ] E2E tests for offline scenarios
+- [x] Add `vite-plugin-pwa` (Workbox) and configure service worker generation
+- [x] Cache app shell (HTML, JS, CSS, fonts) with precaching for offline access
+- [x] Persist React Query cache to IndexedDB so previously fetched data is available offline
+- [x] Add offline mutation queue — queue Supabase writes when offline, sync when back online
+- [x] Show offline indicator in the UI when the app detects no connectivity
+- [x] Update `site.webmanifest` for full installability (icons, display: standalone, start_url, etc.)
+- [x] E2E tests for offline scenarios
 
 **Verification:** Install the app (Add to Home Screen / Install). Turn off network (airplane mode). Open the app — confirm it loads and shows cached data. Navigate between pages — confirm client-side routing works. Toggle a shopping list item — confirm it queues. Reconnect — confirm queued mutations sync.
 

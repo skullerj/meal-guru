@@ -172,6 +172,17 @@ const rootRoute = createRootRoute({
 	component: () => <Outlet />,
 });
 
+async function getAuthUser() {
+	const { data: { user }, error } = await supabase.auth.getUser();
+	if (user) return user;
+	if (error) {
+		// Network error (offline) — fall back to cached session
+		const { data: { session } } = await supabase.auth.getSession();
+		return session?.user ?? null;
+	}
+	return null;
+}
+
 const loginRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/login",
@@ -182,9 +193,7 @@ const loginRoute = createRoute({
 		returnTo: (search.returnTo as string) || undefined,
 	}),
 	beforeLoad: async () => {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
+		const user = await getAuthUser();
 		if (user) {
 			throw redirect({ to: "/" });
 		}
@@ -195,9 +204,7 @@ const authenticatedLayout = createRoute({
 	getParentRoute: () => rootRoute,
 	id: "_authenticated",
 	beforeLoad: async ({ location }) => {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
+		const user = await getAuthUser();
 		if (!user) {
 			throw redirect({
 				to: "/login",

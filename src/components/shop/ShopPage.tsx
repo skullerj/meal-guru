@@ -7,10 +7,7 @@ import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
 import type { Recipe, ShopStatus } from "@/data/types";
 import type { ShopIngredient } from "@/lib/database";
-import { updateShopStatus } from "@/lib/database";
-import { queryKeys } from "@/lib/queries";
-import { queryClient } from "@/lib/query-client";
-import { supabase } from "@/lib/supabase-browser";
+import { useUpdateShopStatus } from "@/lib/mutations";
 
 interface ShopPageProps {
   shopId: string;
@@ -29,13 +26,13 @@ export default function ShopPage({
 }: ShopPageProps) {
   const [status, setStatus] = useState<ShopStatus>(initialStatus);
   const [finishing, setFinishing] = useState(false);
+  const updateStatusMutation = useUpdateShopStatus(shopId);
 
   async function handleFinishShopping() {
     setFinishing(true);
     try {
-      await updateShopStatus(supabase, shopId, "cooking");
+      await updateStatusMutation.mutateAsync("cooking");
       setStatus("cooking");
-      queryClient.invalidateQueries({ queryKey: queryKeys.shop(shopId) });
     } catch {
       // silently fail
     } finally {
