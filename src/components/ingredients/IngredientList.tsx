@@ -2,10 +2,7 @@ import { useState } from "react";
 import IconButton from "@/components/shared/IconButton";
 import type { Category, Ingredient, Unit } from "@/data/types";
 import { CATEGORIES, UNITS } from "@/data/types";
-import { deleteIngredient, updateIngredient } from "@/lib/database";
-import { queryKeys } from "@/lib/queries";
-import { queryClient } from "@/lib/query-client";
-import { supabase } from "@/lib/supabase-browser";
+import { useDeleteIngredient, useUpdateIngredient } from "@/lib/mutations";
 import { cn } from "@/lib/utils";
 
 interface IngredientListProps {
@@ -53,6 +50,9 @@ export default function IngredientList({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const updateMutation = useUpdateIngredient();
+  const deleteMutation = useDeleteIngredient();
+
   function startEdit(ingredient: Ingredient) {
     setEditing({
       id: ingredient.id,
@@ -70,16 +70,18 @@ export default function IngredientList({
     if (!editing) return;
     setSaving(true);
     try {
-      const updated = await updateIngredient(supabase, editing.id, {
-        name: editing.name,
-        unit: editing.unit,
-        category: editing.category,
+      const updated = await updateMutation.mutateAsync({
+        id: editing.id,
+        data: {
+          name: editing.name,
+          unit: editing.unit,
+          category: editing.category,
+        },
       });
       setIngredients((prev) =>
         prev.map((i) => (i.id === editing.id ? updated : i))
       );
       setEditing(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to save ingredient");
     } finally {
@@ -91,9 +93,8 @@ export default function IngredientList({
     if (!confirm("Delete this ingredient? This cannot be undone.")) return;
     setDeleting(id);
     try {
-      await deleteIngredient(supabase, id);
+      await deleteMutation.mutateAsync(id);
       setIngredients((prev) => prev.filter((i) => i.id !== id));
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to delete ingredient");
     } finally {

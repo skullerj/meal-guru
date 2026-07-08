@@ -1,18 +1,9 @@
-import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import Button from "@/components/shared/Button";
 import Icon from "@/components/shared/Icon";
 import type { Recipe } from "@/data/types";
-import {
-  createShop,
-  deactivateShopsForWeek,
-  getWeekMonday,
-  recommendRecipeIds,
-  type ShopSummary,
-} from "@/lib/database";
-import { supabase } from "@/lib/supabase-browser";
-import { queryClient } from "@/lib/query-client";
-import { queryKeys } from "@/lib/queries";
+import type { ShopSummary } from "@/lib/database";
+import { useStartWeek, useStartNewWeek } from "@/lib/mutations";
 
 interface HomePageProps {
   recipes: Recipe[];
@@ -61,23 +52,14 @@ function NoRecipesState() {
 
 function NoActiveShopState() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const startWeek = useStartWeek();
 
-  async function handleStartWeek() {
-    setLoading(true);
-    setError(false);
-    try {
-      const ids = await recommendRecipeIds(supabase);
-      const shop = await createShop(supabase, ids);
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.activeShop,
-      });
-      navigate({ to: "/shop/$id", params: { id: shop.id } });
-    } catch {
-      setError(true);
-      setLoading(false);
-    }
+  function handleStartWeek() {
+    startWeek.mutate(undefined, {
+      onSuccess: (shop) => {
+        navigate({ to: "/shop/$id", params: { id: shop.id } });
+      },
+    });
   }
 
   return (
@@ -99,11 +81,11 @@ function NoActiveShopState() {
           size="lg"
           leftIcon="sparkles"
           onClick={handleStartWeek}
-          loading={loading}
+          loading={startWeek.isPending}
         >
           Start the week
         </Button>
-        {error && (
+        {startWeek.isError && (
           <p className="text-xs text-destructive">
             Something went wrong. Try again.
           </p>
@@ -157,25 +139,14 @@ function CookingState({
   recipeNames,
 }: { activeShop: ShopSummary; recipeNames: Recipe[] }) {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const startNewWeek = useStartNewWeek();
 
-  async function handleStartNewWeek() {
-    setLoading(true);
-    setError(false);
-    try {
-      const weekMonday = getWeekMonday();
-      await deactivateShopsForWeek(supabase, weekMonday);
-      const ids = await recommendRecipeIds(supabase);
-      const shop = await createShop(supabase, ids);
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.activeShop,
-      });
-      navigate({ to: "/shop/$id", params: { id: shop.id } });
-    } catch {
-      setError(true);
-      setLoading(false);
-    }
+  function handleStartNewWeek() {
+    startNewWeek.mutate(undefined, {
+      onSuccess: (shop) => {
+        navigate({ to: "/shop/$id", params: { id: shop.id } });
+      },
+    });
   }
 
   return (
@@ -195,11 +166,11 @@ function CookingState({
           variant="secondary"
           size="sm"
           onClick={handleStartNewWeek}
-          loading={loading}
+          loading={startNewWeek.isPending}
         >
           Start new week
         </Button>
-        {error && (
+        {startNewWeek.isError && (
           <p className="text-xs text-destructive">
             Something went wrong. Try again.
           </p>

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "lib": ["WebWorker"]
   },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist", "tests", "playwright.config.ts"]

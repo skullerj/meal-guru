@@ -10,14 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Ingredient, Recipe } from "@/data/types";
-import {
-  createRecipeWithIngredients,
-  deleteRecipe,
-  updateRecipeWithIngredients,
-} from "@/lib/database";
-import { queryKeys } from "@/lib/queries";
-import { queryClient } from "@/lib/query-client";
-import { supabase } from "@/lib/supabase-browser";
+import { useCreateRecipe, useUpdateRecipe, useDeleteRecipe } from "@/lib/mutations";
 import RecipeCard from "./RecipeCard";
 import RecipeFormDialog, { type SaveData } from "./RecipeFormDialog";
 
@@ -103,6 +96,10 @@ export default function RecipeList({ recipes, ingredients }: Props) {
     isSubmitting: false,
   });
 
+  const createMutation = useCreateRecipe();
+  const updateMutation = useUpdateRecipe();
+  const deleteMutation = useDeleteRecipe();
+
   async function handleSave({
     name,
     ingredients: ingredientInputs,
@@ -132,27 +129,24 @@ export default function RecipeList({ recipes, ingredients }: Props) {
       let savedRecipe: Recipe;
 
       if (state.editingRecipe) {
-        savedRecipe = await updateRecipeWithIngredients(
-          supabase,
-          state.editingRecipe.id,
+        savedRecipe = await updateMutation.mutateAsync({
+          id: state.editingRecipe.id,
           name,
-          ingredientInputs,
-          stepsToSave
-        );
+          ingredients: ingredientInputs,
+          steps: stepsToSave,
+        });
       } else {
-        savedRecipe = await createRecipeWithIngredients(
-          supabase,
+        savedRecipe = await createMutation.mutateAsync({
           name,
-          ingredientInputs,
-          stepsToSave
-        );
+          ingredients: ingredientInputs,
+          steps: stepsToSave,
+        });
       }
 
       dispatch({
         type: "SAVE_SUCCESS",
         recipe: savedRecipe,
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
     } catch {
       dispatch({ type: "SET_SUBMITTING", value: false });
     }
@@ -161,10 +155,9 @@ export default function RecipeList({ recipes, ingredients }: Props) {
   async function handleDelete(id: string) {
     dispatch({ type: "SET_SUBMITTING", value: true });
     try {
-      await deleteRecipe(supabase, id);
+      await deleteMutation.mutateAsync(id);
       dispatch({ type: "SET_SUBMITTING", value: false });
       dispatch({ type: "DELETE_SUCCESS", id });
-      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
     } catch {
       dispatch({ type: "SET_SUBMITTING", value: false });
     }

@@ -2,7 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@import url('https://fonts.googleapis.com/css2?family=Young+Serif&family=Nunito+Sans:ital,opsz,wght@0,6..12,300..900;1,6..12,300..900&display=swap');
+@import "@fontsource/young-serif";
+@import "@fontsource-variable/nunito-sans";
 
 @custom-variant dark (&:is(.dark *));
 

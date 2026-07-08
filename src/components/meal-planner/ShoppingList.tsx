@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Icon from "@/components/shared/Icon";
 import type { ShopIngredient } from "@/lib/database";
-import { toggleShopIngredient } from "@/lib/database";
-import { queryKeys } from "@/lib/queries";
-import { queryClient } from "@/lib/query-client";
-import { supabase } from "@/lib/supabase-browser";
+import { useToggleShopIngredient } from "@/lib/mutations";
 import { cn } from "@/lib/utils";
 import type {
   AggregatedIngredient,
@@ -39,6 +36,7 @@ export default function ShoppingList({
   shopIngredients,
   shopId,
 }: ShoppingListProps) {
+  const toggleMutation = useToggleShopIngredient(shopId);
   const isPersisted = !!shopIngredients && shopIngredients.length > 0;
 
   const [checked, setChecked] = useState<Set<string>>(
@@ -115,15 +113,7 @@ export default function ShoppingList({
     if (isPersisted) {
       const shopIngredientId = shopIngredientMap.get(ingredientId);
       if (shopIngredientId) {
-        toggleShopIngredient(supabase, shopIngredientId, newChecked).then(
-          () => {
-            if (shopId) {
-              queryClient.invalidateQueries({
-                queryKey: queryKeys.shopIngredients(shopId),
-              });
-            }
-          }
-        );
+        toggleMutation.mutate({ id: shopIngredientId, checked: newChecked });
       }
     }
   }
