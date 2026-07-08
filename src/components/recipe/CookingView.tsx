@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
 import type { Recipe, RecipeIngredient } from "../../data/types";
 import Button from "../shared/Button";
 import PageLayout from "../shared/PageLayout";
 
 interface Props {
   recipe: Recipe;
-  backUrl: string;
 }
 
 function formatIngredient(ri: RecipeIngredient): string {
@@ -15,8 +13,7 @@ function formatIngredient(ri: RecipeIngredient): string {
   return `${amount}${ri.ingredient.unit === "unit" ? "" : ri.ingredient.unit} ${ri.ingredient.name}`;
 }
 
-export default function CookingView({ recipe, backUrl }: Props) {
-  const navigate = useNavigate();
+export default function CookingView({ recipe }: Props) {
   const [stepIndex, setStepIndex] = useState(0);
   const steps = recipe.steps ?? [];
   const hasSteps = steps.length > 0;
@@ -32,20 +29,17 @@ export default function CookingView({ recipe, backUrl }: Props) {
       )
     : [];
 
-  function handleBack() {
-    navigate({ to: backUrl });
-  }
-
   if (!hasSteps) {
     return (
-      <PageLayout title={recipe.name} backUrl={backUrl}>
+      <PageLayout title={recipe.name} showBack>
         <p className="text-muted-foreground">No cooking instructions yet.</p>
-        <Link
-          to={backUrl}
-          className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors mt-4"
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors mt-4 cursor-pointer border-0 bg-transparent p-0"
         >
           Back to list
-        </Link>
+        </button>
       </PageLayout>
     );
   }
@@ -61,7 +55,7 @@ export default function CookingView({ recipe, backUrl }: Props) {
   return (
     <PageLayout
       title={recipe.name}
-      backUrl={backUrl}
+      showBack
       subtitle={isOverview ? overviewSubtitle : undefined}
     >
       {isOverview ? (
@@ -127,7 +121,7 @@ export default function CookingView({ recipe, backUrl }: Props) {
                 variant="success"
                 size="lg"
                 className="flex-1 min-h-[44px]"
-                onClick={handleBack}
+                onClick={() => window.history.back()}
               >
                 Done
               </Button>

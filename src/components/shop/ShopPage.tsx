@@ -69,8 +69,7 @@ export default function ShopPage({ shopId }: ShopPageProps) {
   return (
     <PageLayout
       title={status === "shopping" ? "Your shopping list" : "Time to cook!"}
-      backUrl="/"
-      backLabel="Back"
+      showBack
       actions={<StartNewWeekButton />}
       subtitle={recipeLinks}
     >

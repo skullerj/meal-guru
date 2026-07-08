@@ -82,7 +82,7 @@ function PickContent() {
   }
 
   return (
-    <PageLayout title="Plan your week" backUrl="/" backLabel="Back">
+    <PageLayout title="Plan your week" showBack backLabel="Back">
       <MealPlanner recipes={recipes ?? []} />
     </PageLayout>
   );
@@ -107,7 +107,7 @@ function IngredientsContent() {
   }
 
   return (
-    <PageLayout title="Ingredients" backLabel="Home" backUrl="/">
+    <PageLayout title="Ingredients" backLabel="Home" showBack>
       <IngredientList ingredients={ingredients ?? []} />
     </PageLayout>
   );
@@ -134,7 +134,7 @@ function ShopContent() {
 
 function ShopErrorFallback() {
   return (
-    <PageLayout title="Something went wrong" backUrl="/" backLabel="Go home">
+    <PageLayout title="Something went wrong" showBack backLabel="Go home">
       <p className="text-muted-foreground">This shop could not be loaded.</p>
     </PageLayout>
   );
@@ -154,10 +154,7 @@ function CookingViewContent() {
     return null;
   }
 
-  // Determine back URL from history or default to /recipes
-  const backUrl = "/recipes";
-
-  return <CookingView recipe={recipe} backUrl={backUrl} />;
+  return <CookingView recipe={recipe} />;
 }
 
 // --- Route tree ---
