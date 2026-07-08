@@ -12,7 +12,7 @@ function Content() {
   }
 
   return (
-    <PageLayout title="Plan your week" backUrl="/" backLabel="Back">
+    <PageLayout title="Plan your week" showBack>
       <MealPlanner recipes={recipes ?? []} />
     </PageLayout>
   );

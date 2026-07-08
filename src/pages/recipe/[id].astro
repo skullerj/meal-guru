@@ -23,18 +23,8 @@ if (!recipe) {
   return Astro.redirect("/recipes");
 }
 
-const referer = Astro.request.headers.get("referer");
-let backUrl = "/recipes";
-if (referer) {
-  try {
-    const refPath = new URL(referer).pathname;
-    if (refPath.startsWith("/shop/")) {
-      backUrl = refPath;
-    }
-  } catch {}
-}
 ---
 
 <Layout title={recipe.name}>
-  <CookingView recipe={recipe} backUrl={backUrl} client:load />
+  <CookingView recipe={recipe} client:load />
 </Layout>

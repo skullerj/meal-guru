@@ -173,7 +173,7 @@ export default function RecipeList({ recipes, ingredients }: Props) {
   return (
     <PageLayout
       title="Recipes"
-      backUrl="/"
+      showBack
       backLabel="Home"
       actions={
         <Button

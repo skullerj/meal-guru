@@ -12,7 +12,7 @@ function Content() {
   }
 
   return (
-    <PageLayout title="Ingredients" backLabel="Home" backUrl="/">
+    <PageLayout title="Ingredients" backLabel="Home" showBack>
       <IngredientList ingredients={ingredients ?? []} />
     </PageLayout>
   );
