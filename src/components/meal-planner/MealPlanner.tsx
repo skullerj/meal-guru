@@ -1,4 +1,5 @@
 import { useCallback, useReducer } from "react";
+import { Link } from "@tanstack/react-router";
 import type { Recipe } from "@/data/types";
 import RecipeGrid from "./RecipeGrid";
 import ShoppingList from "./ShoppingList";
@@ -32,12 +33,12 @@ export default function MealPlanner({ recipes }: MealPlannerProps) {
         {recipes.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No recipes yet.{" "}
-            <a
-              href="/add-recipe"
+            <Link
+              to="/recipes"
               className="text-primary underline underline-offset-4"
             >
               Add your first recipe
-            </a>
+            </Link>
             .
           </p>
         ) : (

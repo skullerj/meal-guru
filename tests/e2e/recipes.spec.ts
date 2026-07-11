@@ -4,14 +4,14 @@ import { TEST_RECIPE_NAME } from "../fixtures/data";
 test.describe
   .serial("Recipe CRUD", () => {
     test("shows seeded recipe on the list page", async ({ page }) => {
-      await page.goto("/recipes");
+      await page.goto("/app/recipes");
       await expect(
         page.getByRole("heading", { name: TEST_RECIPE_NAME, exact: true })
       ).toBeVisible();
     });
 
     test("adds a new recipe with one ingredient", async ({ page }) => {
-      await page.goto("/recipes");
+      await page.goto("/app/recipes");
       await page.waitForLoadState("networkidle");
 
       await page.getByRole("button", { name: "Add Recipe" }).click();
@@ -34,7 +34,7 @@ test.describe
     });
 
     test("edits a recipe name", async ({ page }) => {
-      await page.goto("/recipes");
+      await page.goto("/app/recipes");
       await page.waitForLoadState("networkidle");
 
       const card = page
@@ -50,7 +50,7 @@ test.describe
     });
 
     test("cancel delete keeps the recipe", async ({ page }) => {
-      await page.goto("/recipes");
+      await page.goto("/app/recipes");
       await page.waitForLoadState("networkidle");
 
       const card = page
@@ -68,7 +68,7 @@ test.describe
     });
 
     test("deletes a recipe after confirmation", async ({ page }) => {
-      await page.goto("/recipes");
+      await page.goto("/app/recipes");
       await page.waitForLoadState("networkidle");
 
       const card = page

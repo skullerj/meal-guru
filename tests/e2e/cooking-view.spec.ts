@@ -6,7 +6,7 @@ test.describe("Cooking view", () => {
     page,
   }) => {
     const recipeId = process.env.TEST_RECIPE_ID;
-    await page.goto(`/recipe/${recipeId}`);
+    await page.goto(`/app/recipe/${recipeId}`);
     await page.waitForLoadState("networkidle");
 
     // Overview screen
@@ -28,7 +28,7 @@ test.describe("Cooking view", () => {
 
   test("navigates through steps with prev/next", async ({ page }) => {
     const recipeId = process.env.TEST_RECIPE_ID;
-    await page.goto(`/recipe/${recipeId}`);
+    await page.goto(`/app/recipe/${recipeId}`);
     await page.waitForLoadState("networkidle");
 
     // Click start cooking
@@ -72,7 +72,7 @@ test.describe("Cooking view", () => {
   test("shows empty state for recipe without steps", async ({ page }) => {
     // TEST_RECIPE_NAME_3 ("Test Rice Bowl") has no steps seeded
     const recipeId = process.env.TEST_RECIPE_ID_3;
-    await page.goto(`/recipe/${recipeId}`);
+    await page.goto(`/app/recipe/${recipeId}`);
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText("No cooking instructions yet")).toBeVisible();
@@ -81,7 +81,7 @@ test.describe("Cooking view", () => {
   test("recipe card links to cooking view when steps exist", async ({
     page,
   }) => {
-    await page.goto("/recipes");
+    await page.goto("/app/recipes");
     await page.waitForLoadState("networkidle");
 
     const card = page
@@ -102,7 +102,7 @@ test.describe("Cooking view", () => {
   test("recipe card does not show cook link when no steps", async ({
     page,
   }) => {
-    await page.goto("/recipes");
+    await page.goto("/app/recipes");
     await page.waitForLoadState("networkidle");
 
     const card = page

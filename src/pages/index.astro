@@ -1,0 +1,58 @@
+---
+export const prerender = true;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#CF6A43" />
+    <meta name="description" content="Meal Guru helps you plan your weekly meals, organize shopping lists, and cook step by step — so you spend less time deciding and more time enjoying." />
+    <title>Meal Guru</title>
+  </head>
+  <body>
+    <main class="min-h-screen flex flex-col items-center justify-center px-6 py-16">
+      <div class="max-w-lg w-full text-center space-y-12">
+        <header class="space-y-4">
+          <h1 class="font-heading text-5xl sm:text-6xl text-foreground">Meal Guru</h1>
+          <p class="text-lg sm:text-xl text-muted-foreground">Take the stress out of meal planning</p>
+        </header>
+
+        <section class="space-y-8 text-left">
+          <div class="space-y-2">
+            <h2 class="font-heading text-xl text-foreground">Smart weekly planning</h2>
+            <p class="text-muted-foreground">Recipes are picked for you based on what you have cooked recently, so every week feels fresh without the decision fatigue.</p>
+          </div>
+
+          <div class="space-y-2">
+            <h2 class="font-heading text-xl text-foreground">Organized shopping lists</h2>
+            <p class="text-muted-foreground">All ingredients are aggregated across your chosen recipes and grouped by supermarket category. No more wandering the aisles.</p>
+          </div>
+
+          <div class="space-y-2">
+            <h2 class="font-heading text-xl text-foreground">Step-by-step cooking</h2>
+            <p class="text-muted-foreground">Follow along one step at a time with exactly the ingredients you need for each step. Cooking has never been simpler.</p>
+          </div>
+        </section>
+
+        <div>
+          <a
+            href="/app/"
+            class="inline-block rounded-lg bg-primary px-8 py-3 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Get started
+          </a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  @import "@fontsource-variable/geist";
+</style>
+<style is:global>
+  @import "../styles/global.css";
+</style>

@@ -8,13 +8,13 @@ test.describe
     test("Start the week creates a shop and navigates to /shop/[id]", async ({
       page,
     }) => {
-      await page.goto("/");
+      await page.goto("/app/");
       await page.waitForLoadState("networkidle");
 
       await page.getByRole("button", { name: "Start the week" }).click();
 
       // Should navigate to /shop/<uuid>
-      await page.waitForURL(/\/shop\/[0-9a-f-]+/);
+      await page.waitForURL(/\/app\/shop\/[0-9a-f-]+/);
       await page.waitForLoadState("networkidle");
 
       // Save the URL for subsequent tests
@@ -39,11 +39,11 @@ test.describe
     test("Start the week again returns the same shop (idempotent within the week)", async ({
       page,
     }) => {
-      await page.goto("/");
+      await page.goto("/app/");
       await page.waitForLoadState("networkidle");
 
       await page.getByRole("button", { name: "Go to shopping list" }).click();
-      await page.waitForURL(/\/shop\/[0-9a-f-]+/);
+      await page.waitForURL(/\/app\/shop\/[0-9a-f-]+/);
 
       // Should be the same shop URL as before
       expect(page.url()).toBe(shopUrl);
@@ -163,7 +163,7 @@ test.describe
       ).not.toBeVisible();
 
       // Verify recipe cards are shown
-      const recipeLinks = page.locator('a[href^="/recipe/"]');
+      const recipeLinks = page.locator('a[href^="/app/recipe/"]');
       await expect(recipeLinks.first()).toBeVisible();
     });
 
@@ -177,7 +177,7 @@ test.describe
       ).toBeVisible();
 
       // Recipe cards should be visible
-      const recipeLinks = page.locator('a[href^="/recipe/"]');
+      const recipeLinks = page.locator('a[href^="/app/recipe/"]');
       await expect(recipeLinks.first()).toBeVisible();
 
       // Done shopping button should not be present

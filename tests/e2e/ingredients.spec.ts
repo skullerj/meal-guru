@@ -4,7 +4,7 @@ import { TEST_INGREDIENTS } from "../fixtures/data";
 test.describe
   .serial("Ingredient management", () => {
     test("shows seeded ingredient on the list page", async ({ page }) => {
-      await page.goto("/ingredients");
+      await page.goto("/app/ingredients");
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -13,7 +13,7 @@ test.describe
     });
 
     test("edits an ingredient category", async ({ page }) => {
-      await page.goto("/ingredients");
+      await page.goto("/app/ingredients");
       await page.waitForLoadState("networkidle");
 
       // Find the list item containing the ingredient name (view mode — span visible)
@@ -43,7 +43,7 @@ test.describe
     test("creates an ingredient with category via recipe form", async ({
       page,
     }) => {
-      await page.goto("/recipes");
+      await page.goto("/app/recipes");
       await page.waitForLoadState("networkidle");
 
       await page.getByRole("button", { name: "Add Recipe" }).click();

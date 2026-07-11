@@ -42,7 +42,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!user) {
       const returnTo = requestUrl.pathname + requestUrl.search;
       return context.redirect(
-        `/login?returnTo=${encodeURIComponent(returnTo)}`
+        `/app/login?returnTo=${encodeURIComponent(returnTo)}`
       );
     }
 

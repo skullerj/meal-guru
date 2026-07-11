@@ -11,5 +11,5 @@ export const POST: APIRoute = async (context) => {
 
   await supabase.auth.signOut();
 
-  return context.redirect("/login");
+  return context.redirect("/app/login");
 };

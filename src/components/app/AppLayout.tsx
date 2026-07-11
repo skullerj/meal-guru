@@ -17,7 +17,7 @@ export default function AppLayout() {
 				<div className="max-w-5xl mx-auto px-4 flex items-center gap-6">
 					<Link
 						to="/"
-						className="text-sm font-semibold text-foreground hover:text-primary transition-colors py-3"
+						className="text-sm font-semibold text-foreground hover:text-primary transition-colors py-3 font-heading"
 					>
 						Meal Guru
 					</Link>

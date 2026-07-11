@@ -5,7 +5,7 @@ test.describe("Ingredient overlap signal", () => {
   test("shared ingredient shows overlap badge, unique ingredient does not", async ({
     page,
   }) => {
-    await page.goto("/pick");
+    await page.goto("/app/pick");
     await page.waitForLoadState("networkidle");
 
     const shoppingList = page.locator("aside");

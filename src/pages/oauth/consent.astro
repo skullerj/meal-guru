@@ -7,7 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 const authorizationId = Astro.url.searchParams.get("authorization_id");
 
 if (!authorizationId) {
-  return Astro.redirect("/");
+  return Astro.redirect("/app/");
 }
 
 const supabase = createSupabaseServerClient({

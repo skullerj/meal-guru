@@ -3,13 +3,13 @@ import { TEST_USER_EMAIL, TEST_USER_PASSWORD } from "../fixtures/data";
 
 test.describe("Authentication", () => {
   test("redirects unauthenticated user to login", async ({ page }) => {
-    await page.goto("/");
-    await page.waitForURL(/\/login/);
-    await expect(page).toHaveURL(/\/login/);
+    await page.goto("/app/");
+    await page.waitForURL(/\/app\/login/);
+    await expect(page).toHaveURL(/\/app\/login/);
   });
 
   test("shows login form", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
     await expect(
       page.getByRole("heading", { name: "Meal Guru" })
@@ -20,7 +20,7 @@ test.describe("Authentication", () => {
   });
 
   test("shows error for invalid credentials", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
     await page.getByLabel("Email").fill("wrong@example.com");
     await page.getByLabel("Password").fill("wrongpassword");
@@ -31,43 +31,43 @@ test.describe("Authentication", () => {
   test("signs in with valid credentials and redirects to home", async ({
     page,
   }) => {
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
     await page.getByLabel("Email").fill(TEST_USER_EMAIL);
     await page.getByLabel("Password").fill(TEST_USER_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.waitForURL("**/", { timeout: 10000 });
-    await expect(page).toHaveURL("/");
+    await page.waitForURL("**/app/", { timeout: 10000 });
+    await expect(page).toHaveURL("/app/");
   });
 
   test("session persists after reload", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
     await page.getByLabel("Email").fill(TEST_USER_EMAIL);
     await page.getByLabel("Password").fill(TEST_USER_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.waitForURL("**/", { timeout: 10000 });
+    await page.waitForURL("**/app/", { timeout: 10000 });
 
     await page.reload();
     await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/app/");
   });
 
   test("logs out and redirects to login", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
     await page.getByLabel("Email").fill(TEST_USER_EMAIL);
     await page.getByLabel("Password").fill(TEST_USER_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.waitForURL("**/", { timeout: 10000 });
+    await page.waitForURL("**/app/", { timeout: 10000 });
 
     await page.getByRole("button", { name: "Log out" }).click();
-    await page.waitForURL(/\/login/, { timeout: 10000 });
-    await expect(page).toHaveURL(/\/login/);
+    await page.waitForURL(/\/app\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/app\/login/);
   });
 
   test("toggles between sign in and sign up modes", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
 
     // Should start in sign in mode
@@ -87,15 +87,15 @@ test.describe("Authentication", () => {
   });
 
   test("redirects authenticated user from login to home", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
     await page.getByLabel("Email").fill(TEST_USER_EMAIL);
     await page.getByLabel("Password").fill(TEST_USER_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL("/", { timeout: 10000 });
+    await expect(page).toHaveURL("/app/", { timeout: 10000 });
 
-    // Try to navigate to /login — should redirect to /
-    await page.goto("/login");
-    await expect(page).toHaveURL("/", { timeout: 10000 });
+    // Try to navigate to /app/login — should redirect to /app/
+    await page.goto("/app/login");
+    await expect(page).toHaveURL("/app/", { timeout: 10000 });
   });
 });

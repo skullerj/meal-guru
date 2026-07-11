@@ -69,7 +69,7 @@ test.describe("Login returnTo redirect", () => {
 
     // Should redirect to /login with returnTo param
     const url = new URL(page.url());
-    expect(url.pathname).toBe("/login");
+    expect(url.pathname).toBe("/app/login");
 
     const returnTo = url.searchParams.get("returnTo");
     expect(returnTo).toBeDefined();
@@ -83,18 +83,18 @@ test.describe("Consent page requires authorization_id", () => {
     page,
   }) => {
     // Log in first
-    await page.goto("/login");
+    await page.goto("/app/login");
     await page.waitForLoadState("networkidle");
     await page.getByLabel("Email").fill(TEST_USER_EMAIL);
     await page.getByLabel("Password").fill(TEST_USER_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.waitForURL("**/", { timeout: 10000 });
+    await page.waitForURL("**/app/", { timeout: 10000 });
 
     // Navigate to consent page without authorization_id
     await page.goto("/oauth/consent");
     await page.waitForLoadState("networkidle");
 
     // Should redirect to home
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/app/");
   });
 });

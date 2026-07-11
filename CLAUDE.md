@@ -196,7 +196,9 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   ├── layouts/
 │   │   └── Layout.astro             # Used only by oauth/consent.astro
 │   ├── pages/
-│   │   ├── [...path].astro          # SPA catch-all: serves App component with client:only="react"
+│   │   ├── index.astro              # Static landing page: welcome page with tagline, value props, and CTA to /app/ (prerender = true)
+│   │   ├── app/
+│   │   │   └── [...path].astro      # SPA catch-all: serves App component with client:only="react" (basepath /app)
 │   │   ├── api/
 │   │   │   ├── auth/
 │   │   │   │   └── signout.ts       # POST endpoint: signs out user (legacy, used by Layout.astro)
@@ -218,17 +220,18 @@ When adding a new test file that needs logged-out browser state, add it to both 
 ## Features Implemented
 - **Recipe Data Structure**: TypeScript interfaces for recipes, ingredients, and instruction steps
 - **Context-Aware Home Page** (`/`): React island that shows different content based on user state — onboarding (no recipes), start the week (no active shop), shopping list link (active shop in shopping mode), or cooking view link with start-new-week option (active shop in cooking mode). Uses `useRecipes` and `useActiveShop` React Query hooks
-- **Manual Recipe Picker** (`/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
+- **Manual Recipe Picker** (`/app/pick`): Interactive meal planning with recipe selection, ingredient aggregation, and shopping optimization
 - **Persistent Weekly Shop** (`/shop/[id]`): Loads a persisted shop record with two modes — "shopping" (ingredient checklist) and "cooking" (recipe cards linking to `/recipe/[id]`). "Done shopping" transitions to cooking mode
 - **Step-by-Step Cooking View** (`/recipe/[id]`): Mobile-first cooking interface showing one step at a time with per-step ingredient list, overview/intro screen, and Previous/Next/Done navigation
 - **Recipe Import Tool** (`/add-recipe`): PDF upload with AI-powered parsing using Claude API
 - **Supabase Integration**: Centralized database with ingredient library and standardized units
 - **Interactive Features**: Complex state management, real-time price calculations, ingredient aggregation
 - **Ingredient Management**: edit name/unit/category and delete (with referential integrity guard) via direct Supabase calls from React
-- **Authentication**: Supabase Auth via `@supabase/ssr`. Auth guard in TanStack Router's `beforeLoad` checks `supabase.auth.getUser()` and redirects unauthenticated users to `/login?returnTo=<path>`. Sign-out via `supabase.auth.signOut()` in the AppLayout nav bar. Server middleware only protects `/oauth/*` routes
+- **Authentication**: Supabase Auth via `@supabase/ssr`. Auth guard in TanStack Router's `beforeLoad` checks `supabase.auth.getUser()` and redirects unauthenticated users to `/app/login?returnTo=<path>`. Sign-out via `supabase.auth.signOut()` in the AppLayout nav bar. Server middleware only protects `/oauth/*` routes (redirects to `/app/login`)
 - **MCP OAuth**: The `/api/mcp` endpoint requires a `Bearer` token (Supabase access token) in the `Authorization` header. Invalid/missing tokens return 401 with `WWW-Authenticate` header pointing to the PRM endpoint. The middleware serves `/.well-known/oauth-protected-resource` with Protected Resource Metadata JSON (resource URL, Supabase auth server, supported scopes)
 - **OAuth Consent** (`/oauth/consent`): SSR page for third-party OAuth authorization. Receives `authorization_id` query param, fetches authorization details from Supabase, and renders ConsentForm for user to approve/deny. LoginForm supports `returnTo` query param for post-login redirect back to consent page
-- **SPA with Client-Side Routing**: Single-page app using TanStack Router (`src/components/app/`). A single Astro catch-all page (`[...path].astro`) serves the React app with `client:only="react"`. `App.tsx` provides `QueryClientProvider` + `RouterProvider`. Route components inline data-fetching via React Query hooks. Navigation uses TanStack Router `<Link>` and `useNavigate()` — no full-page reloads between SPA routes. Server routes (`/api/*`, `/oauth/*`) are separate Astro pages
+- **Landing Page** (`/`): Static prerendered welcome page with app name, tagline, value propositions, and CTA linking to `/app/`. Pure Astro/HTML, no React components
+- **SPA with Client-Side Routing**: Single-page app using TanStack Router (`src/components/app/`) with `basepath: '/app'`. A catch-all Astro page (`src/pages/app/[...path].astro`) serves the React app with `client:only="react"`. All SPA routes live under `/app/` (e.g., `/app/login`, `/app/recipes`, `/app/pick`). `App.tsx` provides `QueryClientProvider` + `RouterProvider`. Route components inline data-fetching via React Query hooks. Navigation uses TanStack Router `<Link>` and `useNavigate()` — no full-page reloads between SPA routes. Server routes (`/api/*`, `/oauth/*`) are separate Astro pages
 
 ## Data Structure
 - **Recipes**: Complete recipes with ingredients stored in Supabase
@@ -543,7 +546,7 @@ Centralized reusable components in `src/components/shared/`:
 - **Mutations**: All CRUD operations go directly from React components to Supabase via the browser client — no Astro actions layer. Only `parse-recipe` and MCP stay server-side
 - **Data Management**: Recipe data fetched from Supabase via React Query hooks (client-side), TypeScript interfaces in `/src/data/recipes.ts`
 - **React Query**: Singleton `QueryClient` in `src/lib/query-client.ts`, hooks in `src/lib/queries.ts`. `QueryClientProvider` wraps the entire app at the root (`App.tsx`). After mutations, call `queryClient.invalidateQueries()` with the relevant `queryKeys` entry to keep caches fresh
-- **SPA Router**: TanStack Router in `src/components/app/router.tsx` defines the full route tree with code-based routes. `App.tsx` is the SPA entry point (QueryClientProvider + RouterProvider). `AppLayout.tsx` provides the nav bar for authenticated routes. Auth guard uses `beforeLoad` to check `supabase.auth.getUser()`. A single catch-all Astro page (`[...path].astro`) serves the React app with `client:only="react"`. Route components inline data-fetching via React Query hooks
+- **SPA Router**: TanStack Router in `src/components/app/router.tsx` defines the full route tree with code-based routes and `basepath: '/app'`. All SPA routes are served under `/app/` (e.g., `/app/login`, `/app/recipes`, `/app/shop/$id`). `App.tsx` is the SPA entry point (QueryClientProvider + RouterProvider). `AppLayout.tsx` provides the nav bar for authenticated routes. Auth guard uses `beforeLoad` to check `supabase.auth.getUser()`. A catch-all Astro page (`src/pages/app/[...path].astro`) serves the React app with `client:only="react"`. Root `/` redirects to `/app/` via `src/pages/index.astro`. Route components inline data-fetching via React Query hooks
 - **Navigation**: All internal navigation in React components uses TanStack Router (`Link` from `@tanstack/react-router` for links, `useNavigate` for programmatic navigation). Never use `<a href>` for internal routes or `window.location.href` for in-app navigation. The only exceptions are OAuth/API redirects (e.g. `ConsentForm.tsx`, and the server-route fallback in `LoginForm.tsx`) which require full page loads
 - State management follows useReducer pattern with clean component separation
 - Column components use callback props pattern for state management decoupling

@@ -4,7 +4,7 @@ test.describe("Offline support", () => {
   test("offline indicator appears when disconnected and hides on reconnect", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/app/");
     await page.waitForLoadState("networkidle");
 
     // Should not show offline banner when online
@@ -27,13 +27,13 @@ test.describe("Offline support", () => {
 
   test("client-side navigation works while offline", async ({ page }) => {
     // Load the app and visit multiple pages to warm the React Query cache
-    await page.goto("/recipes");
+    await page.goto("/app/recipes");
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("heading", { name: "Recipes" })).toBeVisible();
 
     // Visit ingredients page too
     await page.getByRole("link", { name: "Ingredients" }).click();
-    await page.waitForURL("/ingredients");
+    await page.waitForURL("/app/ingredients");
     await page.waitForLoadState("networkidle");
 
     // Go offline
@@ -45,19 +45,19 @@ test.describe("Offline support", () => {
       exact: true,
     });
     await recipesNavLink.click();
-    await expect(page).toHaveURL("/recipes");
+    await expect(page).toHaveURL("/app/recipes");
     await expect(page.getByRole("heading", { name: "Recipes" })).toBeVisible();
 
     // Navigate home
     await page.locator("nav").getByRole("link", { name: "Meal Guru" }).click();
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/app/");
 
     await page.context().setOffline(false);
   });
 
   test("previously fetched recipes are visible offline", async ({ page }) => {
     // Load recipes page to populate React Query cache
-    await page.goto("/recipes");
+    await page.goto("/app/recipes");
     await page.waitForLoadState("networkidle");
 
     // Verify at least one recipe is visible and remember its name
@@ -70,7 +70,7 @@ test.describe("Offline support", () => {
 
     // Navigate away via nav
     await page.locator("nav").getByRole("link", { name: "Meal Guru" }).click();
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/app/");
 
     // Navigate back to recipes
     await page
@@ -80,7 +80,7 @@ test.describe("Offline support", () => {
         exact: true,
       })
       .click();
-    await expect(page).toHaveURL("/recipes");
+    await expect(page).toHaveURL("/app/recipes");
 
     // The same recipe should still be visible from cached data
     await expect(
@@ -98,7 +98,7 @@ test.describe("Offline support", () => {
     expect(manifest.name).toBe("Meal Guru");
     expect(manifest.short_name).toBe("Meal Guru");
     expect(manifest.display).toBe("standalone");
-    expect(manifest.start_url).toBe("/");
+    expect(manifest.start_url).toBe("/app/");
     expect(manifest.icons.length).toBeGreaterThanOrEqual(2);
   });
 });

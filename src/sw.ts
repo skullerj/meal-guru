@@ -14,7 +14,7 @@ const navigationHandler = new NetworkFirst({
 });
 
 const navigationRoute = new NavigationRoute(navigationHandler, {
-  denylist: [/^\/api\//, /^\/oauth\//, /^\/.well-known\//],
+  allowlist: [/^\/app\//],
 });
 registerRoute(navigationRoute);
 
