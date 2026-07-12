@@ -10,7 +10,7 @@ Old code is preserved on the `archive/v1` branch for reference.
 
 ## Completed (v1)
 
-Features 0–15 shipped. Summary:
+Features 0–15, 16–22, 23, and 24 shipped. Summary:
 
 0. Archive old code (`archive/v1` branch)
 1. Design system foundation (shadcn/ui, shared components, typeface)
@@ -28,6 +28,8 @@ Features 0–15 shipped. Summary:
 13. Persisted shopping checks (`shop_ingredients` table, snapshot on shop creation, optimistic toggle)
 14. Shop cooking mode ("Done shopping" → recipe cards with cooking view links, persisted status)
 15. Supermarket-aisle ingredient categories (expanded from 5 to 10 categories matching store sections)
+23. Cooking step timers (inline countdown timers on steps with time mentions, localStorage persistence, floating summary)
+24. Mobile layout polish (sticky nav bar, dialog pinned header/footer with scrollable body)
 
 ---
 
@@ -218,19 +220,31 @@ Add service worker and offline-first data strategy so the installed app works wi
 
 ---
 
-### 🔲 23. Cooking step timers
+### ✅ 23. Cooking step timers
 Show inline timer buttons on cooking steps that mention a duration (e.g., "simmer for 15 minutes", "bake 25 min"). Tapping the button starts a countdown right in the cooking view — no need to leave the app for a separate timer.
 
 Timers persist to `localStorage` so they survive step-to-step navigation and page refreshes. Multiple timers can run simultaneously (e.g., oven timer on step 3 while prepping step 4), with a floating summary of all active timers visible from any step.
 
-- [ ] Parse step instruction text for time mentions (regex for patterns like "X minutes", "X min", "X hours", "X seconds") and extract duration in seconds
-- [ ] Build `Timer` component — countdown display with start/pause/reset controls, visual alert (flashing/color change) and audio alert (Web Audio API beep) when timer reaches zero
-- [ ] Integrate timer button into `CookingView` steps — show a timer button on steps with a detected duration; tapping it creates a timer pre-filled with that duration
-- [ ] Persist active timers to `localStorage` — timers continue running across step navigation and page reloads; clear timers when the user finishes the recipe or navigates away from cooking
-- [ ] Support multiple simultaneous timers — show a floating summary of all running timers (step number + remaining time) visible from any step, with tap-to-dismiss when complete
-- [ ] E2E tests
+- [x] Parse step instruction text for time mentions (regex for patterns like "X minutes", "X min", "X hours", "X seconds") and extract duration in seconds
+- [x] Build `Timer` component — countdown display with start/pause/reset controls, visual alert (flashing/color change) and audio alert (Web Audio API beep) when timer reaches zero
+- [x] Integrate timer button into `CookingView` steps — show a timer button on steps with a detected duration; tapping it creates a timer pre-filled with that duration
+- [x] Persist active timers to `localStorage` — timers continue running across step navigation and page reloads; clear timers when the user finishes the recipe or navigates away from cooking
+- [x] Support multiple simultaneous timers — show a floating summary of all running timers (step number + remaining time) visible from any step, with tap-to-dismiss when complete
+- [x] E2E tests
 
 **Verification:** Open a recipe cooking view with steps that mention times (e.g., "cook for 10 minutes"). Confirm a timer button appears on those steps. Start a timer, navigate to another step — confirm the timer keeps counting down and appears in the floating summary. Refresh the page — confirm the timer persists and continues. Let a timer reach zero — confirm visual and audio alerts fire.
+
+---
+
+### ✅ 24. Mobile layout polish — sticky nav & scrollable dialog body
+Improve the mobile experience with two CSS/layout changes: make the nav bar stick to the top of the viewport so it's always accessible, and restructure dialogs so the header and footer stay pinned while the content scrolls.
+
+- [x] Make the nav bar sticky at the top (`sticky top-0 z-40`) in `AppLayout.tsx`
+- [x] Restructure `DialogContent` in `dialog.tsx` to use flex column layout with pinned header/footer and scrollable middle section
+- [x] Update `RecipeFormDialog.tsx` to use the new scrollable body pattern (move `overflow-y-auto` from DialogContent to the content `div`)
+- [x] E2E tests
+
+**Verification:** On a small viewport, scroll down a long page (e.g., recipe list) — confirm the nav stays visible at the top. Open the recipe form dialog with enough content to overflow — confirm the title and action buttons stay pinned while the form fields scroll.
 
 ---
 

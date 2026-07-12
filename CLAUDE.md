@@ -335,6 +335,8 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── mutations.ts             # React Query mutation hooks
 │   │   ├── idb-persister.ts         # IndexedDB cache persistence
 │   │   ├── use-online-status.ts     # Online/offline detection hook
+│   │   ├── parse-duration.ts        # Regex parser for time durations in text
+│   │   ├── use-cooking-timers.ts    # Cooking timer context + hook (localStorage, audio alerts)
 │   │   └── utils.ts                 # cn() className utility
 │   ├── sw.ts                        # Workbox service worker
 │   ├── middleware.ts                # Protects /oauth/*, serves PRM metadata

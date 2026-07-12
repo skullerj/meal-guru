@@ -7,9 +7,13 @@ import {
   ChevronRight,
   Edit3,
   Loader2,
+  Pause,
+  Play,
   Plus,
+  RotateCcw,
   ShoppingCart,
   Sparkles,
+  Timer,
   Trash2,
   X,
 } from "lucide-react";
@@ -23,9 +27,13 @@ export type IconName =
   | "chevron-right"
   | "edit"
   | "loader"
+  | "pause"
+  | "play"
   | "plus"
+  | "rotate-ccw"
   | "shopping-cart"
   | "sparkles"
+  | "timer"
   | "trash"
   | "x";
 
@@ -47,9 +55,13 @@ const iconMap = {
   "chevron-right": ChevronRight,
   edit: Edit3,
   loader: Loader2,
+  pause: Pause,
+  play: Play,
   plus: Plus,
+  "rotate-ccw": RotateCcw,
   "shopping-cart": ShoppingCart,
   sparkles: Sparkles,
+  timer: Timer,
   trash: Trash2,
   x: X,
 } as const;
