@@ -13,7 +13,7 @@ export default function AppLayout() {
 	return (
 		<>
 			<OfflineIndicator />
-			<nav className="border-b border-border bg-background">
+			<nav className="sticky top-0 z-40 border-b border-border bg-background">
 				<div className="max-w-5xl mx-auto px-4 flex items-center gap-6">
 					<Link
 						to="/"

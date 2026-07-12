@@ -173,14 +173,14 @@ export default function RecipeFormDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+      <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {mode === "add" ? "Add Recipe" : "Edit Recipe"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 py-2">
+        <div className="flex flex-col gap-4 py-2 overflow-y-auto flex-1 min-h-0">
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="recipe-name"
