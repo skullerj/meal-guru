@@ -85,7 +85,28 @@ Follow the conventions in `tests/` (read existing specs before writing):
 - Use `await page.waitForLoadState('networkidle')` after `page.goto()`
 - Prefer `getByRole` over `getByText`/`getByLabel`
 
-### Step 6 — Update ROADMAP.md
+### Step 6 — XP Code Review
+
+**This step is mandatory for every feature, no exceptions.**
+
+After implementation and tests are written, launch an **xp-reviewer agent** to review the changes. This review runs in its own context as a separate agent so it has a fresh perspective on the code.
+
+**How to run the review:**
+
+1. Use the Agent tool to spawn a new agent. In the prompt, instruct it to:
+   - Load the `xp-reviewer` skill by reading `.claude/skills/xp-reviewer/SKILL.md` and `.claude/skills/xp-reviewer/references/c2wiki-wisdom.md`
+   - Run `git diff HEAD~1` (or the appropriate range covering all commits for this feature) to see the full changeset
+   - Read any new or significantly modified files in full for context
+   - Apply the XP review workflow from the skill: understand intent, apply the smell test, prioritize the top 3-5 issues, suggest concrete refactorings
+   - Return a structured review with: what's good, issues found (with severity: "must fix" vs "consider"), and suggested refactorings
+
+2. **Present the review to the user.** Do NOT auto-apply any changes. Show the review output and ask the user which issues (if any) they want to address.
+
+3. **If the user approves changes**, delegate the fixes to the appropriate agent (`astro-web-dev` for UI, `astro-backend-dev` for backend). Then re-run the E2E tests to make sure nothing broke.
+
+4. **If the user says "skip" or "looks good"**, proceed to Step 7.
+
+### Step 7 — Update ROADMAP.md
 
 After each sub-task completes, update the corresponding `[ ]` to `[x]` in ROADMAP.md.
 
@@ -93,7 +114,7 @@ When all sub-tasks for a feature are `[x]`, change the feature's `🔲` to `✅`
 
 Commit the ROADMAP.md update as part of the feature commit, not separately.
 
-### Step 7 — Verify
+### Step 8 — Verify
 
 After implementation, run the verification step listed for that feature in ROADMAP.md. This typically means:
 - Starting the dev server: `npm run dev`

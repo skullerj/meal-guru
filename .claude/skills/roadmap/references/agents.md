@@ -89,6 +89,20 @@ Add a nullable `category` column to the `ingredients` table using the existing `
 
 ---
 
+### `xp-reviewer` (via general-purpose agent + skill)
+**Use for:** Post-implementation code review from an XP/extreme programming perspective.
+
+**The go-to agent for:**
+- Reviewing feature diffs for code smells, YAGNI violations, coupling issues
+- Suggesting refactorings grounded in XP principles (ComposedMethod, OnceAndOnlyOnce, etc.)
+- Catching premature abstractions or the wrong abstraction
+
+**How to invoke:** Spawn a general-purpose agent and instruct it to read the xp-reviewer skill files (`.claude/skills/xp-reviewer/SKILL.md` and `.claude/skills/xp-reviewer/references/c2wiki-wisdom.md`), then review the feature's diff. The agent should return a structured review — never auto-apply changes.
+
+**Always runs in its own context** so it has a fresh, unbiased perspective on the code. Results are presented to the user for manual approval before any changes are made.
+
+---
+
 ## Parallelization Rules
 
 Run agents **in parallel** (single message, multiple Agent calls) when their work is independent:
