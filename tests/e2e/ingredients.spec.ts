@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { TEST_INGREDIENTS } from "../fixtures/data";
+import { TEST_INGREDIENTS, TEST_RECIPE_NAME } from "../fixtures/data";
 
 test.describe
   .serial("Ingredient management", () => {
@@ -69,5 +69,63 @@ test.describe
       await page.getByRole("button", { name: "Save" }).click();
 
       await expect(page.getByText("Category Test Recipe")).toBeVisible();
+    });
+
+    test("shows recipe names when deleting a referenced ingredient", async ({
+      page,
+    }) => {
+      await page.goto("/app/ingredients");
+      await page.waitForLoadState("networkidle");
+
+      const item = page.getByRole("listitem").filter({
+        has: page.locator("span", { hasText: TEST_INGREDIENTS[0].name }),
+      });
+
+      // Set up dialog handlers: confirm first, then capture the alert
+      let alertMessage = "";
+      page.on("dialog", async (dialog) => {
+        if (dialog.type() === "confirm") {
+          await dialog.accept();
+        } else if (dialog.type() === "alert") {
+          alertMessage = dialog.message();
+          await dialog.accept();
+        }
+      });
+
+      await item.getByRole("button", { name: "Delete" }).click();
+
+      // Wait for the alert to appear with a retry
+      await expect(async () => {
+        expect(alertMessage).toContain("Cannot delete");
+        expect(alertMessage).toContain(TEST_RECIPE_NAME);
+      }).toPass({ timeout: 5000 });
+
+      // Ingredient should still be visible (not deleted)
+      await expect(
+        page.locator("span", { hasText: TEST_INGREDIENTS[0].name })
+      ).toBeVisible();
+    });
+
+    test("deletes an unused ingredient", async ({ page }) => {
+      await page.goto("/app/ingredients");
+      await page.waitForLoadState("networkidle");
+
+      const item = page.getByRole("listitem").filter({
+        has: page.locator("span", { hasText: "TestDeleteIng" }),
+      });
+
+      // Set up dialog handler to accept the confirm
+      page.on("dialog", async (dialog) => {
+        if (dialog.type() === "confirm") {
+          await dialog.accept();
+        }
+      });
+
+      await item.getByRole("button", { name: "Delete" }).click();
+
+      // Ingredient should be removed from the page
+      await expect(
+        page.locator("span", { hasText: "TestDeleteIng" })
+      ).toBeHidden();
     });
   });

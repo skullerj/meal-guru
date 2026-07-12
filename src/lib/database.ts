@@ -181,13 +181,20 @@ export async function deleteIngredient(
   supabase: SupabaseClient,
   id: string
 ): Promise<void> {
-  const { count, error: countError } = await supabase
+  const { data: refs, error: refError } = await supabase
     .from("recipe_ingredients")
-    .select("id", { count: "exact", head: true })
+    .select("recipes(name)")
     .eq("ingredient_id", id);
-  if (countError) throw countError;
-  if (count && count > 0) {
-    throw new Error(`Cannot delete: ingredient is used in ${count} recipe(s)`);
+  if (refError) throw refError;
+  if (refs && refs.length > 0) {
+    const recipeNames = [
+      ...new Set(
+        refs.map((r) => (r.recipes as unknown as { name: string }).name)
+      ),
+    ];
+    throw new Error(
+      `Cannot delete: ingredient is used in ${recipeNames.join(", ")}`
+    );
   }
   const { error } = await supabase.from("ingredients").delete().eq("id", id);
   if (error) throw error;
