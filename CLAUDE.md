@@ -300,6 +300,16 @@ When adding a new test file that needs logged-out browser state, add it to both 
 - **Prefer `getByRole`**: Use `getByRole('button', { name: '...' })` over `getByLabel`/`getByText` (Lucide icons render `aria-label` on SVGs causing double matches)
 - **API-only tests**: Use Playwright's `request` fixture for direct HTTP requests
 
+### Deliberately Untested
+
+Some behaviour depends on browser/device capabilities that Playwright cannot observe. **Do not add E2E tests for these** — a test here can only assert that our own UI state changed, which restates the implementation and adds a flaky test without verifying the actual behaviour.
+
+| Feature | Why it isn't tested |
+|---------|---------------------|
+| **Screen wake lock** (`src/lib/use-wake-lock.ts`, toggle in `CookingView`) | Whether the screen actually stays awake is invisible to the browser automation API. Headless Chromium exposes `navigator.wakeLock` but frequently rejects the request; the hook catches that and resets to off, so a "click then assert pressed" test is inherently flaky. Verify by hand on a real phone instead. |
+
+If you find yourself tempted to cover one of these, the answer is no — check this table before writing the spec.
+
 ---
 
 ## 8. Project Structure
@@ -337,6 +347,7 @@ When adding a new test file that needs logged-out browser state, add it to both 
 │   │   ├── use-online-status.ts     # Online/offline detection hook
 │   │   ├── parse-duration.ts        # Regex parser for time durations in text
 │   │   ├── use-cooking-timers.ts    # Cooking timer context + hook (localStorage, audio alerts)
+│   │   ├── use-wake-lock.ts         # Screen Wake Lock hook (localStorage, re-acquires on visibilitychange)
 │   │   └── utils.ts                 # cn() className utility
 │   ├── sw.ts                        # Workbox service worker
 │   ├── middleware.ts                # Protects /oauth/*, serves PRM metadata

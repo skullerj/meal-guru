@@ -6,6 +6,8 @@ import {
   ChevronDown,
   ChevronRight,
   Edit3,
+  Lightbulb,
+  LightbulbOff,
   Loader2,
   Pause,
   Play,
@@ -26,6 +28,8 @@ export type IconName =
   | "chevron-down"
   | "chevron-right"
   | "edit"
+  | "lightbulb"
+  | "lightbulb-off"
   | "loader"
   | "pause"
   | "play"
@@ -54,6 +58,8 @@ const iconMap = {
   "chevron-down": ChevronDown,
   "chevron-right": ChevronRight,
   edit: Edit3,
+  lightbulb: Lightbulb,
+  "lightbulb-off": LightbulbOff,
   loader: Loader2,
   pause: Pause,
   play: Play,

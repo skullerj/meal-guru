@@ -4,8 +4,10 @@ import {
   CookingTimersContext,
   useCookingTimers,
 } from "@/lib/use-cooking-timers";
+import { useWakeLock } from "@/lib/use-wake-lock";
 import type { Recipe, RecipeIngredient } from "../../data/types";
 import Button from "../shared/Button";
+import IconButton from "../shared/IconButton";
 import PageLayout from "../shared/PageLayout";
 import ActiveTimersSummary from "./ActiveTimersSummary";
 import TimerButton from "./TimerButton";
@@ -25,6 +27,11 @@ export default function CookingView({ recipe }: Props) {
   const [stepIndex, setStepIndex] = useState(0);
   const timerContextValue = useCookingTimers(recipe.id);
   const { timers, clearAllTimers } = timerContextValue;
+  const {
+    supported: wakeLockSupported,
+    enabled: wakeLockEnabled,
+    toggle: toggleWakeLock,
+  } = useWakeLock();
 
   const steps = recipe.steps ?? [];
   const hasSteps = steps.length > 0;
@@ -74,6 +81,19 @@ export default function CookingView({ recipe }: Props) {
         title={recipe.name}
         showBack
         subtitle={isOverview ? overviewSubtitle : undefined}
+        actions={
+          wakeLockSupported ? (
+            <IconButton
+              icon={wakeLockEnabled ? "lightbulb" : "lightbulb-off"}
+              variant={wakeLockEnabled ? "primary" : "ghost"}
+              aria-label={
+                wakeLockEnabled ? "Screen stays on" : "Keep screen on"
+              }
+              aria-pressed={wakeLockEnabled}
+              onClick={toggleWakeLock}
+            />
+          ) : undefined
+        }
       >
         {isOverview ? (
           <div>
