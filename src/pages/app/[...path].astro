@@ -11,7 +11,9 @@ import App from "@/components/app/App";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#CF6A43" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <title>Meal Guru</title>
+    <script is:inline src="/registerSW.js"></script>
   </head>
   <body>
     <App client:only="react" />
