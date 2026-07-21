@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import Icon from "@/components/shared/Icon";
 import IconButton from "@/components/shared/IconButton";
 import type { Recipe } from "@/data/types";
@@ -47,14 +48,15 @@ export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
           onClick={onDelete}
         />
         {stepCount > 0 && (
-          <a
-            href={`/recipe/${recipe.id}`}
+          <Link
+            to="/recipe/$id"
+            params={{ id: recipe.id }}
             className="inline-flex items-center justify-center rounded-md font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm h-8 px-3 text-sm gap-1.5 ml-1"
             aria-label="Cook recipe"
           >
             <Icon name="book-open" size="xs" />
             Cook
-          </a>
+          </Link>
         )}
       </div>
     </div>
