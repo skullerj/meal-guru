@@ -1,42 +1,36 @@
 import { expect, test } from "@playwright/test";
-import { TEST_RECIPE_NAME, TEST_RECIPE_NAME_2 } from "../fixtures/data";
+import {
+  TEST_RECIPE_NAME,
+  TEST_RECIPE_NAME_2,
+  TEST_RECIPE_NAME_3,
+} from "../fixtures/data";
 
 test.describe("Ingredient overlap signal", () => {
-  test("shared ingredient shows overlap badge, unique ingredient does not", async ({
+  test("pairing line shows shared ingredients and flags recipes with none", async ({
     page,
   }) => {
     await page.goto("/app/pick");
     await page.waitForLoadState("networkidle");
 
-    const shoppingList = page.locator("aside");
+    // No pairing lines before anything is selected
+    await expect(page.getByText("nothing shared")).toHaveCount(0);
 
-    // Select the first recipe (has Spaghetti + Tomato sauce)
+    // Select the first recipe (Spaghetti + Tomato sauce)
     await page
-      .getByRole("button", { name: new RegExp(TEST_RECIPE_NAME, "i") })
+      .getByRole("button", { name: new RegExp(TEST_RECIPE_NAME) })
       .first()
       .click();
 
-    // Select the second recipe (has Tomato sauce + Chicken breast)
-    await page
+    // The second recipe shares Tomato sauce
+    const sharedCard = page
       .getByRole("button", { name: new RegExp(TEST_RECIPE_NAME_2) })
-      .click();
+      .first();
+    await expect(sharedCard).toContainText("tomato sauce");
 
-    // Tomato sauce is shared between both recipes — should show ×2 badge
-    const tomatoRow = shoppingList
-      .locator("li")
-      .filter({ hasText: "Tomato sauce" });
-    await expect(tomatoRow.getByText("×2")).toBeVisible();
-
-    // Spaghetti is only in one recipe — should NOT show a badge
-    const spaghettiRow = shoppingList
-      .locator("li")
-      .filter({ hasText: "Spaghetti" });
-    await expect(spaghettiRow.getByText(/×\d/)).not.toBeVisible();
-
-    // Chicken breast is only in one recipe — should NOT show a badge
-    const chickenRow = shoppingList
-      .locator("li")
-      .filter({ hasText: "Chicken breast" });
-    await expect(chickenRow.getByText(/×\d/)).not.toBeVisible();
+    // The third recipe has no ingredients, so nothing overlaps
+    const unsharedCard = page
+      .getByRole("button", { name: new RegExp(TEST_RECIPE_NAME_3) })
+      .first();
+    await expect(unsharedCard).toContainText("nothing shared");
   });
 });

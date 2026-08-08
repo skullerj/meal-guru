@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import type {
   AggregatedIngredient,
   IngredientGroup,
-} from "./utils/mealPlannerUtils";
+} from "./utils/shoppingListUtils";
 
 interface ShoppingListProps {
   groups: IngredientGroup[];
