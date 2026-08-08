@@ -46,7 +46,7 @@ Meal Guru helps people efficiently plan and prepare meals for the week through b
 - **Icons**: Lucide React
 - **Data Fetching**: React Query (@tanstack/react-query) + IndexedDB persistence
 - **AI Integration**: Anthropic Claude API for recipe parsing
-- **PWA**: Workbox service worker via @vite-pwa/astro
+- **PWA**: Workbox service worker via `vite-plugin-pwa`'s `VitePWA()`, registered directly as a Vite plugin in `astro.config.mjs` (not the `@vite-pwa/astro` integration wrapper, which caps astro at `^5.0.0`)
 - **Linter/Formatter**: Biome
 - **Git Hooks**: Lefthook
 - **Package Manager**: npm
