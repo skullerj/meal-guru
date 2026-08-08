@@ -20,7 +20,7 @@ export default defineConfig({
         short_name: 'Meal Guru',
         description: 'Plan meals, build shopping lists, cook step-by-step',
         start_url: '/app/',
-        scope: '/app/',
+        scope: '/',
         id: '/app/',
         display: 'standalone',
         theme_color: '#CF6A43',
