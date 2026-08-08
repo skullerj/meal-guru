@@ -65,6 +65,7 @@
       "!dist/",
       "!.astro/",
       "!public/toggle-theme.js",
+      "!public/registerSW.js",
       "!netlify.toml"
     ],
     "ignoreUnknown": false

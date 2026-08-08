@@ -2,5 +2,6 @@ pre-commit:
   commands:
     biome-check:
       glob: "*.{js,ts,astro}"
+      exclude: '(^|/)public/'
       run: npx biome check {staged_files} --write
       stage_fixed: true
