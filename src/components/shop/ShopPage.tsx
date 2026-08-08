@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Suspense, useMemo, useState } from "react";
-import { aggregateIngredients } from "@/components/meal-planner/utils/mealPlannerUtils";
 import StartNewWeekButton from "@/components/StartNewWeekButton";
 import Button from "@/components/shared/Button";
 import PageLayout from "@/components/shared/PageLayout";
 import ShoppingListSkeleton from "@/components/shop/ShoppingListSkeleton";
 import ShopShoppingList from "@/components/shop/ShopShoppingList";
+import { aggregateIngredients } from "@/components/shop/utils/shoppingListUtils";
 import type { ShopStatus } from "@/data/types";
 import { useUpdateShopStatus } from "@/lib/mutations";
 import { useShopSuspense } from "@/lib/queries";

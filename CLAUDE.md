@@ -143,17 +143,17 @@ The app uses three tiers of state, chosen by complexity:
 | Signal | Use | Example |
 |--------|-----|---------|
 | Data from Supabase | React Query hook | `ShopPage` reads from `useShopSuspense()` |
-| Multiple actions affect each other's state | `useReducer` | `MealPlanner` toggle recomputes shopping list |
+| Multiple actions affect each other's state | `useReducer` | `RecipeList` dialog mode, edit target, and submitting flag |
 | Single toggle / index / flag | `useState` | `CookingView` step index |
 
 **Key rules:**
-- **Parent owns state, children get callback props** — never pass `dispatch` to child components. See `MealPlanner.tsx` → `RecipeGrid` (passes `onToggle`, not dispatch)
-- **Derived state**: Compute in the reducer or with `useMemo` — don't store it separately. See `mealPlannerReducer.ts` where `groups` is recomputed from `selectedIds` on every toggle
-- **Utility functions**: Pure business logic lives in `utils/` files next to the component (e.g., `mealPlannerUtils.ts` for `aggregateIngredients()`)
+- **Parent owns state, children get callback props** — never pass `dispatch` to child components. See `RecipePicker.tsx` → `PickableRecipeCard` (passes `onToggle`, not dispatch)
+- **Derived state**: Compute in the reducer or with `useMemo` — don't store it separately. See `RecipePicker.tsx`, where `recipePickerReducer.ts` owns only `selectedIds` (plus an animation `version`) and the selected/unselected ordering is a `useMemo` over `recipes` + `selectedIds` — so it also stays fresh when a React Query refetch hands down a new `recipes` array
+- **Utility functions**: Pure business logic lives in `utils/` files next to the component (e.g., `shoppingListUtils.ts` for `aggregateIngredients()`)
 
 **Reference examples:**
 - React Query as primary state: `ShopPage.tsx` — almost no local state, reads and derives everything
-- Reducer with derived state: `mealPlannerReducer.ts` — single action, recalculates on dispatch
+- Reducer for interdependent actions: `RecipeList.tsx` — dialog, delete confirmation, and submitting state move together
 - Multiple useState: `IngredientList.tsx` — independent states for editing/saving/deleting
 - Minimal useState: `CookingView.tsx` — single index, everything else derived
 
@@ -176,7 +176,7 @@ components/feature-name/
 - No direct state management dependency — work with any parent
 - Local `useState` only for transient UI (dropdowns, animations)
 
-**Business logic separation**: All transforms, calculations, and validation live in `utils/` files as pure functions. They're testable in isolation and reusable across components. See `mealPlannerUtils.ts` (`aggregateIngredients`) used by both the reducer and `ShopPage`.
+**Business logic separation**: All transforms, calculations, and validation live in `utils/` files as pure functions. They're testable in isolation and reusable across components. See `shoppingListUtils.ts` (`aggregateIngredients`) used by both `ShopPage` and `ShopShoppingList`.
 
 ### 4.5 Data Fetching (Suspense)
 
@@ -321,14 +321,15 @@ If you find yourself tempted to cover one of these, the answer is no — check t
 │   ├── assets/
 │   ├── components/
 │   │   ├── app/                     # SPA root: App.tsx, AppLayout.tsx, router.tsx
-│   │   ├── meal-planner/            # Recipe picker + shopping list aggregation
-│   │   │   └── utils/               # mealPlannerUtils.ts, mealPlannerReducer.ts
+│   │   ├── pick/                    # Manual recipe picker: overlap-ranked cards + commit footer
+│   │   │   └── utils/               # recipePickerUtils.ts, recipePickerReducer.ts
 │   │   ├── add-recipe/              # PDF upload + AI parsing multi-step form
 │   │   │   └── utils/               # addRecipeUtils.ts, addRecipeReducer.ts
 │   │   ├── recipes/                 # Recipe CRUD list
 │   │   ├── ingredients/             # Ingredient CRUD table
 │   │   ├── home/                    # Context-aware home page
-│   │   ├── shop/                    # Weekly shop: shopping ↔ cooking modes
+│   │   ├── shop/                    # Weekly shop: shopping ↔ cooking modes, ShoppingList.tsx
+│   │   │   └── utils/               # shoppingListUtils.ts (aggregateIngredients)
 │   │   ├── recipe/                  # Step-by-step cooking view + timers
 │   │   ├── auth/                    # Login/signup form
 │   │   ├── oauth/                   # OAuth consent screen

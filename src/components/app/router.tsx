@@ -11,7 +11,7 @@ import { Suspense, useEffect } from "react";
 import LoginForm from "@/components/auth/LoginForm";
 import HomePage from "@/components/home/HomePage";
 import IngredientList from "@/components/ingredients/IngredientList";
-import MealPlanner from "@/components/meal-planner/MealPlanner";
+import RecipePicker from "@/components/pick/RecipePicker";
 import CookingView from "@/components/recipe/CookingView";
 import RecipeList from "@/components/recipes/RecipeList";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
@@ -83,7 +83,7 @@ function PickContent() {
 
   return (
     <PageLayout title="Plan your week" showBack backLabel="Back">
-      <MealPlanner recipes={recipes ?? []} />
+      <RecipePicker recipes={recipes ?? []} />
     </PageLayout>
   );
 }
@@ -257,7 +257,7 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-export const router = createRouter({ routeTree, basepath: '/app' });
+export const router = createRouter({ routeTree, basepath: "/app" });
 
 declare module "@tanstack/react-router" {
   interface Register {

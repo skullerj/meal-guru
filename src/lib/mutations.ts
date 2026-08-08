@@ -134,6 +134,20 @@ export function useStartWeek() {
   });
 }
 
+export function useStartWeekWithRecipes() {
+  return useMutation({
+    mutationKey: ["startWeekWithRecipes"],
+    mutationFn: async (recipeIds: string[]) => {
+      const weekMonday = getWeekMonday();
+      await deactivateShopsForWeek(supabase, weekMonday);
+      return createShop(supabase, recipeIds);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.activeShop });
+    },
+  });
+}
+
 export function useStartNewWeek() {
   return useMutation({
     mutationKey: ["startNewWeek"],

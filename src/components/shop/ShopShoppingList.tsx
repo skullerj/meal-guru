@@ -1,5 +1,5 @@
-import ShoppingList from "@/components/meal-planner/ShoppingList";
-import type { IngredientGroup } from "@/components/meal-planner/utils/mealPlannerUtils";
+import ShoppingList from "@/components/shop/ShoppingList";
+import type { IngredientGroup } from "@/components/shop/utils/shoppingListUtils";
 import { useShopIngredientsSuspense } from "@/lib/queries";
 
 interface ShopShoppingListProps {
